@@ -2,7 +2,7 @@ import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
 import "@/styles/globals.css"
 import "@/i18n"
-import { initializeAppearance } from "@/features/system-settings/hooks/useSystemSettingsData"
+import { initializeAppearance } from "@/features/system-settings/hooks/use-system-settings-data"
 import App from "@/app/App"
 
 initializeAppearance()

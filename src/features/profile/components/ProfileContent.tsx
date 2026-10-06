@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PROFILE_COPY } from "../constants"
-import { useProfileData } from "../hooks/useProfileData"
+import { useProfileData } from "../hooks/use-profile-data"
 
 /** Màn hình hồ sơ cá nhân gồm thông tin tài khoản và thiết lập bảo mật. */
 export function ProfileContent() {

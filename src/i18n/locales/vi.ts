@@ -32,6 +32,7 @@ const vi = {
     accessControl: "Phân quyền",
     systemSettings: "Cài đặt hệ thống",
     sections: {
+      overview: "TỔNG QUAN",
       automation: "TỰ ĐỘNG HÓA AI",
       network: "MẠNG",
       monitoring: "GIÁM SÁT",

@@ -9,6 +9,7 @@ import type { SidebarNavigationItem, SidebarWorkspace } from "@/types/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Sidebar as ShadcnSidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, SidebarSeparator, SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 
+/** Hiển thị một mục điều hướng, đánh dấu route hiện tại và đóng sidebar trên mobile sau khi chọn. */
 function NavigationItem({ item }: { item: SidebarNavigationItem }) {
   const { t } = useTranslation()
   const location = useLocation()
@@ -26,6 +27,7 @@ function NavigationItem({ item }: { item: SidebarNavigationItem }) {
   )
 }
 
+/** Hiển thị sidebar chính gồm bộ chọn workspace, các nhóm điều hướng và menu tài khoản. */
 export default function AppSidebar() {
   const { t } = useTranslation()
   const { setOpenMobile } = useSidebar()

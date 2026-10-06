@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button"
 import { NOT_FOUND_COPY } from "../constants"
-import { useNotFoundNavigation } from "../hooks/useNotFoundNavigation"
+import { useNotFoundNavigation } from "../hooks/use-not-found-navigation"
 
 /** Trang fallback cho route không tồn tại, kèm các lựa chọn điều hướng an toàn. */
 export function NotFoundContent() {

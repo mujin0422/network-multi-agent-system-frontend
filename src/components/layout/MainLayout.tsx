@@ -2,13 +2,13 @@ import { Outlet } from "react-router-dom"
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { SIDEBAR_PROVIDER_STYLE } from "@/constants/sidebar"
-import AppSidebar from "./Sidebar"
+import Sidebar from "./Sidebar"
 
 export default function MainLayout() {
   return (
     <SidebarProvider defaultOpen style={SIDEBAR_PROVIDER_STYLE}>
       {/* --- Application Sidebar --- */}
-      <AppSidebar />
+      <Sidebar />
 
       {/* --- Main Content --- */}
       <SidebarInset>

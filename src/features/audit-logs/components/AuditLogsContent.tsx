@@ -7,7 +7,7 @@ import { MoreMenu } from "@/components/common/MoreMenu"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useAuditLogsData } from "../hooks/useAuditLogsData"
+import { useAuditLogsData } from "../hooks/use-audit-logs-data"
 import type { DeviceActionLog } from "../types"
 import { AuditLogForm } from "./AuditLogForm"
 

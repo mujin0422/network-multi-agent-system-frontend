@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MOCK_BRANDS, MOCK_CATEGORIES } from "../data"
-import { useDevicesData } from "../hooks/useDevicesData"
+import { useDevicesData } from "../hooks/use-devices-data"
 import type { Device } from "../types"
 import { DeviceForm } from "./DeviceForm"
 

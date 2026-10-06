@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useUsersData } from "../hooks/useUsersData"
+import { useUsersData } from "../hooks/use-users-data"
 import type { User } from "../types"
 import { UserForm } from "./UserForm"
 

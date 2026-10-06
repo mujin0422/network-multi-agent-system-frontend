@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { MOCK_OPERATIONS, MOCK_TASKS } from "../data"
-import { useTasksData } from "../hooks/useTasksData"
+import { useTasksData } from "../hooks/use-tasks-data"
 import type { Task } from "../types"
 import { TaskForm } from "./TaskForm"
 
