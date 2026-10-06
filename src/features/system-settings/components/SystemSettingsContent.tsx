@@ -6,7 +6,7 @@ import { FeatureHeader } from "@/components/common/FeatureShell"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
-import { useSystemSettingsData } from "../hooks/useSystemSettingsData"
+import { useSystemSettingsData } from "../hooks/use-system-settings-data"
 import type { FontFamily, FontScale } from "../types"
 
 const FONT_PREVIEW: Record<FontFamily, string> = {

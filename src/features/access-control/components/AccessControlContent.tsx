@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { cn } from "@/lib/utils"
 import { useDataPagination } from "@/hooks/use-data-pagination"
 import { MOCK_ACTIONS, MOCK_PERMISSIONS } from "../data"
-import { useAccessControlData } from "../hooks/useAccessControlData"
+import { useAccessControlData } from "../hooks/use-access-control-data"
 import type { Role } from "../types"
 import { AccessControlForm } from "./AccessControlForm"
 

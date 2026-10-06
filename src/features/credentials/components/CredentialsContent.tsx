@@ -7,7 +7,7 @@ import { MoreMenu } from "@/components/common/MoreMenu"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useCredentialsData } from "../hooks/useCredentialsData"
+import { useCredentialsData } from "../hooks/use-credentials-data"
 import type { Credential } from "../types"
 import { CredentialForm } from "./CredentialForm"
 

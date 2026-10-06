@@ -32,6 +32,7 @@ const en = {
     accessControl: "Access Control",
     systemSettings: "System Settings",
     sections: {
+      overview: "OVERVIEW",
       automation: "AI AUTOMATION",
       network: "NETWORK",
       monitoring: "MONITORING",

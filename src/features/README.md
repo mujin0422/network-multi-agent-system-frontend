@@ -14,7 +14,7 @@ src/features/devices/
 ├── data/
 │   └── index.ts
 ├── hooks/
-│   └── useDevicesData.tsx
+│   └── use-devices-data.ts
 └── types/
     └── index.ts
 ```
