@@ -11,7 +11,7 @@ src/features/devices/
 │   └── DevicesContent.tsx
 ├── constants/
 │   └── index.ts
-├── datas/
+├── data/
 │   └── index.ts
 ├── hooks/
 │   └── useDevicesData.tsx
@@ -24,7 +24,7 @@ src/features/devices/
 - `page.tsx`: entry point của route. File này nên ngắn, chỉ compose hoặc render component cấp cao nhất của feature.
 - `components/`: UI chỉ thuộc feature. Tách component khi một khối có trách nhiệm riêng, được lặp lại, hoặc làm `page.tsx` khó đọc.
 - `constants/`: cấu hình và giá trị bất biến của feature như tiêu đề, route, giới hạn hoặc key.
-- `datas/`: mock data dùng trong giai đoạn thiết kế. Không đặt lời gọi API hoặc state thay đổi tại đây.
+- `data/`: mock data dùng trong giai đoạn thiết kế. Không đặt lời gọi API hoặc state thay đổi tại đây.
 - `hooks/`: logic, state và side effect của feature. Custom hook phải bắt đầu bằng `use`.
 - `types/`: type và interface thuộc phạm vi feature.
 

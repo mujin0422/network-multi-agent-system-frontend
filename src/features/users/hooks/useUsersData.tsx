@@ -1,6 +1,32 @@
-import { useResourceData } from "@/features/_shared/resource/hooks/useResourceData"
-import { MOCK_ROWS } from "../datas"
+import { useMemo, useState } from "react"
+import { useDataPagination } from "@/hooks/use-data-pagination"
+import { MOCK_ROLES, MOCK_USERS } from "../data"
+import type { UserStatus } from "../types"
 
 export function useUsersData() {
-  return useResourceData(MOCK_ROWS)
+  const [query, setQuery] = useState("")
+  const [status, setStatus] = useState<UserStatus | "ALL">("ALL")
+  const rows = useMemo(
+    () =>
+      MOCK_USERS.filter((user) => {
+        const matchQuery = [user.id, user.full_name, user.email, user.status]
+          .join(" ")
+          .toLowerCase()
+          .includes(query.toLowerCase())
+        return matchQuery && (status === "ALL" || user.status === status)
+      }),
+    [query, status],
+  )
+  const pagination = useDataPagination(rows)
+  const roleName = (id: string) =>
+    MOCK_ROLES.find((role) => role.id === id)?.name ?? id
+  return {
+    query,
+    rows: pagination.pageRows,
+    pagination,
+    status,
+    setQuery,
+    setStatus,
+    roleName,
+  }
 }

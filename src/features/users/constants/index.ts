@@ -1,8 +1,1 @@
-import type { ResourceModuleConfig } from "../types"
-
-export const MODULE_CONFIG: ResourceModuleConfig = {
-  "title": "Users",
-  "description": "Manage platform users and their account status.",
-  "action": "Invite user",
-  "singular": "user"
-}
+export const USER_STATUS_FILTERS = ["ALL", "ACTIVE", "DISABLED"] as const

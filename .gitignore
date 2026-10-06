@@ -1,24 +1,86 @@
-# Logs
-logs
+# -----------------------------------------------------------------------------
+# Dependencies
+# Cài lại được bằng `npm ci`; không commit thư viện đã tải về.
+# -----------------------------------------------------------------------------
+node_modules/
+
+# -----------------------------------------------------------------------------
+# Build output
+# Các thư mục được Vite hoặc công cụ đóng gói tạo tự động.
+# -----------------------------------------------------------------------------
+dist/
+dist-ssr/
+build/
+
+# -----------------------------------------------------------------------------
+# Cache và file tạm của công cụ
+# Có thể xóa an toàn; công cụ sẽ tạo lại khi cần.
+# -----------------------------------------------------------------------------
+.cache/
+.parcel-cache/
+.turbo/
+.vite/
+node_modules/.tmp/
+*.tsbuildinfo
+
+# -----------------------------------------------------------------------------
+# Báo cáo kiểm thử và chất lượng mã nguồn
+# Không commit kết quả sinh ra từ test, coverage hoặc benchmark.
+# -----------------------------------------------------------------------------
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# -----------------------------------------------------------------------------
+# Log và file chẩn đoán
+# -----------------------------------------------------------------------------
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+*.pid
+*.pid.lock
 
-node_modules
-dist
-dist-ssr
+# -----------------------------------------------------------------------------
+# Biến môi trường và cấu hình chỉ dùng trên máy local
+# Giữ `.env.example` trong Git để mô tả các biến bắt buộc, nhưng không lưu secret.
+# -----------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
 *.local
 
-# Editor directories and files
+# -----------------------------------------------------------------------------
+# IDE và editor
+# Chỉ giữ file gợi ý extension dùng chung của VS Code nếu có.
+# -----------------------------------------------------------------------------
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# -----------------------------------------------------------------------------
+# File do hệ điều hành tạo
+# -----------------------------------------------------------------------------
+.DS_Store
+.AppleDouble
+.LSOverride
+Thumbs.db
+Desktop.ini
+
+# -----------------------------------------------------------------------------
+# File tạm và bản sao lưu
+# -----------------------------------------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.orig
+*~
