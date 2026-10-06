@@ -10,24 +10,15 @@ import { StatusBadge } from "./StatusBadge"
 
 /** Màn hình tổng quan hệ thống với KPI, biểu đồ và hoạt động gần đây. */
 export function DashboardContent() {
-  const { activities, deviceActions, deviceBars, metrics, taskBars } =
-    useDashboardData()
+  const { activities, deviceActions, deviceBars, metrics, taskBars } = useDashboardData()
   return (
     <div className="space-y-3.5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-[22px] font-semibold tracking-tight text-foreground">
-            {DASHBOARD_COPY.title}
-          </h1>
-          <p className="mt-0.5 text-[11px] text-muted-foreground">
-            {DASHBOARD_COPY.description}
-          </p>
+          <h1 className="text-[22px] font-semibold tracking-tight text-foreground">{DASHBOARD_COPY.title}</h1>
+          <p className="mt-0.5 text-[11px] text-muted-foreground">{DASHBOARD_COPY.description}</p>
         </div>
-        <Button
-          variant="outline"
-          className="bg-card text-[11px]"
-          onClick={() => window.location.reload()}
-        >
+        <Button variant="outline" className="bg-card text-[11px]" onClick={() => window.location.reload()}>
           <RefreshCw className="size-3.5" />
           Refresh
         </Button>
@@ -36,39 +27,14 @@ export function DashboardContent() {
         {metrics.map((metric) => {
           const Icon = metric.icon
           return (
-            <Card
-              key={metric.label}
-              className="min-h-[88px] gap-0 rounded-[10px] border-0 bg-card py-3 ring-1 ring-border"
-            >
+            <Card key={metric.label} className="min-h-[88px] gap-0 rounded-[10px] border-0 bg-card py-3 ring-1 ring-border">
               <CardHeader className="grid grid-cols-[1fr_auto] px-3">
-                <p className="text-[10px] text-muted-foreground">
-                  {metric.label}
-                </p>
-                <Icon
-                  className={cn(
-                    "size-3.5",
-                    metric.tone === "success" && "text-emerald-400",
-                    metric.tone === "running" && "text-blue-400",
-                    metric.tone === "waiting" && "text-amber-400",
-                    metric.tone === "danger" && "text-red-400",
-                  )}
-                />
+                <p className="text-[10px] text-muted-foreground">{metric.label}</p>
+                <Icon className={cn("size-3.5", metric.tone === "success" && "text-emerald-400", metric.tone === "running" && "text-blue-400", metric.tone === "waiting" && "text-amber-400", metric.tone === "danger" && "text-red-400")} />
               </CardHeader>
               <CardContent className="mt-1 flex items-end justify-between px-3">
-                <p className="text-[21px] font-semibold leading-none text-foreground">
-                  {metric.value}
-                </p>
-                <p
-                  className={cn(
-                    "text-[9px]",
-                    metric.tone === "success" && "text-emerald-400",
-                    metric.tone === "running" && "text-blue-400",
-                    metric.tone === "waiting" && "text-amber-400",
-                    metric.tone === "danger" && "text-red-400",
-                  )}
-                >
-                  {metric.change}
-                </p>
+                <p className="text-[21px] font-semibold leading-none text-foreground">{metric.value}</p>
+                <p className={cn("text-[9px]", metric.tone === "success" && "text-emerald-400", metric.tone === "running" && "text-blue-400", metric.tone === "waiting" && "text-amber-400", metric.tone === "danger" && "text-red-400")}>{metric.change}</p>
               </CardContent>
             </Card>
           )
@@ -78,12 +44,8 @@ export function DashboardContent() {
         <Card className="gap-0 rounded-[10px] border-0 bg-card py-3.5 ring-1 ring-border">
           <CardHeader className="grid grid-cols-[1fr_auto] px-3.5">
             <div>
-              <CardTitle className="text-[13px] text-foreground">
-                Task Status Overview
-              </CardTitle>
-              <p className="text-[10px] text-muted-foreground">
-                Tasks completed during the last 7 days
-              </p>
+              <CardTitle className="text-[13px] text-foreground">Task Status Overview</CardTitle>
+              <p className="text-[10px] text-muted-foreground">Tasks completed during the last 7 days</p>
             </div>
             <StatusBadge tone="success">96.4% SUCCESS</StatusBadge>
           </CardHeader>
@@ -94,18 +56,10 @@ export function DashboardContent() {
         <Card className="gap-0 rounded-[10px] border-0 bg-card py-3.5 ring-1 ring-border">
           <CardHeader className="grid grid-cols-[1fr_auto] px-3.5">
             <div>
-              <CardTitle className="text-[13px] text-foreground">
-                Device Activity Overview
-              </CardTitle>
-              <p className="text-[10px] text-muted-foreground">
-                Successful command executions by device
-              </p>
+              <CardTitle className="text-[13px] text-foreground">Device Activity Overview</CardTitle>
+              <p className="text-[10px] text-muted-foreground">Successful command executions by device</p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-transparent text-[10px] text-muted-foreground"
-            >
+            <Button variant="outline" size="sm" className="bg-transparent text-[10px] text-muted-foreground">
               Last 7 days
               <ChevronDown className="size-3" />
             </Button>
@@ -119,18 +73,10 @@ export function DashboardContent() {
         <Card className="min-h-[310px] gap-1 rounded-[10px] border-0 bg-card py-3.5 ring-1 ring-border">
           <CardHeader className="grid grid-cols-[1fr_auto] px-3.5">
             <div>
-              <CardTitle className="text-[13px] text-foreground">
-                Recent Activities
-              </CardTitle>
-              <p className="text-[10px] text-muted-foreground">
-                Latest automation events
-              </p>
+              <CardTitle className="text-[13px] text-foreground">Recent Activities</CardTitle>
+              <p className="text-[10px] text-muted-foreground">Latest automation events</p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-transparent text-[10px]"
-            >
+            <Button variant="outline" size="sm" className="bg-transparent text-[10px]">
               View all
             </Button>
           </CardHeader>
@@ -141,18 +87,10 @@ export function DashboardContent() {
         <Card className="min-h-[310px] gap-1 rounded-[10px] border-0 bg-card py-3.5 ring-1 ring-border">
           <CardHeader className="grid grid-cols-[1fr_auto] px-3.5">
             <div>
-              <CardTitle className="text-[13px] text-foreground">
-                Recent Device Actions
-              </CardTitle>
-              <p className="text-[10px] text-muted-foreground">
-                Commands sent to managed devices
-              </p>
+              <CardTitle className="text-[13px] text-foreground">Recent Device Actions</CardTitle>
+              <p className="text-[10px] text-muted-foreground">Commands sent to managed devices</p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="bg-transparent text-[10px]"
-            >
+            <Button variant="outline" size="sm" className="bg-transparent text-[10px]">
               Audit logs
             </Button>
           </CardHeader>

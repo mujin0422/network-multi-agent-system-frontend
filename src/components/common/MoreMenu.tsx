@@ -2,18 +2,8 @@ import { Copy, Ellipsis, Eye, Pencil } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
-type MoreMenuProps = {
-  onView?: () => void
-  onEdit?: () => void
-  onCopy?: () => void
-}
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import type { MoreMenuProps } from "@/types/components"
 
 /**
  * Menu thao tác nhanh cho một bản ghi.
@@ -24,7 +14,7 @@ export function MoreMenu({ onView, onEdit, onCopy }: MoreMenuProps) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger render={ <Button variant="ghost" size="icon-sm" aria-label={t("common.openMenu")}/> }>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label={t("common.openMenu")} />}>
         <Ellipsis />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36">

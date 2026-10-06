@@ -1,72 +1,15 @@
-import {
-  BrainCircuit, Check, ChevronsUpDown, CircleUserRound, Settings2,
-  Fingerprint, KeyRound, LayoutDashboard, ListChecks, LogOut, Users,
-  MessageSquareText, Network, Router, ScrollText, Server, Settings,
-} from "lucide-react"
-import type { LucideIcon } from "lucide-react"
+import { Check, ChevronsUpDown, CircleUserRound, LogOut, Settings } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { NavLink, useLocation } from "react-router-dom"
 
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuGroup,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Sidebar as ShadcnSidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-  SidebarSeparator,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar"
+import { SIDEBAR_SECTIONS, SIDEBAR_WORKSPACES } from "@/constants/sidebar"
+import type { SidebarNavigationItem, SidebarWorkspace } from "@/types/sidebar"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Sidebar as ShadcnSidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, SidebarSeparator, SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
 
-type MenuItem = { nameKey: string; path: string; icon: LucideIcon }
-type MenuSection = { labelKey?: string; items: MenuItem[] }
-
-const sections: MenuSection[] = [
-  { items: [{ nameKey: "navigation.dashboard", path: "/", icon: LayoutDashboard }] },
-  { labelKey: "navigation.sections.automation", items: [
-    { nameKey: "navigation.chatbot", path: "/chat", icon: MessageSquareText },
-    { nameKey: "navigation.tasks", path: "/tasks", icon: ListChecks },
-  ] },
-  { labelKey: "navigation.sections.network", items: [
-    { nameKey: "navigation.devices", path: "/devices", icon: Server },
-    { nameKey: "navigation.credentials", path: "/credentials", icon: KeyRound },
-  ] },
-  { labelKey: "navigation.sections.monitoring", items: [
-    { nameKey: "navigation.auditLogs", path: "/audit-logs", icon: ScrollText },
-  ] },
-  { labelKey: "navigation.sections.administration", items: [
-    { nameKey: "navigation.users", path: "/users", icon: Users },
-    { nameKey: "navigation.accessControl", path: "/access-control", icon: Fingerprint },
-  ] },
-  { labelKey: "navigation.sections.settings", items: [
-    { nameKey: "navigation.systemSettings", path: "/settings/system", icon: Settings2 },
-  ] },
-]
-
-const workspaces = [
-  { name: "Network AI", descriptionKey: "sidebar.production", icon: Network },
-  { name: "Core Network", descriptionKey: "sidebar.infrastructure", icon: Router },
-  { name: "Automation Lab", descriptionKey: "sidebar.development", icon: BrainCircuit },
-]
-
-function NavigationItem({ item }: { item: MenuItem }) {
+function NavigationItem({ item }: { item: SidebarNavigationItem }) {
   const { t } = useTranslation()
   const location = useLocation()
   const { setOpenMobile } = useSidebar()
@@ -75,13 +18,7 @@ function NavigationItem({ item }: { item: MenuItem }) {
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton
-        render={<NavLink to={item.path} onClick={() => setOpenMobile(false)} />}
-        isActive={isActive}
-        tooltip={t(item.nameKey)}
-        size="sm"
-        className="text-[11px] text-sidebar-foreground/85 data-active:text-sidebar-accent-foreground [&_svg]:size-3.5"
-      >
+      <SidebarMenuButton render={<NavLink to={item.path} onClick={() => setOpenMobile(false)} />} isActive={isActive} tooltip={t(item.nameKey)} size="sm" className="text-[11px] text-sidebar-foreground/85 data-active:text-sidebar-accent-foreground [&_svg]:size-3.5">
         <Icon />
         <span>{t(item.nameKey)}</span>
       </SidebarMenuButton>
@@ -92,12 +29,11 @@ function NavigationItem({ item }: { item: MenuItem }) {
 export default function AppSidebar() {
   const { t } = useTranslation()
   const { setOpenMobile } = useSidebar()
-  const [activeWorkspace, setActiveWorkspace] = useState(workspaces[0])
+  const [activeWorkspace, setActiveWorkspace] = useState<SidebarWorkspace>(SIDEBAR_WORKSPACES[0])
   const WorkspaceIcon = activeWorkspace.icon
 
   return (
     <ShadcnSidebar collapsible="icon" className="border-sidebar-border">
-
       {/* --- Sidebar Header --- */}
       <SidebarHeader className="min-w-0 flex-row items-center gap-1 p-2">
         <SidebarMenu className="min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
@@ -116,12 +52,15 @@ export default function AppSidebar() {
               <DropdownMenuContent side="right" align="start" className="w-52">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>{t("sidebar.workspaces")}</DropdownMenuLabel>
-                  {workspaces.map((workspace) => {
+                  {SIDEBAR_WORKSPACES.map((workspace) => {
                     const Icon = workspace.icon
                     return (
                       <DropdownMenuItem key={workspace.name} onClick={() => setActiveWorkspace(workspace)} className="py-2">
                         <Icon className="size-4" />
-                        <div className="min-w-0 flex-1"><p className="truncate text-xs">{workspace.name}</p><p className="text-[9px] text-muted-foreground">{t(workspace.descriptionKey)}</p></div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs">{workspace.name}</p>
+                          <p className="text-[9px] text-muted-foreground">{t(workspace.descriptionKey)}</p>
+                        </div>
                         {workspace.name === activeWorkspace.name && <Check className="ml-auto size-3.5" />}
                       </DropdownMenuItem>
                     )
@@ -133,15 +72,17 @@ export default function AppSidebar() {
         </SidebarMenu>
         <SidebarTrigger className="shrink-0 text-sidebar-foreground group-data-[collapsible=icon]:mx-auto" />
       </SidebarHeader>
-      
+
       {/* --- Sidebar Content --- */}
       <SidebarContent className="gap-0">
-        {sections.map((section) => (
+        {SIDEBAR_SECTIONS.map((section) => (
           <SidebarGroup key={section.labelKey ?? "dashboard"} className="py-1.5">
-            {section.labelKey && <SidebarGroupLabel className="h-5 px-2 text-[9px] tracking-wide text-sidebar-foreground/55">{t(section.labelKey)}</SidebarGroupLabel>}
+            {section.labelKey && <SidebarGroupLabel className="px-2 text-[9px] tracking-wide text-sidebar-foreground/55">{t(section.labelKey)}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {section.items.map((item) => <NavigationItem key={item.path} item={item} />)}
+                {section.items.map((item) => (
+                  <NavigationItem key={item.path} item={item} />
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -171,10 +112,19 @@ export default function AppSidebar() {
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>{t("sidebar.myAccount")}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem render={<NavLink to="/profile" onClick={() => setOpenMobile(false)} />}><CircleUserRound />{t("sidebar.profile")}</DropdownMenuItem>
-                  <DropdownMenuItem render={<NavLink to="/settings/system" onClick={() => setOpenMobile(false)} />}><Settings />{t("sidebar.settings")}</DropdownMenuItem>
+                  <DropdownMenuItem render={<NavLink to="/profile" onClick={() => setOpenMobile(false)} />}>
+                    <CircleUserRound />
+                    {t("sidebar.profile")}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem render={<NavLink to="/settings/system" onClick={() => setOpenMobile(false)} />}>
+                    <Settings />
+                    {t("sidebar.settings")}
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive"><LogOut />{t("sidebar.logout")}</DropdownMenuItem>
+                  <DropdownMenuItem variant="destructive">
+                    <LogOut />
+                    {t("sidebar.logout")}
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
