@@ -1,12 +1,12 @@
-import type { CSSProperties } from "react"
 import { Outlet } from "react-router-dom"
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import AppSidebar from "./AppSidebar"
+import { SIDEBAR_PROVIDER_STYLE } from "@/constants/sidebar"
+import AppSidebar from "./Sidebar"
 
 export default function MainLayout() {
   return (
-    <SidebarProvider defaultOpen style={{ "--sidebar-width": "14.75rem", "--sidebar-width-icon": "3.25rem", } as CSSProperties }>
+    <SidebarProvider defaultOpen style={SIDEBAR_PROVIDER_STYLE}>
       {/* --- Application Sidebar --- */}
       <AppSidebar />
 
