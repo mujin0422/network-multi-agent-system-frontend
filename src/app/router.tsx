@@ -7,7 +7,6 @@ import Chat from "@/features/chatbot/page"
 import Credentials from "@/features/credentials/page"
 import Dashboard from "@/features/dashboard/page"
 import Devices from "@/features/devices/page"
-import Network from "@/features/network/page"
 import NotFound from "@/features/not-found/page"
 import Profile from "@/features/profile/page"
 import SystemSettings from "@/features/system-settings/page"
@@ -22,7 +21,6 @@ export const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "chat", element: <Chat /> },
       { path: "tasks", element: <Tasks /> },
-      { path: "network", element: <Network /> },
       { path: "devices", element: <Devices /> },
       { path: "credentials", element: <Credentials /> },
       { path: "audit-logs", element: <AuditLogs /> },

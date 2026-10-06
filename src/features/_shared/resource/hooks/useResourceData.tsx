@@ -12,3 +12,4 @@ export function useResourceData(source: ResourceRow[]) {
 
   return { query, rows, setQuery }
 }
+

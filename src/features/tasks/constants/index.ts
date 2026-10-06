@@ -1,8 +1,1 @@
-import type { ResourceModuleConfig } from "../types"
-
-export const MODULE_CONFIG: ResourceModuleConfig = {
-  "title": "Tasks",
-  "description": "Monitor automation jobs, approvals, and execution history.",
-  "action": "Create task",
-  "singular": "automation"
-}
+export const TASK_STATUS_FILTERS = ["ALL", "PENDING", "PLANNING", "RUNNING", "SUCCESS", "PARTIAL_SUCCESS", "FAILED", "REJECTED"] as const
