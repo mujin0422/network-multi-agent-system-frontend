@@ -1,5 +1,5 @@
-import { UsersContent } from "./components/UsersContent"
+import { UsersTable } from "./components/UsersTable"
 
 export default function UsersPage() {
-  return <UsersContent />
+  return <UsersTable />
 }

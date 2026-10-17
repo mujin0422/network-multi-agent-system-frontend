@@ -1,0 +1,1 @@
+export const SUPPORTED_ENCRYPTION_TYPES = ["PGP_SYM_AES256"] as const

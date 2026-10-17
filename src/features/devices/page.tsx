@@ -1,5 +1,5 @@
-import { DevicesContent } from "./components/DevicesContent"
+import { DevicesTable } from "./components/DevicesTable"
 
 export default function DevicesPage() {
-  return <DevicesContent />
+  return <DevicesTable />
 }

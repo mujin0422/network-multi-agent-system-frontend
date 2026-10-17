@@ -1,5 +1,5 @@
-import { TasksContent } from "./components/TasksContent"
+import { TasksTable } from "./components/TasksTable"
 
 export default function TasksPage() {
-  return <TasksContent />
+  return <TasksTable />
 }

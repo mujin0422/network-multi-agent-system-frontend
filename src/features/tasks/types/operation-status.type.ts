@@ -1,0 +1,1 @@
+export type OperationStatus = "PENDING" | "WAITING_APPROVAL" | "RUNNING" | "SUCCESS" | "PARTIAL_SUCCESS" | "FAILED" | "REJECTED" | "SKIPPED"

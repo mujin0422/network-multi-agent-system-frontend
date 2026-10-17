@@ -1,5 +1,5 @@
-import { ChatContent } from "./components/ChatContent"
+import { ChatWorkspace } from "./components/ChatWorkspace"
 
 export default function ChatPage() {
-  return <ChatContent />
+  return <ChatWorkspace />
 }

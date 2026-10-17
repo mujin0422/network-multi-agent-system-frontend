@@ -1,5 +1,5 @@
-import { ProfileContent } from "./components/ProfileContent"
+import { ProfileDetails } from "./components/ProfileDetails"
 
 export default function ProfilePage() {
-  return <ProfileContent />
+  return <ProfileDetails />
 }

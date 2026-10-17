@@ -8,42 +8,41 @@ Thư mục `src/features` tổ chức mã nguồn theo từng module nghiệp v�
 src/features/devices/
 ├── page.tsx
 ├── components/
-│   └── DevicesContent.tsx
+│   ├── DevicesTable.tsx
+│   ├── DeviceStats.tsx
+│   └── DeviceForm.tsx
 ├── constants/
-│   └── index.ts
-├── data/
-│   └── index.ts
+│   └── devices.constants.ts
 ├── hooks/
 │   └── use-devices-data.ts
-└── types/
-    └── index.ts
+├── mocks/
+│   └── devices.mock.ts
+├── types/
+│   └── devices.type.ts
+└── utils/
+    └── devices.util.ts
 ```
 
 ## Trách nhiệm của từng nhánh
 
 - `page.tsx`: entry point của route. File này nên ngắn, chỉ compose hoặc render component cấp cao nhất của feature.
-- `components/`: UI chỉ thuộc feature. Tách component khi một khối có trách nhiệm riêng, được lặp lại, hoặc làm `page.tsx` khó đọc.
+- `components/`: UI chỉ thuộc feature. Component bảng dùng hậu tố `Table`; thống kê, panel, selector và form phải là component riêng, không dồn toàn bộ JSX vào một file.
 - `constants/`: cấu hình và giá trị bất biến của feature như tiêu đề, route, giới hạn hoặc key.
-- `data/`: mock data dùng trong giai đoạn thiết kế. Không đặt lời gọi API hoặc state thay đổi tại đây.
+- `mocks/`: mock data riêng của feature trong giai đoạn thiết kế. Mỗi entity/dataset đặt trong một file riêng; không import dữ liệu từ file mock khác.
 - `hooks/`: logic, state và side effect của feature. Custom hook phải bắt đầu bằng `use`.
-- `types/`: type và interface thuộc phạm vi feature.
+- `types/`: type và interface thuộc phạm vi feature. Mỗi type/interface đặt trong một file riêng; type phụ thuộc import trực tiếp file cần dùng.
+- `utils/`: hàm thuần chỉ phục vụ feature, không chứa JSX hoặc state.
 
 ## Quy tắc import
 
 1. Dùng alias `@/` khi import ngoài feature.
 2. Dùng relative import khi import giữa các nhánh trong cùng feature.
-3. Feature không import component nội bộ của feature khác. Nếu nhiều feature cùng dùng, chuyển phần đó vào `_shared` hoặc `src/components`.
+3. Feature không import component nội bộ của feature khác. Nếu nhiều feature cùng dùng, chuyển phần đó vào `src/components/shared`.
 4. Router chỉ import `page.tsx` của feature.
 
 ```tsx
 import DevicesPage from "@/features/devices/page"
 ```
-
-## Shared feature
-
-`_shared/resource` chứa giao diện và logic danh sách dùng chung cho các module quản trị. Mỗi module vẫn sở hữu config, mock data, hook và component kết nối riêng; `_shared` chỉ loại bỏ phần UI lặp lại.
-
-Không đặt logic nghiệp vụ riêng của một module vào `_shared`.
 
 ## Tạo feature mới
 
@@ -67,6 +66,7 @@ npm run lint
 - Hook: `useCamelCase`.
 - Constant: `UPPER_SNAKE_CASE`.
 - Mock data: tên mô tả rõ nội dung, ví dụ `MOCK_DEVICES`.
+- File trong `mocks`, `types`, `constants`, `utils`: lần lượt dùng hậu tố `.mock.ts`, `.type.ts`, `.constants.ts`, `.util.ts`; không dùng barrel `index.ts`.
 
 ## Lưu ý
 
