@@ -1,4 +1,3 @@
-import type { LucideIcon } from "lucide-react"
 import type { ReactNode } from "react"
 
 export type FormMode = "create" | "edit" | "view"
@@ -31,56 +30,14 @@ export type FormComboboxProps = {
   name: string
   options: readonly ComboboxOption[]
   defaultValue?: string
+  value?: string | null
+  onValueChange?: (value: string | null) => void
   disabled?: boolean
   placeholder?: string
 }
 
-export type FeatureHeaderProps = {
-  title: string
-  description: string
-  action?: ReactNode
-  secondaryAction?: ReactNode
-}
-
-export type StatCardTone = "blue" | "green" | "amber" | "red" | "violet"
-
-export type StatCardProps = {
-  label: string
-  value: string | number
-  detail: string
-  icon: LucideIcon
-  tone?: StatCardTone
-}
-
 export type StatusBadgeProps = {
   value: string
-}
-
-export type TableToolbarProps = {
-  query: string
-  onQueryChange: (value: string) => void
-  placeholder: string
-  children?: ReactNode
-}
-
-export type FilterComboboxProps<T extends string> = {
-  value: T
-  options: readonly ComboboxOption<T>[]
-  onValueChange: (value: T) => void
-  ariaLabel: string
-  className?: string
-}
-
-export type EmptyRowsProps = {
-  label?: string
-}
-
-export type DataPaginationProps = {
-  page: number
-  pageCount: number
-  pageSize: number
-  totalRows: number
-  onPageChange: (page: number) => void
 }
 
 export type MoreMenuProps = {

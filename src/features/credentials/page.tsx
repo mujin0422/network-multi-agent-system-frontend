@@ -1,5 +1,5 @@
-import { CredentialsContent } from "./components/CredentialsContent"
+import { CredentialsTable } from "./components/CredentialsTable"
 
 export default function CredentialsPage() {
-  return <CredentialsContent />
+  return <CredentialsTable />
 }

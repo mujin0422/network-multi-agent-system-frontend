@@ -1,6 +1,9 @@
 import { useState } from "react"
-import { MOCK_PROFILE_ROLE, MOCK_PROFILE_USER } from "../data"
-import type { ProfileMode, ProfileUser } from "../types"
+import { MOCK_PROFILE_ROLE } from "../mocks/profile-role.mock"
+import { MOCK_PROFILE_SESSION } from "../mocks/profile-session.mock"
+import { MOCK_PROFILE_USER } from "../mocks/profile-user.mock"
+import type { ProfileMode } from "../types/profile-mode.type"
+import type { ProfileUser } from "../types/profile-user.type"
 
 // Quản lý dữ liệu hồ sơ và chế độ xem hoặc chỉnh sửa hồ sơ.
 export function useProfileData() {
@@ -21,5 +24,5 @@ export function useProfileData() {
     setProfile(updateProfile)
     setMode("view")
   }
-  return { profile, role: MOCK_PROFILE_ROLE, mode, setMode, saveProfile }
+  return { profile, role: MOCK_PROFILE_ROLE, session: MOCK_PROFILE_SESSION, mode, setMode, saveProfile }
 }

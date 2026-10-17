@@ -1,14 +1,4 @@
-import type { StatCardTone } from "@/types/components"
-
 export const FORM_COMBOBOX_DEFAULT_PLACEHOLDER = "Select an option"
-
-export const STAT_CARD_TONES: Record<StatCardTone, string> = {
-  blue: "bg-blue-500/10 text-blue-400",
-  green: "bg-emerald-500/10 text-emerald-400",
-  amber: "bg-amber-500/10 text-amber-400",
-  red: "bg-red-500/10 text-red-400",
-  violet: "bg-violet-500/10 text-violet-400",
-}
 
 export const STATUS_TONES = {
   success: "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",

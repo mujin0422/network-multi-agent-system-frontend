@@ -6,13 +6,11 @@ Thư mục `src/hooks` chứa custom hook có thể dùng lại ở nhiều feat
 
 ```text
 src/hooks/
-├── use-data-pagination.ts
 └── use-mobile.ts
 ```
 
 ## Trách nhiệm
 
-- `use-data-pagination.ts`: phân trang một tập dữ liệu ở phía client.
 - `use-mobile.ts`: theo dõi viewport để xác định giao diện mobile.
 
 ## Quy tắc

@@ -1,26 +1,63 @@
-import { FeatureFormSheet, FormField } from "@/components/common/FeatureFormSheet"
+import {
+  FeatureFormSheet,
+  FormField,
+} from "@/components/shared/FeatureFormSheet"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { FormMode } from "@/types/components"
-import type { DeviceActionLog } from "../types"
+import type { DeviceActionLog } from "../types/device-action-log.type"
 
 /** Sheet chỉ đọc dùng để xem command, kết quả và trace của audit log. */
-export function AuditLogForm({ open, mode, log, onOpenChange }: { open: boolean; mode: FormMode; log: DeviceActionLog | null; onOpenChange: (open: boolean) => void }) {
+export function AuditLogForm({
+  open,
+  mode,
+  log,
+  onOpenChange,
+}: {
+  open: boolean
+  mode: FormMode
+  log: DeviceActionLog | null
+  onOpenChange: (open: boolean) => void
+}) {
   return (
-    <FeatureFormSheet open={open} onOpenChange={onOpenChange} mode={mode} entityLabel="audit log" description="Audit logs are immutable and available in view mode only.">
+    <FeatureFormSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      mode={mode}
+      entityLabel="audit log"
+      description="Audit logs are immutable and available in view mode only."
+    >
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Device ID">
           <Input value={log?.device_id ?? ""} disabled />
         </FormField>
         <FormField label="Status">
-          <Input value={log?.status ?? ""} disabled />
+          <Input value={log?.action_log_status ?? ""} disabled />
+        </FormField>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <FormField label="Action type">
+          <Input value={log?.action_type ?? ""} disabled />
+        </FormField>
+        <FormField label="Action phase">
+          <Input value={log?.action_phase ?? ""} disabled />
         </FormField>
       </div>
       <FormField label="Command">
-        <Textarea value={log?.command ?? ""} disabled rows={4} className="font-mono text-xs" />
+        <Textarea
+          value={log?.command ?? ""}
+          disabled
+          rows={4}
+          className="font-mono text-xs"
+        />
       </FormField>
       <FormField label="Result">
-        <Textarea value={log?.result ?? log?.error_message ?? ""} disabled rows={6} className="font-mono text-xs" />
+        <Textarea
+          value={log?.result ?? log?.error_message ?? ""}
+          disabled
+          rows={6}
+          className="font-mono text-xs"
+        />
       </FormField>
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Task ID">
@@ -41,7 +78,9 @@ export function AuditLogForm({ open, mode, log, onOpenChange }: { open: boolean;
           <p>
             UUID: <span className="font-mono">{log.id}</span>
           </p>
-          <p className="mt-1">Executed: {new Date(log.executed_at).toLocaleString("vi-VN")}</p>
+          <p className="mt-1">
+            Executed: {new Date(log.executed_at).toLocaleString("vi-VN")}
+          </p>
         </div>
       )}
     </FeatureFormSheet>

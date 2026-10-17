@@ -1,6 +1,7 @@
 import {
   BrainCircuit,
   Fingerprint,
+  LibraryBig,
   KeyRound,
   LayoutDashboard,
   ListChecks,
@@ -43,6 +44,11 @@ export const SIDEBAR_SECTIONS: SidebarMenuSection[] = [
         nameKey: "navigation.credentials",
         path: "/credentials",
         icon: KeyRound,
+      },
+      {
+        nameKey: "navigation.deviceCatalog",
+        path: "/device-catalog",
+        icon: LibraryBig,
       },
     ],
   },
