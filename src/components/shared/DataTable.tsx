@@ -266,6 +266,7 @@ function DataTableFilter({ filterId, className }: DataTableFilterProps) {
 
   return (
     <Combobox
+      items={options}
       value={selectedValue}
       onValueChange={(value) => value && table.setFilterValue(filter.id, value)}
     >
@@ -294,22 +295,21 @@ function DataTableFilter({ filterId, className }: DataTableFilterProps) {
           {filter.emptyMessage ?? "No results found."}
         </ComboboxEmpty>
         <ComboboxList>
-          {options.map((option) => (
+          {(option: DataTableFilterOption) => (
             <ComboboxItem
-              key={option.value}
               value={option.value}
               className="text-xs"
             >
               <div className="min-w-0">
                 <p className="truncate">{option.label}</p>
                 {option.description && (
-                  <p className="truncate font-mono text-[9px] text-muted-foreground">
+                  <p className="truncate font-mono type-caption text-muted-foreground">
                     {option.description}
                   </p>
                 )}
               </div>
             </ComboboxItem>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>
@@ -433,7 +433,7 @@ function DataTableContent({
 /** Kết quả, page size và điều hướng trang dùng chung context. */
 function DataTablePagination({
   itemLabel = "items",
-  pageSizeOptions = [10, 20, 50],
+  pageSizeOptions = [5, 10, 20, 50],
   className,
   ...props
 }: DataTablePaginationProps) {
@@ -498,7 +498,7 @@ function DataTablePagination({
                   table.goToPreviousPage()
                 }}
                 className={cn(
-                  "size-8 gap-1 p-0 sm:w-auto sm:px-2.5",
+                  "size-8 gap-1 p-0 sm:w-auto sm:px-3",
                   !table.canGoPrevious && "pointer-events-none opacity-50",
                 )}
               >
@@ -537,7 +537,7 @@ function DataTablePagination({
                   table.goToNextPage()
                 }}
                 className={cn(
-                  "size-8 gap-1 p-0 sm:w-auto sm:px-2.5",
+                  "size-8 gap-1 p-0 sm:w-auto sm:px-3",
                   !table.canGoNext && "pointer-events-none opacity-50",
                 )}
               >

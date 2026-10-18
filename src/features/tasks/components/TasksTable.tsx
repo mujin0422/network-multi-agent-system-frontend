@@ -16,21 +16,15 @@ import {
   PageLayoutContent,
   PageLayoutHeader,
 } from "@/components/shared/PageLayout"
+import {
+  TASK_STATUS_LABELS,
+  TASK_STATUS_OPTIONS,
+} from "../constants/tasks.constants"
 import { useTasksData } from "../hooks/use-tasks-data"
 import type { Task } from "../types/task.type"
 import { TaskForm } from "./TaskForm"
 import { TaskStats } from "./TaskStats"
 import { TaskExecutionPanel } from "./TaskExecutionPanel"
-
-const TASK_STATUS_FILTER_OPTIONS = [
-  { value: "PENDING", label: "PENDING" },
-  { value: "PLANNING", label: "PLANNING" },
-  { value: "RUNNING", label: "RUNNING" },
-  { value: "SUCCESS", label: "SUCCESS" },
-  { value: "PARTIAL_SUCCESS", label: "PARTIAL_SUCCESS" },
-  { value: "FAILED", label: "FAILED" },
-  { value: "REJECTED", label: "REJECTED" },
-] as const
 
 /** Màn hình theo dõi task, trạng thái thực thi và các bước cần phê duyệt. */
 export function TasksTable() {
@@ -61,7 +55,7 @@ export function TasksTable() {
                 label: "status",
                 accessorKey: "task_status",
                 allLabel: "All statuses",
-                options: TASK_STATUS_FILTER_OPTIONS,
+                options: TASK_STATUS_OPTIONS,
               },
             ]}
             searchValue={(task) =>
@@ -80,7 +74,7 @@ export function TasksTable() {
                     <p className="truncate text-xs font-medium">
                       {task.input_message}
                     </p>
-                    <p className="mt-1 font-mono text-[9px] text-muted-foreground">
+                    <p className="mt-1 font-mono type-caption text-muted-foreground">
                       {task.id}
                     </p>
                   </>
@@ -89,18 +83,23 @@ export function TasksTable() {
               {
                 id: "status",
                 header: "Status",
-                cell: (task) => <StatusBadge value={task.task_status} />,
+                cell: (task) => (
+                  <StatusBadge
+                    value={task.task_status}
+                    label={TASK_STATUS_LABELS[task.task_status]}
+                  />
+                ),
               },
               {
                 id: "owner",
                 header: "Owner",
                 accessorKey: "user_id",
-                className: "font-mono text-[9px] text-muted-foreground",
+                className: "font-mono type-caption text-muted-foreground",
               },
               {
                 id: "created",
                 header: "Created",
-                className: "text-[10px] text-muted-foreground",
+                className: "type-caption text-muted-foreground",
                 cell: (task) =>
                   new Date(task.created_at).toLocaleString("vi-VN"),
               },

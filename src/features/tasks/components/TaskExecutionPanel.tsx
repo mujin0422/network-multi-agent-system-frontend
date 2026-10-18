@@ -2,6 +2,7 @@ import { Bot, Clock3, Eye, Pencil } from "lucide-react"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { OPERATION_STATUS_LABELS } from "../constants/tasks.constants"
 import type { TaskOperation } from "../types/task-operation.type"
 import type { Task } from "../types/task.type"
 
@@ -22,7 +23,7 @@ export function TaskExecutionPanel({
         <div className="flex items-start justify-between gap-2">
           <div>
             <CardTitle className="text-sm">Execution plan</CardTitle>
-            <p className="mt-1 truncate font-mono text-[9px] text-muted-foreground">
+            <p className="mt-1 truncate font-mono type-caption text-muted-foreground">
               {task.id}
             </p>
           </div>
@@ -45,18 +46,21 @@ export function TaskExecutionPanel({
               key={operation.id}
               className="relative flex gap-3 pb-5 last:pb-0"
             >
-              <div className="relative z-10 grid size-7 shrink-0 place-items-center rounded-full border bg-card text-[10px] font-semibold">
+              <div className="relative z-10 grid size-7 shrink-0 place-items-center rounded-full border bg-card type-caption font-semibold">
                 {index + 1}
               </div>
               {index < operations.length - 1 && (
-                <div className="absolute left-3.5 top-7 h-[calc(100%-1.75rem)] w-px bg-border" />
+                <div className="absolute left-4 top-7 h-[calc(100%-1.75rem)] w-px bg-border" />
               )}
-              <div className="min-w-0 flex-1 pt-0.5">
+              <div className="min-w-0 flex-1 pt-1">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-[11px] font-medium">
+                  <p className="truncate type-caption font-medium">
                     {operation.operation_intent.replaceAll("_", " ")}
                   </p>
-                  <StatusBadge value={operation.operation_status} />
+                  <StatusBadge
+                    value={operation.operation_status}
+                    label={OPERATION_STATUS_LABELS[operation.operation_status]}
+                  />
                 </div>
                 {operation.operation_status === "WAITING_APPROVAL" && (
                   <ApprovalPanel />
@@ -80,11 +84,11 @@ export function TaskExecutionPanel({
 function ApprovalPanel() {
   return (
     <div className="mt-3 rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-      <div className="flex items-center gap-2 text-[10px] text-amber-300">
+      <div className="flex items-center gap-2 type-caption text-amber-300">
         <Clock3 className="size-3" />
         Configuration approval required
       </div>
-      <pre className="mt-2 text-[9px] text-muted-foreground">
+      <pre className="mt-2 type-caption text-muted-foreground">
         router ospf 1{"\n"}network 10.0.0.0 0.0.0.255 area 0
       </pre>
       <div className="mt-3 flex gap-2">

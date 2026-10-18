@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { MOCK_CONVERSATIONS } from "../mocks/conversations.mock"
 import { INITIAL_MESSAGES } from "../mocks/messages.mock"
+import { MOCK_CHAT_TASK_PREVIEWS } from "../mocks/task-previews.mock"
 import type { ChatMessage } from "../types/chat-message.type"
 import type { Conversation } from "../types/conversation.type"
 import { createConversation, createUserMessage, isEmptyDraftConversation } from "../utils/chatbot.util"
@@ -47,5 +48,5 @@ export function useChatMessages() {
     } : conversation))
     setInput("")
   }
-  return { input, messages, conversations, activeConversationId, createNewConversation, sendMessage, setActiveConversationId, setInput }
+  return { input, messages, taskPreviews: MOCK_CHAT_TASK_PREVIEWS, conversations, activeConversationId, createNewConversation, sendMessage, setActiveConversationId, setInput }
 }

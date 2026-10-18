@@ -1,4 +1,3 @@
-import { CirclePlus } from "lucide-react"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
@@ -23,7 +22,7 @@ import { CredentialStats } from "./CredentialStats"
 
 /** Màn hình quản lý, tìm kiếm và kiểm tra các bộ thông tin xác thực. */
 export function CredentialsTable() {
-  const { rows, summary } = useCredentialsData()
+  const { rows, summary, auditUserName } = useCredentialsData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -33,10 +32,12 @@ export function CredentialsTable() {
     setForm({ open: true, mode, credential })
   const headerAction = (
     <Button size="sm" onClick={() => openForm("create")}>
-      <CirclePlus />
       Add credential
     </Button>
   )
+  const auditTimestamp = (timestamp: string) =>
+    new Date(timestamp).toLocaleString("vi-VN")
+
   return (
     <>
       <PageLayout>
@@ -58,12 +59,10 @@ export function CredentialsTable() {
               {
                 id: "credential",
                 header: "Credential",
-                headerClassName: "pl-4",
-                className: "pl-4",
                 cell: (item) => (
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium">{item.name}</p>
-                    <p className="font-mono text-[9px] text-muted-foreground">
+                    <p className="font-mono type-caption text-success">
                       {item.id}
                     </p>
                   </div>
@@ -72,7 +71,7 @@ export function CredentialsTable() {
               {
                 id: "description",
                 header: "Description",
-                className: "max-w-64 text-[10px] text-muted-foreground",
+                className: "max-w-64 type-caption text-muted-foreground",
                 cell: (item) => (
                   <p className="line-clamp-2">{item.description ?? "—"}</p>
                 ),
@@ -87,7 +86,7 @@ export function CredentialsTable() {
                 id: "encryption",
                 header: "Encryption",
                 cell: (item) => (
-                  <span className="rounded-md border px-2 py-1 text-[9px] text-emerald-400">
+                  <span className="rounded-md border border-success/20 bg-success/10 px-2 py-1 type-caption text-success">
                     {item.encryption_type}
                   </span>
                 ),
@@ -99,11 +98,27 @@ export function CredentialsTable() {
                 className: "text-xs",
               },
               {
-                id: "updated",
-                header: "Updated",
-                className: "text-[10px] text-muted-foreground",
-                cell: (item) =>
-                  new Date(item.last_updated_at).toLocaleDateString("vi-VN"),
+                id: "timestamp",
+                header: "Timestamp",
+                className: "min-w-72 text-muted-foreground",
+                cell: (item) => (
+                  <div className="type-micro space-y-1 whitespace-nowrap">
+                    <p>
+                      <span className="font-medium text-foreground">
+                        Created by:
+                      </span>{" "}
+                      {auditUserName(item.created_by)} ·{" "}
+                      {auditTimestamp(item.created_at)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-foreground">
+                        Updated by:
+                      </span>{" "}
+                      {auditUserName(item.last_updated_by)} ·{" "}
+                      {auditTimestamp(item.last_updated_at)}
+                    </p>
+                  </div>
+                ),
               },
               {
                 id: "actions",

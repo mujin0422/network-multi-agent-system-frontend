@@ -37,7 +37,7 @@ export function CategoryTable({
           cell: (category) => (
             <>
               <p className="text-xs font-medium">{category.name}</p>
-              <p className="mt-0.5 font-mono text-[9px] text-muted-foreground">
+              <p className="mt-1 font-mono type-caption text-muted-foreground">
                 {category.id}
               </p>
             </>

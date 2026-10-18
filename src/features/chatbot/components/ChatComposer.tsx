@@ -45,7 +45,7 @@ export function ChatComposer({
             <Send />
           </Button>
         </div>
-        <p className="mt-2 flex items-center justify-center gap-1 text-center text-[9px] text-muted-foreground">
+        <p className="mt-2 flex items-center justify-center gap-1 text-center type-caption text-muted-foreground">
           <Sparkles className="size-3" />
           AI responses may require approval before network changes are applied.
         </p>

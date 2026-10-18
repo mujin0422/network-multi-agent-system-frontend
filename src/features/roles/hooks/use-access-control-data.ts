@@ -10,7 +10,12 @@ import { findPermission } from "../utils/roles.util"
 // Quản lý vai trò đang chọn và tập quyền được cấp cho vai trò đó.
 export function useAccessControlData() {
   const [activeRoleId, setActiveRoleId] = useState(MOCK_ROLES[1].id)
-  const [grants, setGrants] = useState(MOCK_ROLE_PERMISSIONS)
+  const [grants, setGrants] = useState<RolePermission[]>(() => [
+    ...MOCK_ROLE_PERMISSIONS,
+  ])
+  const [draftGrants, setDraftGrants] = useState<RolePermission[]>(() => [
+    ...MOCK_ROLE_PERMISSIONS,
+  ])
 
   // Tạo tập mã quyền của vai trò đang được chọn.
   const roleGrants = useMemo(function createRoleGrants() {
@@ -24,8 +29,23 @@ export function useAccessControlData() {
       return item.permission_id
     }
 
-    return new Set(grants.filter(belongsToActiveRole).map(getPermissionId))
-  }, [activeRoleId, grants])
+    return new Set(draftGrants.filter(belongsToActiveRole).map(getPermissionId))
+  }, [activeRoleId, draftGrants])
+
+  const hasChanges = useMemo(() => {
+    const savedPermissionIds = new Set(
+      grants
+        .filter((item) => item.role_id === activeRoleId)
+        .map((item) => item.permission_id),
+    )
+
+    return (
+      savedPermissionIds.size !== roleGrants.size ||
+      [...savedPermissionIds].some(
+        (permissionId) => !roleGrants.has(permissionId),
+      )
+    )
+  }, [activeRoleId, grants, roleGrants])
 
   // Thêm hoặc gỡ quyền tương ứng với chức năng và hành động được chọn.
   function toggle(functionId: string, actionId: string) {
@@ -53,7 +73,31 @@ export function useAccessControlData() {
       ]
     }
 
-    setGrants(updateGrants)
+    setDraftGrants(updateGrants)
   }
-  return { activeRoleId, actions: MOCK_ACTIONS, functions: MOCK_FUNCTIONS, permissions: MOCK_PERMISSIONS, roles: MOCK_ROLES, roleGrants, setActiveRoleId, toggle }
+
+  // Bỏ bản nháp chưa lưu khi chuyển sang một vai trò khác.
+  function selectRole(roleId: string) {
+    setDraftGrants([...grants])
+    setActiveRoleId(roleId)
+  }
+
+  // Xác nhận toàn bộ thay đổi quyền của vai trò đang chọn.
+  function saveChanges() {
+    if (activeRoleId === "role-0001" || !hasChanges) return
+    setGrants([...draftGrants])
+  }
+
+  return {
+    activeRoleId,
+    actions: MOCK_ACTIONS,
+    functions: MOCK_FUNCTIONS,
+    permissions: MOCK_PERMISSIONS,
+    roles: MOCK_ROLES,
+    roleGrants,
+    hasChanges,
+    selectRole,
+    saveChanges,
+    toggle,
+  }
 }

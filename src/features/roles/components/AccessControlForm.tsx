@@ -116,7 +116,7 @@ function AccessControlFormFields({
                   return (
                     <label
                       key={action.id}
-                      className="flex items-center justify-between gap-2 text-[10px] text-muted-foreground"
+                      className="flex items-center justify-between gap-2 type-caption text-muted-foreground"
                     >
                       <span>{action.name}</span>
                       <Switch

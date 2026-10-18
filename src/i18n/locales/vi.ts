@@ -104,26 +104,6 @@ const vi = {
       dark: "Chế độ tối",
       darkDescription: "Giảm độ sáng khi làm việc trong môi trường thiếu sáng.",
     },
-    typography: {
-      title: "Kiểu chữ",
-      description: "Quản lý phông chữ và kích thước đọc trên toàn ứng dụng.",
-      fontFamily: "Phông chữ",
-      fontFamilyDescription: "Chọn kiểu chữ phù hợp nhất với cách làm việc của bạn.",
-      fontSize: "Kích thước chữ",
-      fontSizeDescription: "Điều chỉnh tỷ lệ giao diện để nội dung dễ đọc hơn.",
-      preview: "Xem trước trực tiếp",
-      previewText: "Giám sát thiết bị, tự động hóa vận hành mạng và xem hoạt động hệ thống trong cùng một không gian làm việc.",
-      fonts: {
-        inter: { title: "Inter", description: "Gọn gàng và tối ưu cho giao diện số." },
-        system: { title: "Hệ thống", description: "Sử dụng phông chữ mặc định của thiết bị." },
-        mono: { title: "Đơn cách", description: "Phù hợp với dữ liệu kỹ thuật và mã định danh." },
-      },
-      sizes: {
-        small: { title: "Thu gọn", description: "Cỡ nền 14px cho giao diện nhiều dữ liệu." },
-        default: { title: "Mặc định", description: "Cỡ nền 16px cân bằng." },
-        large: { title: "Lớn", description: "Cỡ nền 18px giúp nội dung dễ đọc hơn." },
-      },
-    },
   },
 } as const
 

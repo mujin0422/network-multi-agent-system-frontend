@@ -5,6 +5,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { FormMode } from "@/types/components"
+import {
+  AUDIT_ACTION_PHASE_LABELS,
+  AUDIT_ACTION_TYPE_LABELS,
+  AUDIT_STATUS_LABELS,
+} from "../constants/audit-logs.constants"
 import type { DeviceActionLog } from "../types/device-action-log.type"
 
 /** Sheet chỉ đọc dùng để xem command, kết quả và trace của audit log. */
@@ -32,15 +37,24 @@ export function AuditLogForm({
           <Input value={log?.device_id ?? ""} disabled />
         </FormField>
         <FormField label="Status">
-          <Input value={log?.action_log_status ?? ""} disabled />
+          <Input
+            value={log ? AUDIT_STATUS_LABELS[log.action_log_status] : ""}
+            disabled
+          />
         </FormField>
       </div>
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Action type">
-          <Input value={log?.action_type ?? ""} disabled />
+          <Input
+            value={log ? AUDIT_ACTION_TYPE_LABELS[log.action_type] : ""}
+            disabled
+          />
         </FormField>
         <FormField label="Action phase">
-          <Input value={log?.action_phase ?? ""} disabled />
+          <Input
+            value={log ? AUDIT_ACTION_PHASE_LABELS[log.action_phase] : ""}
+            disabled
+          />
         </FormField>
       </div>
       <FormField label="Command">
@@ -74,7 +88,7 @@ export function AuditLogForm({
         </FormField>
       </div>
       {log && (
-        <div className="rounded-lg border bg-muted/30 p-3 text-[10px] text-muted-foreground">
+        <div className="rounded-lg border bg-muted/30 p-3 type-caption text-muted-foreground">
           <p>
             UUID: <span className="font-mono">{log.id}</span>
           </p>

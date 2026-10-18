@@ -17,6 +17,7 @@ export function ChatWorkspace() {
   const {
     input,
     messages,
+    taskPreviews,
     conversations,
     activeConversationId,
     createNewConversation,
@@ -72,7 +73,10 @@ export function ChatWorkspace() {
             onOpenMobile={() => setMobileSidebarOpen(true)}
             onExpandDesktop={() => setSidebarCollapsed(false)}
           />
-          <MessageList messages={visibleMessages} />
+          <MessageList
+            messages={visibleMessages}
+            taskPreviews={taskPreviews}
+          />
           <ChatComposer
             input={input}
             onInputChange={setInput}

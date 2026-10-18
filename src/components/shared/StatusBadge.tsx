@@ -1,12 +1,9 @@
-import { useTranslation } from "react-i18next"
-
 import { STATUS_TONES } from "@/constants/components"
 import { cn } from "@/lib/utils"
 import type { StatusBadgeProps } from "@/types/components"
 
-/** Chuẩn hóa trạng thái thành badge có màu sắc và nhãn đã được dịch. */
-export function StatusBadge({ value }: StatusBadgeProps) {
-  const { t } = useTranslation()
+/** Hiển thị badge theo giá trị trạng thái gốc và nhãn do feature cung cấp. */
+export function StatusBadge({ value, label }: StatusBadgeProps) {
   const normalized = value.toUpperCase()
   const tone =
     normalized.includes("SUCCESS") ||
@@ -28,11 +25,12 @@ export function StatusBadge({ value }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md border px-2 py-1 text-[9px] font-semibold tracking-wide",
+        "inline-flex h-control-xs items-center gap-2 rounded-full border px-3 text-[12px]! leading-4! font-semibold tracking-wide",
         tone,
       )}
     >
-      {t(`status.${normalized}`, { defaultValue: value.replaceAll("_", " ") })}
+      <span className="size-1 shrink-0 rounded-full bg-current" aria-hidden="true" />
+      {label ?? value.replaceAll("_", " ")}
     </span>
   )
 }

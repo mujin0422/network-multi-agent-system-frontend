@@ -2,8 +2,6 @@ import { useState } from "react"
 
 import { useLocale } from "@/i18n/use-locale"
 import type { AppearancePreferences } from "../types/appearance-preferences.type"
-import type { FontFamily } from "../types/font-family.type"
-import type { FontScale } from "../types/font-scale.type"
 import type { ThemeMode } from "../types/theme-mode.type"
 import { applyAppearancePreferences, DEFAULT_APPEARANCE_PREFERENCES, persistAppearancePreferences, readAppearancePreferences } from "../utils/settings.util"
 
@@ -41,22 +39,10 @@ export function useSystemSettingsData() {
     updatePreferences({ theme })
   }
 
-  // Cập nhật họ phông chữ của giao diện.
-  function setFontFamily(fontFamily: FontFamily) {
-    updatePreferences({ fontFamily })
-  }
-
-  // Cập nhật kích thước chữ của giao diện.
-  function setFontScale(fontScale: FontScale) {
-    updatePreferences({ fontScale })
-  }
-
   return {
     ...preferences,
     language,
     setTheme,
-    setFontFamily,
-    setFontScale,
     setLanguage: changeLanguage,
     resetPreferences,
   }

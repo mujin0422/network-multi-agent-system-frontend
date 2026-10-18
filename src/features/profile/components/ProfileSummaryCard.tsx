@@ -2,6 +2,7 @@ import { Clock3, ShieldCheck, UserRound } from "lucide-react"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
 import { Card, CardContent } from "@/components/ui/card"
+import { PROFILE_STATUS_LABELS } from "../constants/profile.constants"
 import type { ProfileUser } from "../types/profile-user.type"
 import { profileInitials } from "../utils/profile.util"
 
@@ -24,10 +25,13 @@ export function ProfileSummaryCard({
         <h2 className="mt-4 text-base font-semibold">{profile.full_name}</h2>
         <p className="mt-1 text-xs text-muted-foreground">{profile.email}</p>
         <div className="mt-3 flex items-center gap-2">
-          <span className="rounded-md bg-violet-500/10 px-2 py-1 text-[10px] font-medium text-violet-300">
+          <span className="rounded-md bg-violet-500/10 px-2 py-1 type-caption font-medium text-violet-300">
             {roleName}
           </span>
-          <StatusBadge value={profile.user_status} />
+          <StatusBadge
+            value={profile.user_status}
+            label={PROFILE_STATUS_LABELS[profile.user_status]}
+          />
         </div>
         <div className="mt-5 w-full space-y-3 border-t pt-4 text-left">
           <ProfileMeta
@@ -69,17 +73,17 @@ function ProfileMeta({
   mono?: boolean
 }) {
   return (
-    <div className="flex items-start gap-2.5">
-      <Icon className="mt-0.5 size-3.5 text-muted-foreground" />
+    <div className="flex items-start gap-3">
+      <Icon className="mt-1 size-4 text-muted-foreground" />
       <div className="min-w-0">
-        <p className="text-[9px] uppercase tracking-wide text-muted-foreground">
+        <p className="type-caption uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
         <p
           className={
             mono
-              ? "mt-0.5 truncate font-mono text-[10px]"
-              : "mt-0.5 text-[10px]"
+              ? "mt-1 truncate font-mono type-caption"
+              : "mt-1 type-caption"
           }
         >
           {value}

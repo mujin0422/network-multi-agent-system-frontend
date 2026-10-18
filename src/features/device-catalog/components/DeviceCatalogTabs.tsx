@@ -39,7 +39,7 @@ export function DeviceCatalogTabs({
             </div>
             <div>
               <p className="text-xs font-semibold">{tab.label}</p>
-              <p className="mt-0.5 text-[10px] text-muted-foreground">
+              <p className="mt-1 type-caption text-muted-foreground">
                 {tab.description}
               </p>
             </div>

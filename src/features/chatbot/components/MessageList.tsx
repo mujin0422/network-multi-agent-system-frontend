@@ -6,11 +6,22 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import {
+  CHAT_TASK_STATUS_LABELS,
+  MESSAGE_SENDER_LABELS,
+} from "../constants/chatbot.constants"
 import type { ChatMessage } from "../types/chat-message.type"
+import type { ChatTaskPreview } from "../types/chat-task-preview.type"
 import { formatMessageTimestamp } from "../utils/chatbot.util"
 
 /** Hiển thị luồng tin nhắn và phân biệt nội dung của người dùng với AI. */
-export function MessageList({ messages }: { messages: ChatMessage[] }) {
+export function MessageList({
+  messages,
+  taskPreviews,
+}: {
+  messages: ChatMessage[]
+  taskPreviews: ChatTaskPreview[]
+}) {
   if (messages.length === 0) {
     return (
       <div className="no-scrollbar grid min-h-0 flex-1 place-items-center overflow-y-auto px-5 py-10 text-center">
@@ -31,9 +42,15 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto scroll-smooth">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-7 px-4 py-8 sm:px-6 sm:py-10">
         <TooltipProvider delay={300}>
-          {messages.map((item) => (
+          {messages.map((item) => {
+            const taskPreview = taskPreviews.find(
+              (preview) => preview.message_id === item.id,
+            )
+
+            return (
             <article
               key={item.id}
+              aria-label={`${MESSAGE_SENDER_LABELS[item.sender_by]} message`}
               className={
                 item.sender_by === "USER"
                   ? "flex justify-end"
@@ -67,26 +84,27 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
                   <TooltipContent
                     side={item.sender_by === "USER" ? "left" : "top"}
                   >
+                    {MESSAGE_SENDER_LABELS[item.sender_by]} ·{" "}
                     {formatMessageTimestamp(item.created_at)}
                   </TooltipContent>
                 </Tooltip>
-                {item.task_id && (
+                {taskPreview && (
                   <div className="mt-4 rounded-xl border bg-card p-4 shadow-sm">
                     <div className="flex items-center justify-between gap-3">
                       <div>
-                        <p className="text-[10px] font-medium">
+                        <p className="type-caption font-medium">
                           Automation task created
                         </p>
-                        <p className="mt-1 font-mono text-[8px] text-muted-foreground">
-                          {item.task_id}
+                        <p className="mt-1 font-mono type-micro text-muted-foreground">
+                          {taskPreview.task_id}
                         </p>
                       </div>
-                      <span className="flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-1 text-[9px] text-amber-300">
+                      <span className="flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-1 type-caption text-amber-300">
                         <Clock3 className="size-3" />
-                        Approval needed
+                        {CHAT_TASK_STATUS_LABELS[taskPreview.task_status]}
                       </span>
                     </div>
-                    <div className="mt-3 flex items-center gap-2 text-[9px] text-muted-foreground">
+                    <div className="mt-3 flex items-center gap-2 type-caption text-muted-foreground">
                       <CheckCircle2 className="size-3 text-emerald-400" />2 of 3
                       operations completed
                     </div>
@@ -97,7 +115,8 @@ export function MessageList({ messages }: { messages: ChatMessage[] }) {
                 )}
               </div>
             </article>
-          ))}
+            )
+          })}
         </TooltipProvider>
       </div>
     </div>

@@ -19,16 +19,16 @@ import {
   PageLayoutHeader,
 } from "@/components/shared/PageLayout"
 import { Button } from "@/components/ui/button"
+import {
+  AUDIT_ACTION_PHASE_LABELS,
+  AUDIT_ACTION_TYPE_LABELS,
+  AUDIT_STATUS_LABELS,
+  AUDIT_STATUS_OPTIONS,
+} from "../constants/audit-logs.constants"
 import { useAuditLogsData } from "../hooks/use-audit-logs-data"
 import type { DeviceActionLog } from "../types/device-action-log.type"
 import { AuditLogForm } from "./AuditLogForm"
 import { AuditLogStats } from "./AuditLogStats"
-
-const AUDIT_STATUS_FILTER_OPTIONS = [
-  { value: "SUCCESS", label: "Success" },
-  { value: "FAILED", label: "Failed" },
-  { value: "UNKNOWN", label: "Unknown" },
-] as const
 
 /** Màn hình tra cứu, lọc và xem chi tiết lịch sử lệnh đã chạy trên thiết bị. */
 export function AuditLogsTable() {
@@ -64,7 +64,7 @@ export function AuditLogsTable() {
                 label: "result",
                 accessorKey: "action_log_status",
                 allLabel: "All results",
-                options: AUDIT_STATUS_FILTER_OPTIONS,
+                options: AUDIT_STATUS_OPTIONS,
               },
             ]}
             searchValue={(log) =>
@@ -75,7 +75,7 @@ export function AuditLogsTable() {
                 id: "timestamp",
                 header: "Timestamp",
                 headerClassName: "pl-4",
-                className: "pl-4 text-[10px] text-muted-foreground",
+                className: "pl-4 type-caption text-muted-foreground",
                 cell: (log) =>
                   new Date(log.executed_at).toLocaleString("vi-VN"),
               },
@@ -83,7 +83,7 @@ export function AuditLogsTable() {
                 id: "device",
                 header: "Device",
                 accessorKey: "device_id",
-                className: "font-mono text-[10px]",
+                className: "font-mono type-caption",
               },
               {
                 id: "command",
@@ -91,14 +91,15 @@ export function AuditLogsTable() {
                 className: "max-w-[260px]",
                 cell: (log) => (
                   <>
-                    <code className="block truncate rounded bg-background px-2 py-1.5 text-[10px] text-blue-300">
+                    <code className="block truncate rounded bg-background px-2 py-2 type-caption text-blue-300">
                       {log.command}
                     </code>
-                    <p className="mt-1 text-[9px] text-muted-foreground">
-                      {log.action_type} · {log.action_phase}
+                    <p className="mt-1 type-caption text-muted-foreground">
+                      {AUDIT_ACTION_TYPE_LABELS[log.action_type]} ·{" "}
+                      {AUDIT_ACTION_PHASE_LABELS[log.action_phase]}
                     </p>
                     {log.error_message && (
-                      <p className="mt-1 truncate text-[9px] text-red-400">
+                      <p className="mt-1 truncate type-caption text-red-400">
                         {log.error_message}
                       </p>
                     )}
@@ -110,10 +111,10 @@ export function AuditLogsTable() {
                 header: "Task trace",
                 cell: (log) => (
                   <>
-                    <p className="font-mono text-[9px] text-muted-foreground">
+                    <p className="font-mono type-caption text-muted-foreground">
                       {log.task_id}
                     </p>
-                    <p className="mt-0.5 font-mono text-[8px] text-muted-foreground/60">
+                    <p className="mt-1 font-mono type-micro text-muted-foreground/60">
                       {log.execution_id}
                     </p>
                   </>
@@ -122,7 +123,12 @@ export function AuditLogsTable() {
               {
                 id: "result",
                 header: "Result",
-                cell: (log) => <StatusBadge value={log.action_log_status} />,
+                cell: (log) => (
+                  <StatusBadge
+                    value={log.action_log_status}
+                    label={AUDIT_STATUS_LABELS[log.action_log_status]}
+                  />
+                ),
               },
               {
                 id: "actions",

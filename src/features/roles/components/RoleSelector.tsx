@@ -16,7 +16,7 @@ export function RoleSelector({
     <Card className="gap-0 py-0">
       <CardHeader className="border-b py-4">
         <CardTitle className="text-sm">Roles</CardTitle>
-        <p className="text-[10px] text-muted-foreground">
+        <p className="type-caption text-muted-foreground">
           Select a role to configure
         </p>
       </CardHeader>
@@ -26,7 +26,7 @@ export function RoleSelector({
             key={role.id}
             onClick={() => onSelect(role.id)}
             className={cn(
-              "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-left transition-colors",
+              "flex w-full items-center justify-between rounded-lg px-3 py-3 text-left transition-colors",
               role.id === activeRoleId
                 ? "bg-blue-500/10 text-blue-300"
                 : "text-muted-foreground hover:bg-muted",
@@ -34,11 +34,11 @@ export function RoleSelector({
           >
             <div>
               <p className="text-xs font-medium">{role.name}</p>
-              <p className="mt-0.5 font-mono text-[9px] opacity-60">
+              <p className="mt-1 font-mono type-caption opacity-60">
                 {role.id}
               </p>
             </div>
-            {role.id === activeRoleId && <Check className="size-3.5" />}
+            {role.id === activeRoleId && <Check className="size-4" />}
           </button>
         ))}
       </CardContent>

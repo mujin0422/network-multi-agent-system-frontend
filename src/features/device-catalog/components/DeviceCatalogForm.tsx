@@ -82,7 +82,7 @@ export function DeviceCatalogForm({
         </FormField>
       )}
       {record && (
-        <div className="rounded-lg border bg-muted/30 p-3 text-[10px] text-muted-foreground">
+        <div className="rounded-lg border bg-muted/30 p-3 type-caption text-muted-foreground">
           <p>
             ID: <span className="font-mono">{record.id}</span>
           </p>

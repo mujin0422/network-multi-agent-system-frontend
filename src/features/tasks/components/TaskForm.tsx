@@ -6,17 +6,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { FormMode } from "@/types/components"
+import { TASK_STATUS_OPTIONS } from "../constants/tasks.constants"
 import type { Task } from "../types/task.type"
-
-const TASK_STATUS_OPTIONS = [
-  "PENDING",
-  "PLANNING",
-  "RUNNING",
-  "SUCCESS",
-  "PARTIAL_SUCCESS",
-  "FAILED",
-  "REJECTED",
-].map((status) => ({ value: status, label: status }))
 
 /** Sheet tạo, xem hoặc chỉnh sửa yêu cầu và metadata của một task. */
 export function TaskForm({
@@ -89,7 +80,7 @@ export function TaskForm({
         </FormField>
       </div>
       {task && (
-        <div className="rounded-lg border bg-muted/30 p-3 text-[10px] text-muted-foreground">
+        <div className="rounded-lg border bg-muted/30 p-3 type-caption text-muted-foreground">
           <p>
             Task ID: <span className="font-mono">{task.id}</span>
           </p>

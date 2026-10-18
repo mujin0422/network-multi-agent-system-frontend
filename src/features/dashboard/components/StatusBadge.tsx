@@ -13,11 +13,11 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex h-[22px] shrink-0 items-center gap-1 rounded-full border px-2 text-[9px] font-semibold",
+        "inline-flex h-control-xs shrink-0 items-center gap-2 rounded-full border px-3 text-[12px]! leading-4! font-semibold",
         TONE_CLASSES[tone],
       )}
     >
-      <span className="size-1 rounded-full bg-current" />
+      <span className="size-1 shrink-0 rounded-full bg-current" aria-hidden="true" />
       {children}
     </span>
   )

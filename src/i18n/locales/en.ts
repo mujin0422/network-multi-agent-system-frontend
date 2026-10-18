@@ -104,26 +104,6 @@ const en = {
       dark: "Dark mode",
       darkDescription: "Reduced brightness for low-light environments.",
     },
-    typography: {
-      title: "Typography",
-      description: "Control the font family and reading size used across the application.",
-      fontFamily: "Font family",
-      fontFamilyDescription: "Select the typeface that best suits your workflow.",
-      fontSize: "Text size",
-      fontSizeDescription: "Adjust the global interface scale for readability.",
-      preview: "Live preview",
-      previewText: "Monitor devices, automate network operations, and review system activity from one workspace.",
-      fonts: {
-        inter: { title: "Inter", description: "Clean and optimized for digital interfaces." },
-        system: { title: "System", description: "Uses the native typeface of your device." },
-        mono: { title: "Monospace", description: "Ideal for technical data and identifiers." },
-      },
-      sizes: {
-        small: { title: "Compact", description: "14px base size for dense layouts." },
-        default: { title: "Default", description: "16px balanced base size." },
-        large: { title: "Large", description: "18px base size for easier reading." },
-      },
-    },
   },
 } as const
 

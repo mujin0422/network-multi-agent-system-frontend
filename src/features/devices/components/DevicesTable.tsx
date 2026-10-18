@@ -1,4 +1,3 @@
-import { CirclePlus } from "lucide-react"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
@@ -25,8 +24,15 @@ import { DeviceStats } from "./DeviceStats"
 
 /** Màn hình quản lý, lọc và theo dõi trạng thái các thiết bị mạng. */
 export function DevicesTable() {
-  const { rows, brands, categories, summary, brandName, categoryName } =
-    useDevicesData()
+  const {
+    rows,
+    brands,
+    categories,
+    summary,
+    brandName,
+    categoryName,
+    auditUserName,
+  } = useDevicesData()
   const brandFilterOptions = brands.map((item) => ({
     value: item.id,
     label: item.name,
@@ -44,10 +50,12 @@ export function DevicesTable() {
     setForm({ open: true, mode, device })
   const headerAction = (
     <Button size="sm" onClick={() => openForm("create")}>
-      <CirclePlus />
       Add device
     </Button>
   )
+  const auditTimestamp = (timestamp: string) =>
+    new Date(timestamp).toLocaleString("vi-VN")
+
   return (
     <>
       <PageLayout>
@@ -89,12 +97,10 @@ export function DevicesTable() {
               {
                 id: "device",
                 header: "Device",
-                headerClassName: "pl-4",
-                className: "pl-4",
                 cell: (device) => (
                   <div>
                     <p className="text-xs font-medium">{device.hostname}</p>
-                    <p className="font-mono text-[9px] text-muted-foreground">
+                    <p className="font-mono type-caption text-success">
                       {device.id}
                     </p>
                   </div>
@@ -108,7 +114,7 @@ export function DevicesTable() {
                     <p className="font-mono text-xs">
                       {device.host}:{device.port}
                     </p>
-                    <p className="mt-0.5 text-[9px] text-muted-foreground">
+                    <p className="mt-1 type-caption text-muted-foreground">
                       {device.credential_id ?? "No credential"}
                     </p>
                   </>
@@ -120,7 +126,7 @@ export function DevicesTable() {
                 cell: (device) => (
                   <>
                     <p className="text-xs">{brandName(device.brand_id)}</p>
-                    <p className="mt-0.5 text-[9px] text-muted-foreground">
+                    <p className="mt-1 type-caption text-muted-foreground">
                       {categoryName(device.category_id)} · {device.device_type}
                     </p>
                   </>
@@ -133,16 +139,27 @@ export function DevicesTable() {
                 className: "text-xs text-muted-foreground",
               },
               {
-                id: "updated",
-                header: "Updated",
-                className: "text-[10px] text-muted-foreground",
-                cell: (device) =>
-                  new Date(device.last_updated_at).toLocaleString("vi-VN", {
-                    day: "2-digit",
-                    month: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
+                id: "timestamp",
+                header: "Timestamp",
+                className: "min-w-72 text-muted-foreground",
+                cell: (device) => (
+                  <div className="type-micro space-y-1 whitespace-nowrap">
+                    <p>
+                      <span className="font-medium text-foreground">
+                        Created by:
+                      </span>{" "}
+                      {auditUserName(device.created_by)} ·{" "}
+                      {auditTimestamp(device.created_at)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-foreground">
+                        Updated by:
+                      </span>{" "}
+                      {auditUserName(device.last_updated_by)} ·{" "}
+                      {auditTimestamp(device.last_updated_at)}
+                    </p>
+                  </div>
+                ),
               },
               {
                 id: "actions",

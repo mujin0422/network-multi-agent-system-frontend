@@ -58,7 +58,7 @@ export function ConversationForm({
         />
       </FormField>
       {conversation && (
-        <div className="rounded-lg border bg-muted/30 p-3 text-[10px] text-muted-foreground">
+        <div className="rounded-lg border bg-muted/30 p-3 type-caption text-muted-foreground">
           <p>
             ID: <span className="font-mono">{conversation.id}</span>
           </p>

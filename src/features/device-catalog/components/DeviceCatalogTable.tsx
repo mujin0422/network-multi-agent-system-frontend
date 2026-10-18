@@ -1,4 +1,3 @@
-import { CirclePlus } from "lucide-react"
 import { useState } from "react"
 import {
   PageLayout,
@@ -41,7 +40,6 @@ export function DeviceCatalogTable() {
           description="Manage inventory brands, categories, and the Netmiko drivers allowed for each vendor."
         >
           <Button size="sm" onClick={() => openForm("create", entity)}>
-            <CirclePlus />
             Add {entityLabel(entity)}
           </Button>
         </PageLayoutHeader>
