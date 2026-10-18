@@ -1,1 +1,0 @@
-export const DEVICE_STATUS_FILTERS = ["ALL", "CONNECTED", "CHECKING", "UNREACHABLE"] as const

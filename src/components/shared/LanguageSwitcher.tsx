@@ -39,11 +39,11 @@ export function LanguageSwitcher({ compact = false }: LanguageSwitcherProps) {
             key={item.code}
             onClick={() => void changeLanguage(item.code)}
           >
-            <span className="w-5 text-[10px] font-semibold text-muted-foreground">
+            <span className="w-5 type-caption font-semibold text-muted-foreground">
               {item.shortLabel}
             </span>
             <span className="flex-1">{t(item.labelKey)}</span>
-            {language === item.code && <Check className="size-3.5" />}
+            {language === item.code && <Check className="size-4" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

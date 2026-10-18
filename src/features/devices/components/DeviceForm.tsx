@@ -71,7 +71,7 @@ function DeviceFormFields({
           />
         </FormField>
       </div>
-      <div className="grid grid-cols-[1fr_110px] gap-4">
+      <div className="grid grid-cols-[1fr_112px] gap-4">
         <FormField label="Host" required>
           <Input
             name="host"
@@ -142,7 +142,7 @@ function DeviceFormFields({
         />
       </FormField>
       {device && (
-        <div className="rounded-lg border bg-muted/30 p-3 text-[10px] text-muted-foreground">
+        <div className="rounded-lg border bg-muted/30 p-3 type-caption text-muted-foreground">
           <p>
             ID: <span className="font-mono">{device.id}</span>
           </p>

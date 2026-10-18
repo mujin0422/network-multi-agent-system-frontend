@@ -38,6 +38,7 @@ export type FormComboboxProps = {
 
 export type StatusBadgeProps = {
   value: string
+  label?: string
 }
 
 export type MoreMenuProps = {

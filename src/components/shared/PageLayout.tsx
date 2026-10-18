@@ -47,7 +47,7 @@ function PageLayoutHeader({
           {t(title, { defaultValue: title })}
         </h1>
         {description && (
-          <p className="text-xs tracking-[0.2px] text-muted-foreground">
+          <p className="text-xs tracking-normal text-muted-foreground">
             {t(description, { defaultValue: description })}
           </p>
         )}
@@ -111,15 +111,15 @@ function PageLayoutStat({
       {...props}
     >
       <CardContent className="flex min-h-24 items-center justify-between gap-4 p-4">
-        <div className="flex min-w-0 flex-col gap-1.5">
-          <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+        <div className="flex min-w-0 flex-col gap-2">
+          <p className="type-caption font-medium uppercase tracking-[0.14em] text-muted-foreground">
             {t(label, { defaultValue: label })}
           </p>
           <p className="text-2xl font-semibold leading-none text-card-foreground">
             {value}
           </p>
           {description && (
-            <p className="text-[10px] text-muted-foreground">
+            <p className="type-caption text-muted-foreground">
               {t(description, { defaultValue: description })}
             </p>
           )}

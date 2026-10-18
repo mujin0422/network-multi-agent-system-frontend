@@ -1,13 +1,11 @@
-import { Eye, Pencil } from "lucide-react"
 import type { DataTableColumn } from "@/types/shared/data-table.types"
 import {
   DataTable,
   DataTableContent,
   DataTablePanel,
-  DataTablePagination,
 } from "@/components/shared/DataTable"
 import { Button } from "@/components/ui/button"
-import { CardHeader, CardTitle } from "@/components/ui/card"
+import { CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import type { Action } from "../types/action.type"
 import type { ManagementFunction } from "../types/management-function.type"
@@ -20,18 +18,18 @@ export function PermissionMatrix({
   functions,
   permissions,
   grants,
+  hasChanges,
   onToggle,
-  onViewRole,
-  onEditRole,
+  onSave,
 }: {
   role: Role
   actions: Action[]
   functions: ManagementFunction[]
   permissions: Permission[]
   grants: Set<string>
+  hasChanges: boolean
   onToggle: (functionId: string, actionId: string) => void
-  onViewRole: () => void
-  onEditRole: () => void
+  onSave: () => void
 }) {
   const columns: DataTableColumn<ManagementFunction>[] = [
     {
@@ -42,7 +40,7 @@ export function PermissionMatrix({
       cell: (fn) => (
         <>
           <p className="text-xs font-medium">{fn.name}</p>
-          <p className="font-mono text-[8px] text-muted-foreground">{fn.id}</p>
+          <p className="font-mono type-micro text-muted-foreground">{fn.id}</p>
         </>
       ),
     },
@@ -71,32 +69,29 @@ export function PermissionMatrix({
     ),
   ]
   return (
-    <DataTable data={functions} columns={columns} getRowId={(fn) => fn.id}>
+    <DataTable
+      data={functions}
+      columns={columns}
+      getRowId={(fn) => fn.id}
+      initialPageSize={Math.max(functions.length, 1)}
+    >
       <DataTablePanel>
-        <CardHeader className="border-b py-4">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <CardTitle className="text-sm">{role.name} permissions</CardTitle>
-              <p className="text-[10px] text-muted-foreground">
-                {role.id === "role-0001"
-                  ? "System role has full access and cannot be modified."
-                  : "Changes in this prototype apply immediately."}
-              </p>
-            </div>
-            <div className="flex gap-1">
-              <Button size="icon-xs" variant="ghost" onClick={onViewRole}>
-                <Eye />
-              </Button>
-              {role.id !== "role-0001" && (
-                <Button size="icon-xs" variant="ghost" onClick={onEditRole}>
-                  <Pencil />
-                </Button>
-              )}
-            </div>
+        <div className="flex min-h-20 items-center justify-between gap-4 border-b px-4 py-5">
+          <div className="space-y-1">
+            <CardTitle className="text-sm">{role.name} permissions</CardTitle>
+            <p className="type-caption text-muted-foreground">
+              {role.id === "role-0001"
+                ? "System role has full access and cannot be modified."
+                : "Edit permissions directly, then save your changes."}
+            </p>
           </div>
-        </CardHeader>
+          {role.id !== "role-0001" && (
+            <Button size="sm" disabled={!hasChanges} onClick={onSave}>
+              Save changes
+            </Button>
+          )}
+        </div>
         <DataTableContent />
-        <DataTablePagination itemLabel="functions" />
       </DataTablePanel>
     </DataTable>
   )

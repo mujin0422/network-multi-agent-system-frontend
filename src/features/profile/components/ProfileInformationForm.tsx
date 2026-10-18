@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { PROFILE_STATUS_LABELS } from "../constants/profile.constants"
 import type { ProfileSession } from "../types/profile-session.type"
 import type { ProfileUser } from "../types/profile-user.type"
 
@@ -44,7 +45,7 @@ export function ProfileInformationForm({
           </p>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="full_name">Full name</Label>
             <Input
               id="full_name"
@@ -54,10 +55,10 @@ export function ProfileInformationForm({
               required
             />
           </div>
-          <div className="space-y-1.5 sm:col-span-2">
+          <div className="space-y-2 sm:col-span-2">
             <Label htmlFor="email">Email address</Label>
             <div className="relative">
-              <Mail className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="email"
                 type="email"
@@ -69,11 +70,11 @@ export function ProfileInformationForm({
               />
             </div>
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Account status</Label>
-            <Input value={profile.user_status} disabled />
+            <Input value={PROFILE_STATUS_LABELS[profile.user_status]} disabled />
           </div>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <Label>Assigned role</Label>
             <Input value={roleName} disabled />
           </div>
@@ -140,7 +141,7 @@ function SecurityItem({
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-xs font-medium">{label}</p>
-        <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
+        <p className="mt-1 truncate type-caption text-muted-foreground">
           {value}
         </p>
       </div>

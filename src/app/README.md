@@ -1,12 +1,13 @@
 # Application setup
 
-Thư mục `src/app` chứa phần khởi tạo ứng dụng và cấu hình ở cấp toàn cục. Đây là nơi kết nối router với React, không chứa giao diện hoặc logic nghiệp vụ của từng feature.
+Thư mục `src/app` chứa phần khởi tạo ứng dụng, cấu hình ở cấp toàn cục và các màn hình thuộc vòng đời của ứng dụng thay vì một nghiệp vụ cụ thể.
 
 ## Cấu trúc hiện tại
 
 ```text
 src/app/
 ├── App.tsx
+├── not-found.tsx
 └── router.tsx
 ```
 
@@ -14,6 +15,7 @@ src/app/
 
 - `App.tsx`: component gốc, gắn các provider cấp ứng dụng như router, query client hoặc theme provider.
 - `router.tsx`: khai báo route, layout và ánh xạ route tới `page.tsx` của từng feature.
+- `not-found.tsx`: fallback cho route không tồn tại; đặt ở cấp ứng dụng vì không thuộc module nghiệp vụ nào.
 
 ## Quy tắc
 

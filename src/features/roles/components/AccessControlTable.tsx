@@ -1,4 +1,3 @@
-import { Plus } from "lucide-react"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
@@ -23,7 +22,9 @@ export function AccessControlTable() {
     permissions,
     roles,
     roleGrants,
-    setActiveRoleId,
+    hasChanges,
+    selectRole,
+    saveChanges,
     toggle,
   } = useAccessControlData()
   const activeRole = roles.find((role) => role.id === activeRoleId)!
@@ -36,7 +37,6 @@ export function AccessControlTable() {
     setForm({ open: true, mode, role })
   const headerAction = (
     <Button size="sm" onClick={() => openForm("create")}>
-      <Plus />
       Create role
     </Button>
   )
@@ -58,7 +58,7 @@ export function AccessControlTable() {
           <RoleSelector
             roles={roles}
             activeRoleId={activeRoleId}
-            onSelect={setActiveRoleId}
+            onSelect={selectRole}
           />
           <PermissionMatrix
             role={activeRole}
@@ -66,9 +66,9 @@ export function AccessControlTable() {
             functions={functions}
             permissions={permissions}
             grants={roleGrants}
+            hasChanges={hasChanges}
             onToggle={toggle}
-            onViewRole={() => openForm("view", activeRole)}
-            onEditRole={() => openForm("edit", activeRole)}
+            onSave={saveChanges}
           />
         </PageLayoutContent>
       </PageLayout>

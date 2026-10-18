@@ -5,6 +5,7 @@ import { NavLink, useLocation } from "react-router-dom"
 
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/ui/avatar"
 import { SIDEBAR_SECTIONS, SIDEBAR_WORKSPACES } from "@/constants/sidebar"
+import { clearAuthenticatedSession } from "@/features/auth/utils/auth.util"
 import type { SidebarNavigationItem, SidebarWorkspace } from "@/types/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuGroup, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Sidebar as ShadcnSidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail, SidebarSeparator, SidebarTrigger, useSidebar } from "@/components/ui/sidebar"
@@ -19,7 +20,7 @@ function NavigationItem({ item }: { item: SidebarNavigationItem }) {
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton render={<NavLink to={item.path} onClick={() => setOpenMobile(false)} />} isActive={isActive} tooltip={t(item.nameKey)} size="sm" className="text-[11px] text-sidebar-foreground/85 data-active:text-sidebar-accent-foreground [&_svg]:size-3.5">
+      <SidebarMenuButton render={<NavLink to={item.path} onClick={() => setOpenMobile(false)} />} isActive={isActive} tooltip={t(item.nameKey)} size="sm" className="type-caption text-sidebar-foreground/85 data-active:text-sidebar-accent-foreground [&_svg]:size-4">
         <Icon />
         <span>{t(item.nameKey)}</span>
       </SidebarMenuButton>
@@ -47,9 +48,9 @@ export default function AppSidebar() {
                 </div>
                 <div className="min-w-0 flex-1 text-left">
                   <p className="truncate text-xs font-semibold text-sidebar-accent-foreground">{activeWorkspace.name}</p>
-                  <p className="truncate text-[9px] text-sidebar-foreground/60">{t(activeWorkspace.descriptionKey)}</p>
+                  <p className="truncate type-caption text-sidebar-foreground/60">{t(activeWorkspace.descriptionKey)}</p>
                 </div>
-                <ChevronsUpDown className="ml-auto size-3.5 text-sidebar-foreground/60" />
+                <ChevronsUpDown className="ml-auto size-4 text-sidebar-foreground/60" />
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right" align="start" className="w-52">
                 <DropdownMenuGroup>
@@ -61,9 +62,9 @@ export default function AppSidebar() {
                         <Icon className="size-4" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs">{workspace.name}</p>
-                          <p className="text-[9px] text-muted-foreground">{t(workspace.descriptionKey)}</p>
+                          <p className="type-caption text-muted-foreground">{t(workspace.descriptionKey)}</p>
                         </div>
-                        {workspace.name === activeWorkspace.name && <Check className="ml-auto size-3.5" />}
+                        {workspace.name === activeWorkspace.name && <Check className="ml-auto size-4" />}
                       </DropdownMenuItem>
                     )
                   })}
@@ -78,8 +79,8 @@ export default function AppSidebar() {
       {/* --- Sidebar Content --- */}
       <SidebarContent className="gap-0">
         {SIDEBAR_SECTIONS.map((section) => (
-          <SidebarGroup key={section.labelKey ?? "dashboard"} className="py-1.5">
-            {section.labelKey && <SidebarGroupLabel className="px-2 text-[9px] tracking-wide text-sidebar-foreground/55">{t(section.labelKey)}</SidebarGroupLabel>}
+          <SidebarGroup key={section.labelKey ?? "dashboard"} className="py-2">
+            {section.labelKey && <SidebarGroupLabel className="px-2 type-caption tracking-wide text-sidebar-foreground/55">{t(section.labelKey)}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
                 {section.items.map((item) => (
@@ -101,14 +102,14 @@ export default function AppSidebar() {
             <DropdownMenu>
               <DropdownMenuTrigger render={<SidebarMenuButton size="lg" tooltip={t("sidebar.account")} className="data-open:bg-sidebar-accent" />}>
                 <Avatar>
-                  <AvatarFallback className="bg-blue-500/15 text-[10px] font-semibold text-blue-300">AN</AvatarFallback>
+                  <AvatarFallback className="bg-blue-500/15 type-caption font-semibold text-blue-300">AN</AvatarFallback>
                   <AvatarBadge className="bg-emerald-400 ring-sidebar" />
                 </Avatar>
                 <div className="min-w-0 flex-1 text-left">
                   <p className="truncate text-xs font-medium text-sidebar-accent-foreground">Pham Dinh Duy Thai</p>
-                  <p className="truncate text-[9px] text-sidebar-foreground/60">{t("sidebar.administrator")}</p>
+                  <p className="truncate type-caption text-sidebar-foreground/60">{t("sidebar.administrator")}</p>
                 </div>
-                <ChevronsUpDown className="ml-auto size-3.5 text-sidebar-foreground/60" />
+                <ChevronsUpDown className="ml-auto size-4 text-sidebar-foreground/60" />
               </DropdownMenuTrigger>
               <DropdownMenuContent side="right" align="end" className="w-48">
                 <DropdownMenuGroup>
@@ -123,7 +124,18 @@ export default function AppSidebar() {
                     {t("sidebar.settings")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem variant="destructive">
+                  <DropdownMenuItem
+                    variant="destructive"
+                    render={
+                      <NavLink
+                        to="/login"
+                        onClick={() => {
+                          clearAuthenticatedSession()
+                          setOpenMobile(false)
+                        }}
+                      />
+                    }
+                  >
                     <LogOut />
                     {t("sidebar.logout")}
                   </DropdownMenuItem>

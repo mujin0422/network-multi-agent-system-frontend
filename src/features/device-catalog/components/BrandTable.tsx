@@ -37,7 +37,7 @@ export function BrandTable({
           cell: (brand) => (
             <>
               <p className="text-xs font-medium">{brand.name}</p>
-              <p className="mt-0.5 font-mono text-[9px] text-muted-foreground">
+              <p className="mt-1 font-mono type-caption text-muted-foreground">
                 {brand.id}
               </p>
             </>
@@ -52,7 +52,7 @@ export function BrandTable({
               {brand.supported_drivers.map((driver) => (
                 <code
                   key={driver}
-                  className="rounded-md border bg-background px-2 py-1 text-[9px] text-blue-400"
+                  className="rounded-md border bg-background px-2 py-1 type-caption text-blue-400"
                 >
                   {driver}
                 </code>

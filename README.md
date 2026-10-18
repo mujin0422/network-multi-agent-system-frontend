@@ -61,6 +61,7 @@ npm run build
 
 | Đường dẫn          | Chức năng                  |
 | ------------------ | -------------------------- |
+| `/login`           | Đăng nhập                  |
 | `/`                | Dashboard tổng quan        |
 | `/chat`            | Trò chuyện với agent       |
 | `/tasks`           | Quản lý tác vụ             |

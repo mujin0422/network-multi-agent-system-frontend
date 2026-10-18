@@ -96,13 +96,13 @@ export function FeatureFormSheet({
 /** Bọc label, nội dung field và phần hướng dẫn để các form có bố cục thống nhất. */
 export function FormField({ label, required, children, hint }: FormFieldProps) {
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
       <Label className="text-xs">
         {label}
         {required && <span className="text-destructive">*</span>}
       </Label>
       {children}
-      {hint && <p className="text-[10px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="type-caption text-muted-foreground">{hint}</p>}
     </div>
   )
 }
@@ -127,7 +127,7 @@ export function FormCombobox({
     >
       <ComboboxTrigger
         disabled={disabled}
-        className="flex h-8 w-full items-center justify-between rounded-lg border border-input bg-background px-2.5 text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex h-control-md w-full items-center justify-between rounded-lg border border-input bg-background px-3 text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60"
       >
         <ComboboxValue placeholder={placeholder}>
           {(value) =>

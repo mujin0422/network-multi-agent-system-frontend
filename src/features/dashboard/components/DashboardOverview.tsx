@@ -9,7 +9,10 @@ import {
   PageLayoutStat,
 } from "@/components/shared/PageLayout"
 import { cn } from "@/lib/utils"
-import { DASHBOARD_COPY } from "../constants/dashboard.constants"
+import {
+  DASHBOARD_COPY,
+  DASHBOARD_STATUS_LABELS,
+} from "../constants/dashboard.constants"
 import { useDashboardData } from "../hooks/use-dashboard-data"
 import { ActivityList } from "./ActivityList"
 import { BarChart } from "./BarChart"
@@ -27,14 +30,14 @@ export function DashboardOverview() {
       >
         <Button
           variant="outline"
-          className="bg-card text-[11px]"
+          className="bg-card type-caption"
           onClick={() => window.location.reload()}
         >
-          <RefreshCw className="size-3.5" />
+          <RefreshCw className="size-4" />
           Refresh
         </Button>
       </PageLayoutHeader>
-      <PageLayoutOverview className="grid-cols-2 gap-2.5 md:grid-cols-3 xl:grid-cols-6">
+      <PageLayoutOverview className="grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         {metrics.map((metric) => {
           const Icon = metric.icon
           return (
@@ -44,7 +47,7 @@ export function DashboardOverview() {
               value={metric.value}
               description={metric.change}
               icon={<Icon />}
-              className="min-h-[88px] rounded-[10px] border-0 bg-card ring-1 ring-border"
+              className="min-h-22 rounded-xl border-0 bg-card ring-1 ring-border"
               iconClassName={cn(
                 metric.tone === "success" &&
                   "bg-emerald-500/10 text-emerald-400",
@@ -58,88 +61,90 @@ export function DashboardOverview() {
       </PageLayoutOverview>
       <PageLayoutContent className="space-y-3">
         <section className="grid gap-3 xl:grid-cols-2">
-          <Card className="gap-0 rounded-[10px] border-0 bg-card py-3.5 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-3.5">
+          <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
+            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
-                <CardTitle className="text-[13px] text-foreground">
+                <CardTitle className="type-caption text-foreground">
                   Task Status Overview
                 </CardTitle>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="type-caption text-muted-foreground">
                   Tasks completed during the last 7 days
                 </p>
               </div>
-              <StatusBadge tone="success">96.4% SUCCESS</StatusBadge>
+              <StatusBadge tone="success">
+                {`96.4% ${DASHBOARD_STATUS_LABELS.SUCCESS}`}
+              </StatusBadge>
             </CardHeader>
-            <CardContent className="mt-4 px-3.5">
+            <CardContent className="mt-4 px-4">
               <BarChart bars={taskBars} color="green" />
             </CardContent>
           </Card>
-          <Card className="gap-0 rounded-[10px] border-0 bg-card py-3.5 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-3.5">
+          <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
+            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
-                <CardTitle className="text-[13px] text-foreground">
+                <CardTitle className="type-caption text-foreground">
                   Device Activity Overview
                 </CardTitle>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="type-caption text-muted-foreground">
                   Successful command executions by device
                 </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-transparent text-[10px] text-muted-foreground"
+                className="bg-transparent type-caption text-muted-foreground"
               >
                 Last 7 days
                 <ChevronDown className="size-3" />
               </Button>
             </CardHeader>
-            <CardContent className="mt-4 px-3.5">
+            <CardContent className="mt-4 px-4">
               <BarChart bars={deviceBars} color="blue" />
             </CardContent>
           </Card>
         </section>
         <section className="grid gap-3 xl:grid-cols-2">
-          <Card className="min-h-[310px] gap-1 rounded-[10px] border-0 bg-card py-3.5 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-3.5">
+          <Card className="min-h-78 gap-1 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
+            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
-                <CardTitle className="text-[13px] text-foreground">
+                <CardTitle className="type-caption text-foreground">
                   Recent Activities
                 </CardTitle>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="type-caption text-muted-foreground">
                   Latest automation events
                 </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-transparent text-[10px]"
+                className="bg-transparent type-caption"
               >
                 View all
               </Button>
             </CardHeader>
-            <CardContent className="px-3.5">
+            <CardContent className="px-4">
               <ActivityList items={activities} />
             </CardContent>
           </Card>
-          <Card className="min-h-[310px] gap-1 rounded-[10px] border-0 bg-card py-3.5 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-3.5">
+          <Card className="min-h-78 gap-1 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
+            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
-                <CardTitle className="text-[13px] text-foreground">
+                <CardTitle className="type-caption text-foreground">
                   Recent Device Actions
                 </CardTitle>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="type-caption text-muted-foreground">
                   Commands sent to managed devices
                 </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                className="bg-transparent text-[10px]"
+                className="bg-transparent type-caption"
               >
                 Audit logs
               </Button>
             </CardHeader>
-            <CardContent className="px-3.5">
+            <CardContent className="px-4">
               <ActivityList items={deviceActions} />
             </CardContent>
           </Card>

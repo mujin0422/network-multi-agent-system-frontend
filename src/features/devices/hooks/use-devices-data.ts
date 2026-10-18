@@ -1,6 +1,7 @@
 import { useMemo } from "react"
 import { MOCK_DEVICE_BRANDS } from "../mocks/device-brands.mock"
 import { MOCK_DEVICE_CATEGORIES } from "../mocks/device-categories.mock"
+import { MOCK_DEVICE_AUDIT_USERS } from "../mocks/device-audit-users.mock"
 import { MOCK_DEVICES } from "../mocks/devices.mock"
 import { catalogName } from "../utils/devices.util"
 
@@ -17,6 +18,13 @@ export function useDevicesData() {
     // Kiểm tra danh mục có mã trùng với mã cần tìm hay không.
     return catalogName(MOCK_DEVICE_CATEGORIES, id)
   }
+
+  // Tra cứu tên người tạo/cập nhật từ dữ liệu người dùng mock của feature.
+  function auditUserName(id: string) {
+    return (
+      MOCK_DEVICE_AUDIT_USERS.find((user) => user.id === id)?.full_name ?? id
+    )
+  }
   const summary = useMemo(() => ({
     total: MOCK_DEVICES.length,
     routers: MOCK_DEVICES.filter((device) => device.category_id === "catg-0001").length,
@@ -27,6 +35,7 @@ export function useDevicesData() {
     rows: MOCK_DEVICES,
     brandName,
     categoryName,
+    auditUserName,
     brands: MOCK_DEVICE_BRANDS,
     categories: MOCK_DEVICE_CATEGORIES,
     summary,
