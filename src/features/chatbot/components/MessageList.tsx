@@ -1,18 +1,15 @@
-import { CheckCircle2, Clock3 } from "lucide-react"
-import { Button } from "@/components/ui/button"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import {
-  CHAT_TASK_STATUS_LABELS,
-  MESSAGE_SENDER_LABELS,
-} from "../constants/chatbot.constants"
+import { MESSAGE_SENDER_LABELS } from "../constants/chatbot.constants"
 import type { ChatMessage } from "../types/chat-message.type"
 import type { ChatTaskPreview } from "../types/chat-task-preview.type"
 import { formatMessageTimestamp } from "../utils/chatbot.util"
+import { AgentActivity } from "./AgentActivity"
+import { ApprovalRequestCard } from "./ApprovalRequestCard"
 
 /** Hiển thị luồng tin nhắn và phân biệt nội dung của người dùng với AI. */
 export function MessageList({
@@ -44,7 +41,9 @@ export function MessageList({
         <TooltipProvider delay={300}>
           {messages.map((item) => {
             const taskPreview = taskPreviews.find(
-              (preview) => preview.message_id === item.id,
+              (preview) =>
+                item.sender_by === "AGENT" &&
+                preview.response_message_id === item.id,
             )
 
             return (
@@ -64,6 +63,7 @@ export function MessageList({
                     : "min-w-0 flex-1"
                 }
               >
+                {taskPreview && <AgentActivity task={taskPreview} />}
                 <Tooltip>
                   <TooltipTrigger
                     render={
@@ -74,7 +74,13 @@ export function MessageList({
                     }
                   >
                     {item.sender_by === "AGENT" ? (
-                      <span className="text-sm leading-7 text-foreground">
+                      <span
+                        className={
+                          taskPreview
+                            ? "mt-4 block text-sm leading-7 text-foreground"
+                            : "text-sm leading-7 text-foreground"
+                        }
+                      >
                         {item.message}
                       </span>
                     ) : (
@@ -88,30 +94,8 @@ export function MessageList({
                     {formatMessageTimestamp(item.created_at)}
                   </TooltipContent>
                 </Tooltip>
-                {taskPreview && (
-                  <div className="mt-4 rounded-xl border bg-card p-4 shadow-sm">
-                    <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="type-caption font-medium">
-                          Automation task created
-                        </p>
-                        <p className="mt-1 font-mono type-micro text-muted-foreground">
-                          {taskPreview.task_id}
-                        </p>
-                      </div>
-                      <span className="flex items-center gap-1 rounded-md bg-amber-500/10 px-2 py-1 type-caption text-amber-300">
-                        <Clock3 className="size-3" />
-                        {CHAT_TASK_STATUS_LABELS[taskPreview.task_status]}
-                      </span>
-                    </div>
-                    <div className="mt-3 flex items-center gap-2 type-caption text-muted-foreground">
-                      <CheckCircle2 className="size-3 text-emerald-400" />2 of 3
-                      operations completed
-                    </div>
-                    <Button size="xs" variant="outline" className="mt-3 w-full">
-                      Review task
-                    </Button>
-                  </div>
+                {taskPreview?.approval && (
+                  <ApprovalRequestCard approval={taskPreview.approval} />
                 )}
               </div>
             </article>
