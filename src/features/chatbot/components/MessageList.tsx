@@ -15,9 +15,11 @@ import { ApprovalRequestCard } from "./ApprovalRequestCard"
 export function MessageList({
   messages,
   taskPreviews,
+  onApprovalDecision,
 }: {
   messages: ChatMessage[]
   taskPreviews: ChatTaskPreview[]
+  onApprovalDecision: (approvalId: string, decision: "APPROVED" | "REJECTED") => Promise<void>
 }) {
   if (messages.length === 0) {
     return (
@@ -95,7 +97,7 @@ export function MessageList({
                   </TooltipContent>
                 </Tooltip>
                 {taskPreview?.approval && (
-                  <ApprovalRequestCard approval={taskPreview.approval} />
+                  <ApprovalRequestCard approval={taskPreview.approval} onDecision={onApprovalDecision} />
                 )}
               </div>
             </article>

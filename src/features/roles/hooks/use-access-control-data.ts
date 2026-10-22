@@ -1,21 +1,33 @@
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { rolesApi } from "@/service"
+import type { RoleCreate, RoleUpdate } from "@/service"
 import { MOCK_FUNCTIONS } from "../mocks/management-functions.mock"
 import { MOCK_ACTIONS } from "../mocks/actions.mock"
 import { MOCK_PERMISSIONS } from "../mocks/permissions.mock"
 import { MOCK_ROLE_PERMISSIONS } from "../mocks/role-permissions.mock"
-import { MOCK_ROLES } from "../mocks/roles.mock"
+import type { Role } from "../types/role.type"
 import type { RolePermission } from "../types/role-permission.type"
 import { findPermission } from "../utils/roles.util"
 
 // Quản lý vai trò đang chọn và tập quyền được cấp cho vai trò đó.
 export function useAccessControlData() {
-  const [activeRoleId, setActiveRoleId] = useState(MOCK_ROLES[1].id)
+  const [roles, setRoles] = useState<Role[]>([])
+  const [activeRoleId, setActiveRoleId] = useState("")
   const [grants, setGrants] = useState<RolePermission[]>(() => [
     ...MOCK_ROLE_PERMISSIONS,
   ])
   const [draftGrants, setDraftGrants] = useState<RolePermission[]>(() => [
     ...MOCK_ROLE_PERMISSIONS,
   ])
+  const reload = useCallback(async () => {
+    const rows = await rolesApi.list()
+    setRoles(rows)
+    setActiveRoleId((current) => current && rows.some((role) => role.id === current) ? current : rows[0]?.id ?? "")
+  }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ state với API khi mount.
+  useEffect(() => { void reload() }, [reload])
+  const createRole = useCallback(async (payload: RoleCreate) => { await rolesApi.create(payload); await reload() }, [reload])
+  const updateRole = useCallback(async (id: string, payload: RoleUpdate) => { await rolesApi.update(id, payload); await reload() }, [reload])
 
   // Tạo tập mã quyền của vai trò đang được chọn.
   const roleGrants = useMemo(function createRoleGrants() {
@@ -93,11 +105,13 @@ export function useAccessControlData() {
     actions: MOCK_ACTIONS,
     functions: MOCK_FUNCTIONS,
     permissions: MOCK_PERMISSIONS,
-    roles: MOCK_ROLES,
+    roles,
     roleGrants,
     hasChanges,
     selectRole,
     saveChanges,
     toggle,
+    createRole,
+    updateRole,
   }
 }

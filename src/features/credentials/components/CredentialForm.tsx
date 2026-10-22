@@ -6,6 +6,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { FormMode } from "@/types/components"
+import type { CredentialCreate, CredentialUpdate } from "@/service"
 import type { Credential } from "../types/credentials.type"
 
 /** Sheet quản lý thông tin xác thực dùng để kết nối tới thiết bị mạng. */
@@ -15,12 +16,14 @@ export function CredentialForm({
   credential,
   onOpenChange,
   onModeChange,
+  onSave,
 }: {
   open: boolean
   mode: FormMode
   credential: Credential | null
   onOpenChange: (open: boolean) => void
   onModeChange: (mode: FormMode) => void
+  onSave: (payload: CredentialCreate | CredentialUpdate) => Promise<void>
 }) {
   const readOnly = mode === "view"
   return (
@@ -32,7 +35,19 @@ export function CredentialForm({
       description="Credential metadata used by agents to connect to network devices."
       canEdit={!!credential}
       onEdit={() => onModeChange("edit")}
-      onSubmit={() => onOpenChange(false)}
+      onSubmit={async (data) => {
+        const password = String(data.get("password") ?? "")
+        const secret = String(data.get("secret") ?? "")
+        await onSave({
+          name: String(data.get("name") ?? ""),
+          description: String(data.get("description") ?? "").trim() || null,
+          username: String(data.get("username") ?? ""),
+          encryption_type: "PGP_SYM_AES256",
+          ...(password ? { password } : {}),
+          ...(secret ? { secret } : {}),
+        } as CredentialCreate | CredentialUpdate)
+        onOpenChange(false)
+      }}
     >
       <FormField label="Name" required>
         <Input
@@ -57,6 +72,12 @@ export function CredentialForm({
           disabled={readOnly}
           autoComplete="off"
         />
+      </FormField>
+      <FormField label={mode === "create" ? "Password" : "New password"} required={mode === "create"} hint={mode === "edit" ? "Để trống nếu không đổi mật khẩu." : undefined}>
+        <Input name="password" type="password" required={mode === "create"} disabled={readOnly} autoComplete="new-password" />
+      </FormField>
+      <FormField label="Enable secret" hint="Không bắt buộc; dùng cho thiết bị yêu cầu privileged EXEC.">
+        <Input name="secret" type="password" disabled={readOnly} autoComplete="new-password" />
       </FormField>
       <FormField label="Encryption type" required>
         <FormCombobox

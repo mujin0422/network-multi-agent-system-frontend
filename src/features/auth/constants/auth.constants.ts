@@ -2,8 +2,6 @@ import type { LoginCopy } from "../types/login.type"
 
 export const POST_LOGIN_PATH = "/"
 export const LOGIN_PATH = "/login"
-export const AUTH_STORAGE_KEY = "network-ai-authenticated"
-
 export const LOGIN_COPY: LoginCopy = {
   productName: "Network AI",
   productDescription: "Multi-Agent System",

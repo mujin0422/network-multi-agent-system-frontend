@@ -5,14 +5,10 @@ import {
 } from "@/components/shared/FeatureFormSheet"
 import { Input } from "@/components/ui/input"
 import type { FormMode } from "@/types/components"
+import type { Role, UserCreate, UserUpdate } from "@/service"
 import { USER_STATUS_OPTIONS } from "../constants/users.constants"
-import { MOCK_USER_ROLES } from "../mocks/user-roles.mock"
 import type { User } from "../types/user.type"
 
-const ROLE_OPTIONS = MOCK_USER_ROLES.map((role) => ({
-  value: role.id,
-  label: role.name,
-}))
 /** Sheet tạo mới, xem hoặc chỉnh sửa tài khoản và vai trò người dùng. */
 export function UserForm({
   open,
@@ -20,14 +16,19 @@ export function UserForm({
   user,
   onOpenChange,
   onModeChange,
+  roles,
+  onSave,
 }: {
   open: boolean
   mode: FormMode
   user: User | null
   onOpenChange: (open: boolean) => void
   onModeChange: (mode: FormMode) => void
+  roles: Role[]
+  onSave: (payload: UserCreate | UserUpdate) => Promise<void>
 }) {
   const readOnly = mode === "view"
+  const roleOptions = roles.map((role) => ({ value: role.id, label: role.name }))
   return (
     <FeatureFormSheet
       open={open}
@@ -37,7 +38,17 @@ export function UserForm({
       description="Identity, role assignment, and account status."
       canEdit={!!user}
       onEdit={() => onModeChange("edit")}
-      onSubmit={() => onOpenChange(false)}
+      onSubmit={async (data) => {
+        const payload: UserCreate | UserUpdate = {
+          full_name: String(data.get("full_name") ?? ""),
+          email: String(data.get("email") ?? ""),
+          role_id: String(data.get("role_id") ?? ""),
+          user_status: String(data.get("user_status") ?? "ACTIVE") as UserCreate["user_status"],
+          ...(mode === "create" ? { password: String(data.get("password") ?? "") } : {}),
+        }
+        await onSave(payload)
+        onOpenChange(false)
+      }}
     >
       <FormField label="Full name" required>
         <Input
@@ -58,9 +69,9 @@ export function UserForm({
         <FormField label="Role" required>
           <FormCombobox
             name="role_id"
-            defaultValue={user?.role_id ?? MOCK_USER_ROLES[2].id}
+            defaultValue={user?.role_id ?? roles[0]?.id}
             disabled={readOnly}
-            options={ROLE_OPTIONS}
+            options={roleOptions}
           />
         </FormField>
         <FormField label="Status" required>

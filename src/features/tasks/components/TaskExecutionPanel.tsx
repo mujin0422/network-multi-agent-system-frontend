@@ -12,11 +12,14 @@ export function TaskExecutionPanel({
   onView,
   onEdit,
 }: {
-  task: Task
+  task: Task | null
   operations: TaskOperation[]
   onView: () => void
   onEdit: () => void
 }) {
+  if (!task) {
+    return <Card className="grid min-h-64 place-items-center text-xs text-muted-foreground">Chưa có task.</Card>
+  }
   return (
     <Card className="gap-0 py-0">
       <CardHeader className="border-b py-4">

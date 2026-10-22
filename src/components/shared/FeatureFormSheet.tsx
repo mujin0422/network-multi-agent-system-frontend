@@ -1,4 +1,4 @@
-import type { FormEvent } from "react"
+import { useState, type FormEvent } from "react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
@@ -42,15 +42,25 @@ export function FeatureFormSheet({
   onEdit,
 }: FeatureFormSheetProps) {
   const { t } = useTranslation()
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const modeLabel = {
     create: t("common.add"),
     edit: t("common.edit"),
     view: t("common.view"),
   }[mode]
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    onSubmit?.()
+    setSubmitting(true)
+    setSubmitError(null)
+    try {
+      await onSubmit?.(new FormData(event.currentTarget))
+    } catch (reason) {
+      setSubmitError(reason instanceof Error ? reason.message : "Không thể lưu dữ liệu")
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -65,6 +75,7 @@ export function FeatureFormSheet({
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
           <div className="flex-1 space-y-4 overflow-y-auto p-4">{children}</div>
           <SheetFooter className="border-t">
+            {submitError && <p className="mr-auto text-xs text-destructive">{submitError}</p>}
             <div className="flex w-full justify-end gap-2">
               <Button
                 type="button"
@@ -79,7 +90,7 @@ export function FeatureFormSheet({
                 </Button>
               )}
               {mode !== "view" && (
-                <Button type="submit">
+                <Button type="submit" disabled={submitting}>
                   {mode === "create"
                     ? t("common.create")
                     : t("common.saveChanges")}

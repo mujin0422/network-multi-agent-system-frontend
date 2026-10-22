@@ -26,8 +26,10 @@ export function AccessControlTable() {
     selectRole,
     saveChanges,
     toggle,
+    createRole,
+    updateRole,
   } = useAccessControlData()
-  const activeRole = roles.find((role) => role.id === activeRoleId)!
+  const activeRole = roles.find((role) => role.id === activeRoleId)
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -60,7 +62,7 @@ export function AccessControlTable() {
             activeRoleId={activeRoleId}
             onSelect={selectRole}
           />
-          <PermissionMatrix
+          {activeRole && <PermissionMatrix
             role={activeRole}
             actions={actions}
             functions={functions}
@@ -69,7 +71,7 @@ export function AccessControlTable() {
             hasChanges={hasChanges}
             onToggle={toggle}
             onSave={saveChanges}
-          />
+          />}
         </PageLayoutContent>
       </PageLayout>
       <AccessControlForm
@@ -77,6 +79,7 @@ export function AccessControlTable() {
         mode={form.mode}
         role={form.role}
         grants={roleGrants}
+        onSave={(payload) => form.mode === "create" ? createRole(payload as Parameters<typeof createRole>[0]) : updateRole(form.role!.id, payload)}
         onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
         onModeChange={(mode) => setForm((current) => ({ ...current, mode }))}
         onToggle={toggle}

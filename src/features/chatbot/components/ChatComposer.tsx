@@ -8,6 +8,7 @@ type ChatComposerProps = {
   input: string
   onInputChange: (value: string) => void
   onSend: () => void
+  disabled?: boolean
 }
 
 /** Ô soạn tin nhắn, hỗ trợ gửi bằng nút hoặc phím Enter. */
@@ -15,6 +16,7 @@ export function ChatComposer({
   input,
   onInputChange,
   onSend,
+  disabled = false,
 }: ChatComposerProps) {
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === "Enter" && !event.shiftKey) {
@@ -34,12 +36,13 @@ export function ChatComposer({
             className="max-h-36 min-h-12 resize-none rounded-2xl bg-card py-3 pr-12 pl-4 text-sm shadow-sm"
             placeholder={CHAT_COPY.placeholder}
             rows={1}
+            disabled={disabled}
           />
           <Button
             size="icon-sm"
             aria-label="Send message"
             onClick={onSend}
-            disabled={!input.trim()}
+            disabled={disabled || !input.trim()}
             className="absolute right-2 bottom-2 rounded-full"
           >
             <Send />

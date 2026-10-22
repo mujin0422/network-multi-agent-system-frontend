@@ -1,21 +1,33 @@
-import { useMemo } from "react"
-import { MOCK_CREDENTIAL_AUDIT_USERS } from "../mocks/credential-audit-users.mock"
-import { MOCK_CREDENTIALS } from "../mocks/credentials.mock"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { credentialsApi, devicesApi, usersApi } from "@/service"
+import type { CredentialCreate, CredentialUpdate, User } from "@/service"
+import type { Credential } from "../types/credentials.type"
 
-// Quản lý tìm kiếm và phân trang danh sách thông tin xác thực.
 export function useCredentialsData() {
-  const rows = MOCK_CREDENTIALS
-  function auditUserName(id: string) {
-    return (
-      MOCK_CREDENTIAL_AUDIT_USERS.find((user) => user.id === id)?.full_name ??
-      id
-    )
-  }
+  const [rows, setRows] = useState<Credential[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const reload = useCallback(async () => {
+    try {
+      const [credentials, devices, userRows] = await Promise.all([
+        credentialsApi.list(), devicesApi.list({ page_size: 100 }), usersApi.list().catch(() => []),
+      ])
+      setRows(credentials.map((credential) => ({ ...credential, device_count: devices.items.filter((device) => device.credential_id === credential.id).length })))
+      setUsers(userRows)
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải credential") }
+    finally { setLoading(false) }
+  }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ state với API khi mount.
+  useEffect(() => { void reload() }, [reload])
+  const createCredential = useCallback(async (payload: CredentialCreate) => { await credentialsApi.create(payload); await reload() }, [reload])
+  const updateCredential = useCallback(async (id: string, payload: CredentialUpdate) => { await credentialsApi.update(id, payload); await reload() }, [reload])
+  function auditUserName(id: string | null) { return id ? users.find((user) => user.id === id)?.full_name ?? id : "—" }
   const summary = useMemo(() => ({
-    total: MOCK_CREDENTIALS.length,
-    assigned: MOCK_CREDENTIALS.filter((credential) => credential.device_count > 0).length,
-    deviceAssignments: MOCK_CREDENTIALS.reduce((total, credential) => total + credential.device_count, 0),
-    unassigned: MOCK_CREDENTIALS.filter((credential) => credential.device_count === 0).length,
-  }), [])
-  return { rows, summary, auditUserName }
+    total: rows.length,
+    assigned: rows.filter((credential) => credential.device_count > 0).length,
+    deviceAssignments: rows.reduce((total, credential) => total + credential.device_count, 0),
+    unassigned: rows.filter((credential) => credential.device_count === 0).length,
+  }), [rows])
+  return { rows, summary, auditUserName, loading, error, reload, createCredential, updateCredential }
 }
