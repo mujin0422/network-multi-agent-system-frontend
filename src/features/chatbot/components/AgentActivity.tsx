@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronDown } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -33,10 +33,26 @@ function ActivityRow({ activity }: { activity: AgentActivityItem }) {
 /** Timeline thu gọn mô tả những gì các agent đã làm cho một user message. */
 export function AgentActivity({ task }: { task: ChatTaskPreview }) {
   const [open, setOpen] = useState(true)
-  const duration = elapsedLabel(task.active_duration_ms)
+  const [now, setNow] = useState(Date.now())
   const waitingApproval = task.activities.some(
     (item) => item.status === "WAITING_APPROVAL",
   )
+  const workflowFailed = task.activities.some(
+    (item) => item.status === "FAILED",
+  )
+  const running = !task.response_message_id && !waitingApproval && !workflowFailed
+
+  useEffect(() => {
+    if (!running) return
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [running])
+
+  const latestStartedAt = task.activities.at(-1)?.started_at ?? task.started_at
+  const liveDuration = running
+    ? task.active_duration_ms + Math.max(0, now - Date.parse(latestStartedAt))
+    : task.active_duration_ms
+  const duration = elapsedLabel(liveDuration)
 
   return (
     <div className="mt-3">
@@ -48,7 +64,7 @@ export function AgentActivity({ task }: { task: ChatTaskPreview }) {
       >
         <span className="flex min-w-0 items-center gap-2">
           <span className="truncate font-medium">
-            Đã xử lý trong {duration}
+            {running ? "Đang xử lý" : "Đã xử lý"} trong {duration}
           </span>
           {waitingApproval && (
             <span className="hidden text-xs font-normal text-amber-600 dark:text-amber-400 sm:inline">

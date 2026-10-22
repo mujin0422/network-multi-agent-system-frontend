@@ -4,6 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Fragment } from "react"
 import { MESSAGE_SENDER_LABELS } from "../constants/chatbot.constants"
 import type { ChatMessage } from "../types/chat-message.type"
 import type { ChatTaskPreview } from "../types/chat-task-preview.type"
@@ -47,10 +48,16 @@ export function MessageList({
                 item.sender_by === "AGENT" &&
                 preview.response_message_id === item.id,
             )
+            const pendingTaskPreview = taskPreviews.find(
+              (preview) =>
+                item.sender_by === "USER" &&
+                preview.source_message_id === item.id &&
+                !preview.response_message_id,
+            )
 
             return (
+            <Fragment key={item.id}>
             <article
-              key={item.id}
               aria-label={`${MESSAGE_SENDER_LABELS[item.sender_by]} message`}
               className={
                 item.sender_by === "USER"
@@ -101,6 +108,14 @@ export function MessageList({
                 )}
               </div>
             </article>
+            {pendingTaskPreview && (
+              <article aria-label="AI processing" className="flex items-start">
+                <div className="min-w-0 flex-1">
+                  <AgentActivity task={pendingTaskPreview} />
+                </div>
+              </article>
+            )}
+            </Fragment>
             )
           })}
         </TooltipProvider>
