@@ -22,7 +22,7 @@ import { CredentialStats } from "./CredentialStats"
 
 /** Màn hình quản lý, tìm kiếm và kiểm tra các bộ thông tin xác thực. */
 export function CredentialsTable() {
-  const { rows, summary, auditUserName } = useCredentialsData()
+  const { rows, summary, auditUserName, createCredential, updateCredential } = useCredentialsData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -147,6 +147,7 @@ export function CredentialsTable() {
         open={form.open}
         mode={form.mode}
         credential={form.credential}
+        onSave={(payload) => form.mode === "create" ? createCredential(payload as Parameters<typeof createCredential>[0]) : updateCredential(form.credential!.id, payload)}
         onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
         onModeChange={(mode) => setForm((current) => ({ ...current, mode }))}
       />

@@ -6,6 +6,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import type { FormMode } from "@/types/components"
+import type { RoleCreate, RoleUpdate } from "@/service"
 import { MOCK_ACTIONS } from "../mocks/actions.mock"
 import { MOCK_FUNCTIONS } from "../mocks/management-functions.mock"
 import { MOCK_PERMISSIONS } from "../mocks/permissions.mock"
@@ -20,6 +21,7 @@ export function AccessControlForm({
   onOpenChange,
   onModeChange,
   onToggle,
+  onSave,
 }: {
   open: boolean
   mode: FormMode
@@ -28,6 +30,7 @@ export function AccessControlForm({
   onOpenChange: (open: boolean) => void
   onModeChange: (mode: FormMode) => void
   onToggle: (functionId: string, actionId: string) => void
+  onSave: (payload: RoleCreate | RoleUpdate) => Promise<void>
 }) {
   return (
     <AccessControlFormFields
@@ -39,6 +42,7 @@ export function AccessControlForm({
       onOpenChange={onOpenChange}
       onModeChange={onModeChange}
       onToggle={onToggle}
+      onSave={onSave}
     />
   )
 }
@@ -52,6 +56,7 @@ function AccessControlFormFields({
   onOpenChange,
   onModeChange,
   onToggle,
+  onSave,
 }: {
   open: boolean
   mode: FormMode
@@ -60,6 +65,7 @@ function AccessControlFormFields({
   onOpenChange: (open: boolean) => void
   onModeChange: (mode: FormMode) => void
   onToggle: (functionId: string, actionId: string) => void
+  onSave: (payload: RoleCreate | RoleUpdate) => Promise<void>
 }) {
   const readOnly = mode === "view"
   const [draftGrants, setDraftGrants] = useState(grants)
@@ -85,7 +91,10 @@ function AccessControlFormFields({
       description="Define the role and its function/action permissions in one form."
       canEdit={!!role && role.id !== "role-0001"}
       onEdit={() => onModeChange("edit")}
-      onSubmit={() => onOpenChange(false)}
+      onSubmit={async (data) => {
+        await onSave({ name: String(data.get("name") ?? "").trim() })
+        onOpenChange(false)
+      }}
     >
       <FormField label="Role name" required>
         <Input

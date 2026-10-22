@@ -18,7 +18,7 @@ import { CategoryTable } from "./CategoryTable"
 
 /** Màn hình quản lý master data brand và category cho inventory. */
 export function DeviceCatalogTable() {
-  const { entity, brands, categories, summary, selectEntity } =
+  const { entity, brands, categories, summary, selectEntity, createBrand, updateBrand } =
     useDeviceCatalogData()
   const [form, setForm] = useState<{
     open: boolean
@@ -39,7 +39,7 @@ export function DeviceCatalogTable() {
           title="Device Catalog"
           description="Manage inventory brands, categories, and the Netmiko drivers allowed for each vendor."
         >
-          <Button size="sm" onClick={() => openForm("create", entity)}>
+          <Button size="sm" disabled={entity === "category"} title={entity === "category" ? "Backend chưa có API tạo category" : undefined} onClick={() => openForm("create", entity)}>
             Add {entityLabel(entity)}
           </Button>
         </PageLayoutHeader>
@@ -58,7 +58,7 @@ export function DeviceCatalogTable() {
             <CategoryTable
               categories={categories}
               onView={(category) => openForm("view", "category", category)}
-              onEdit={(category) => openForm("edit", "category", category)}
+              onEdit={undefined}
             >
               <DeviceCatalogTabs entity={entity} onChange={selectEntity} />
             </CategoryTable>
@@ -70,6 +70,7 @@ export function DeviceCatalogTable() {
         mode={form.mode}
         entity={form.entity}
         record={form.record}
+        onSaveBrand={(name, supported_drivers) => form.mode === "create" ? createBrand({ name, supported_drivers }) : updateBrand(form.record!.id, { name, supported_drivers })}
         onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
         onModeChange={(mode) => setForm((current) => ({ ...current, mode }))}
       />

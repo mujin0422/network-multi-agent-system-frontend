@@ -19,7 +19,7 @@ export function CategoryTable({
   categories: Category[]
   children?: ReactNode
   onView: (category: Category) => void
-  onEdit: (category: Category) => void
+  onEdit?: (category: Category) => void
 }) {
   return (
     <DataTable
@@ -62,7 +62,7 @@ export function CategoryTable({
           cell: (category) => (
             <MoreMenu
               onView={() => onView(category)}
-              onEdit={() => onEdit(category)}
+              onEdit={onEdit ? () => onEdit(category) : undefined}
               onCopy={() => navigator.clipboard?.writeText(category.id)}
             />
           ),

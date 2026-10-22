@@ -25,9 +25,9 @@ export function ProfileDetails() {
     setMode("view")
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    saveProfile({ full_name: fullName.trim(), email: email.trim() })
+    await saveProfile({ full_name: fullName.trim(), email: email.trim() })
   }
 
   const headerAction = isEditing ? (
@@ -42,7 +42,7 @@ export function ProfileDetails() {
       </Button>
     </div>
   ) : (
-    <Button size="sm" onClick={() => setMode("edit")}>
+    <Button size="sm" onClick={() => { setFullName(profile.full_name); setEmail(profile.email); setMode("edit") }}>
       <Pencil />
       Edit profile
     </Button>
@@ -62,8 +62,8 @@ export function ProfileDetails() {
           profile={profile}
           roleName={role.name}
           session={session}
-          fullName={fullName}
-          email={email}
+          fullName={isEditing ? fullName : profile.full_name}
+          email={isEditing ? email : profile.email}
           editing={isEditing}
           onFullNameChange={setFullName}
           onEmailChange={setEmail}

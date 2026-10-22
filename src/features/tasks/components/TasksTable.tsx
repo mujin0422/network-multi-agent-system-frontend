@@ -119,8 +119,8 @@ export function TasksTable() {
           <TaskExecutionPanel
             task={selected}
             operations={operations}
-            onView={() => openForm("view", selected)}
-            onEdit={() => openForm("edit", selected)}
+            onView={() => selected && openForm("view", selected)}
+            onEdit={() => selected && openForm("edit", selected)}
           />
         </PageLayoutContent>
       </PageLayout>

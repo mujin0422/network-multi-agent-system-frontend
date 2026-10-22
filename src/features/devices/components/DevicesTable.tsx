@@ -32,6 +32,8 @@ export function DevicesTable() {
     brandName,
     categoryName,
     auditUserName,
+    createDevice,
+    updateDevice,
   } = useDevicesData()
   const brandFilterOptions = brands.map((item) => ({
     value: item.id,
@@ -192,6 +194,9 @@ export function DevicesTable() {
         open={form.open}
         mode={form.mode}
         device={form.device}
+        brands={brands}
+        categories={categories}
+        onSave={(payload) => form.mode === "create" ? createDevice(payload) : updateDevice(form.device!.id, payload)}
         onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
         onModeChange={(mode) => setForm((current) => ({ ...current, mode }))}
       />

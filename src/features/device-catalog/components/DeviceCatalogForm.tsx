@@ -17,6 +17,7 @@ type DeviceCatalogFormProps = {
   record: CatalogRecord | null
   onOpenChange: (open: boolean) => void
   onModeChange: (mode: FormMode) => void
+  onSaveBrand: (name: string, supportedDrivers: string[]) => Promise<void>
 }
 
 /** Sheet dùng chung để tạo, xem và chỉnh sửa brand/category. */
@@ -27,6 +28,7 @@ export function DeviceCatalogForm({
   record,
   onOpenChange,
   onModeChange,
+  onSaveBrand,
 }: DeviceCatalogFormProps) {
   const readOnly = mode === "view"
   const brand = record && isBrand(record) ? record : null
@@ -43,9 +45,14 @@ export function DeviceCatalogForm({
           ? "Manage a vendor and the unique, non-empty Netmiko drivers it supports."
           : "Manage a reusable classification for inventory devices."
       }
-      canEdit={Boolean(record)}
+      canEdit={Boolean(record) && entity === "brand"}
       onEdit={() => onModeChange("edit")}
-      onSubmit={() => onOpenChange(false)}
+      onSubmit={async (data) => {
+        if (entity !== "brand") return
+        const drivers = String(data.get("supported_drivers") ?? "").split(/\r?\n/).map((item) => item.trim()).filter(Boolean)
+        await onSaveBrand(String(data.get("name") ?? "").trim(), [...new Set(drivers)])
+        onOpenChange(false)
+      }}
     >
       <FormField label="Name" required>
         <Input

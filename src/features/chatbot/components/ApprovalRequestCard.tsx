@@ -6,9 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { ApprovalRequest } from "../types/chat-task-preview.type"
 
 /** Hiển thị đầy đủ phạm vi thay đổi trước khi người dùng ra quyết định. */
-export function ApprovalRequestCard({ approval }: { approval: ApprovalRequest }) {
+export function ApprovalRequestCard({
+  approval,
+  onDecision,
+}: {
+  approval: ApprovalRequest
+  onDecision: (approvalId: string, decision: "APPROVED" | "REJECTED") => Promise<void>
+}) {
   const [decision, setDecision] = useState(approval.status)
+  const [submitting, setSubmitting] = useState(false)
   const decided = decision !== "PENDING"
+
+  async function decide(nextDecision: "APPROVED" | "REJECTED") {
+    setSubmitting(true)
+    try {
+      await onDecision(approval.id, nextDecision)
+      setDecision(nextDecision)
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   return (
     <Card className="mt-3 border-amber-500/25 bg-amber-500/[0.04] shadow-none">
@@ -50,10 +67,10 @@ export function ApprovalRequestCard({ approval }: { approval: ApprovalRequest })
           </div>
         ) : (
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button size="sm" variant="outline" onClick={() => setDecision("REJECTED")}>
+            <Button size="sm" variant="outline" disabled={submitting} onClick={() => void decide("REJECTED")}>
               <X /> Từ chối
             </Button>
-            <Button size="sm" onClick={() => setDecision("APPROVED")}>
+            <Button size="sm" disabled={submitting} onClick={() => void decide("APPROVED")}>
               <Check /> Phê duyệt và tiếp tục
             </Button>
           </div>

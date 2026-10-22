@@ -6,25 +6,19 @@ import {
 } from "@/components/shared/FeatureFormSheet"
 import { Input } from "@/components/ui/input"
 import type { FormMode } from "@/types/components"
-import { MOCK_DEVICE_BRANDS } from "../mocks/device-brands.mock"
-import { MOCK_DEVICE_CATEGORIES } from "../mocks/device-categories.mock"
+import type { Brand, Category, DeviceCreate } from "@/service"
 import type { Device } from "../types/device.type"
-
-const BRAND_OPTIONS = MOCK_DEVICE_BRANDS.map((brand) => ({
-  value: brand.id,
-  label: brand.name,
-}))
-const CATEGORY_OPTIONS = MOCK_DEVICE_CATEGORIES.map((category) => ({
-  value: category.id,
-  label: category.name,
-}))
 
 function DeviceFormFields({
   device,
   readOnly,
+  brands,
+  categories,
 }: {
   device: Device | null
   readOnly: boolean
+  brands: Brand[]
+  categories: Category[]
 }) {
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(
     device?.brand_id ?? null,
@@ -32,7 +26,7 @@ function DeviceFormFields({
   const [selectedDeviceType, setSelectedDeviceType] = useState<string | null>(
     device?.device_type ?? null,
   )
-  const selectedBrand = MOCK_DEVICE_BRANDS.find(
+  const selectedBrand = brands.find(
     (brand) => brand.id === selectedBrandId,
   )
   const deviceTypeOptions = (selectedBrand?.supported_drivers ?? []).map(
@@ -41,7 +35,7 @@ function DeviceFormFields({
 
   function handleBrandChange(brandId: string | null) {
     const supportedDrivers =
-      MOCK_DEVICE_BRANDS.find((brand) => brand.id === brandId)
+      brands.find((brand) => brand.id === brandId)
         ?.supported_drivers ?? []
     setSelectedBrandId(brandId)
     setSelectedDeviceType((currentDeviceType) =>
@@ -65,9 +59,9 @@ function DeviceFormFields({
         <FormField label="Category" required>
           <FormCombobox
             name="category_id"
-            defaultValue={device?.category_id ?? MOCK_DEVICE_CATEGORIES[0].id}
+            defaultValue={device?.category_id ?? categories[0]?.id}
             disabled={readOnly}
-            options={CATEGORY_OPTIONS}
+            options={categories.map((category) => ({ value: category.id, label: category.name }))}
           />
         </FormField>
       </div>
@@ -95,7 +89,7 @@ function DeviceFormFields({
             value={selectedBrandId}
             onValueChange={handleBrandChange}
             disabled={readOnly}
-            options={BRAND_OPTIONS}
+            options={brands.map((brand) => ({ value: brand.id, label: brand.name }))}
             placeholder="Select a brand"
           />
         </FormField>
@@ -169,12 +163,18 @@ export function DeviceForm({
   device,
   onOpenChange,
   onModeChange,
+  brands,
+  categories,
+  onSave,
 }: {
   open: boolean
   mode: FormMode
   device: Device | null
   onOpenChange: (open: boolean) => void
   onModeChange: (mode: FormMode) => void
+  brands: Brand[]
+  categories: Category[]
+  onSave: (payload: Omit<DeviceCreate, "last_updated_by">) => Promise<void>
 }) {
   const readOnly = mode === "view"
 
@@ -187,12 +187,27 @@ export function DeviceForm({
       description="Select a brand to load only the Netmiko drivers supported by that vendor."
       canEdit={!!device}
       onEdit={() => onModeChange("edit")}
-      onSubmit={() => onOpenChange(false)}
+      onSubmit={async (data) => {
+        const credentialId = String(data.get("credential_id") ?? "").trim()
+        await onSave({
+          hostname: String(data.get("hostname") ?? ""),
+          category_id: String(data.get("category_id") ?? ""),
+          host: String(data.get("host") ?? "127.0.0.1"),
+          port: Number(data.get("port") ?? 22),
+          brand_id: String(data.get("brand_id") ?? ""),
+          device_type: String(data.get("device_type") ?? ""),
+          credential_id: credentialId || null,
+          location: String(data.get("location") ?? "").trim() || null,
+        })
+        onOpenChange(false)
+      }}
     >
       <DeviceFormFields
         key={`${open}-${mode}-${device?.id ?? "new"}`}
         device={device}
         readOnly={readOnly}
+        brands={brands}
+        categories={categories}
       />
     </FeatureFormSheet>
   )

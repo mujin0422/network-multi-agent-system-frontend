@@ -9,7 +9,7 @@ export type Device = {
   device_type: string
   location: string | null
   created_by: string
-  last_updated_by: string
+  last_updated_by: string | null
   created_at: string
   last_updated_at: string
 }

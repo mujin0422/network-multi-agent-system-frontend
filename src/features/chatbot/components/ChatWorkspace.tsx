@@ -24,6 +24,9 @@ export function ChatWorkspace() {
     sendMessage,
     setActiveConversationId,
     setInput,
+    sending,
+    error,
+    decideApproval,
   } = useChatMessages()
   const visibleMessages = messages.filter(
     (item) => item.conversation_id === activeConversationId,
@@ -76,11 +79,16 @@ export function ChatWorkspace() {
           <MessageList
             messages={visibleMessages}
             taskPreviews={taskPreviews}
+            onApprovalDecision={decideApproval}
           />
+          {error && (
+            <p className="mx-auto w-full max-w-3xl px-6 text-xs text-destructive">{error}</p>
+          )}
           <ChatComposer
             input={input}
             onInputChange={setInput}
             onSend={sendMessage}
+            disabled={sending}
           />
         </section>
       </PageLayoutContent>

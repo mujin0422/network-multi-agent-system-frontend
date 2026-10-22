@@ -29,7 +29,7 @@ import { UserStats } from "./UserStats"
 
 /** Màn hình quản lý người dùng, vai trò và trạng thái tài khoản. */
 export function UsersTable() {
-  const { rows, summary, roleName } = useUsersData()
+  const { rows, roles, summary, roleName, createUser, updateUser } = useUsersData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -151,6 +151,8 @@ export function UsersTable() {
         open={form.open}
         mode={form.mode}
         user={form.user}
+        roles={roles}
+        onSave={(payload) => form.mode === "create" ? createUser(payload as Parameters<typeof createUser>[0]) : updateUser(form.user!.id, payload)}
         onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
         onModeChange={(mode) => setForm((current) => ({ ...current, mode }))}
       />

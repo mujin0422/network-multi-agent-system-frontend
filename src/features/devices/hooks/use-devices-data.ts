@@ -1,43 +1,42 @@
-import { useMemo } from "react"
-import { MOCK_DEVICE_BRANDS } from "../mocks/device-brands.mock"
-import { MOCK_DEVICE_CATEGORIES } from "../mocks/device-categories.mock"
-import { MOCK_DEVICE_AUDIT_USERS } from "../mocks/device-audit-users.mock"
-import { MOCK_DEVICES } from "../mocks/devices.mock"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { authApi, brandsApi, categoriesApi, devicesApi, usersApi } from "@/service"
+import type { Brand, Category, DeviceCreate, DeviceUpdate, User } from "@/service"
+import type { Device } from "../types/device.type"
 import { catalogName } from "../utils/devices.util"
 
-// Quản lý tìm kiếm, bộ lọc và phân trang danh sách thiết bị.
 export function useDevicesData() {
-  // Trả về tên thương hiệu theo mã, hoặc chính mã đó nếu không tìm thấy.
-  function brandName(id: string) {
-    // Kiểm tra thương hiệu có mã trùng với mã cần tìm hay không.
-    return catalogName(MOCK_DEVICE_BRANDS, id)
-  }
-
-  // Trả về tên danh mục theo mã, hoặc chính mã đó nếu không tìm thấy.
-  function categoryName(id: string) {
-    // Kiểm tra danh mục có mã trùng với mã cần tìm hay không.
-    return catalogName(MOCK_DEVICE_CATEGORIES, id)
-  }
-
-  // Tra cứu tên người tạo/cập nhật từ dữ liệu người dùng mock của feature.
-  function auditUserName(id: string) {
-    return (
-      MOCK_DEVICE_AUDIT_USERS.find((user) => user.id === id)?.full_name ?? id
-    )
-  }
+  const [rows, setRows] = useState<Device[]>([])
+  const [brands, setBrands] = useState<Brand[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [currentUserId, setCurrentUserId] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const reload = useCallback(async () => {
+    try {
+      const [page, brandRows, categoryRows, me, userRows] = await Promise.all([
+        devicesApi.list({ page_size: 100 }), brandsApi.list(), categoriesApi.list(), authApi.me(), usersApi.list().catch(() => []),
+      ])
+      setRows(page.items); setBrands(brandRows); setCategories(categoryRows); setCurrentUserId(me.id); setUsers(userRows)
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải thiết bị") }
+    finally { setLoading(false) }
+  }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ state với API khi mount.
+  useEffect(() => { void reload() }, [reload])
+  const createDevice = useCallback(async (payload: Omit<DeviceCreate, "last_updated_by">) => {
+    await devicesApi.create({ ...payload, last_updated_by: currentUserId }); await reload()
+  }, [currentUserId, reload])
+  const updateDevice = useCallback(async (id: string, payload: Omit<DeviceUpdate, "last_updated_by">) => {
+    await devicesApi.update(id, { ...payload, last_updated_by: currentUserId }); await reload()
+  }, [currentUserId, reload])
+  function brandName(id: string) { return catalogName(brands, id) }
+  function categoryName(id: string) { return catalogName(categories, id) }
+  function auditUserName(id: string | null) { return id ? users.find((user) => user.id === id)?.full_name ?? id : "—" }
   const summary = useMemo(() => ({
-    total: MOCK_DEVICES.length,
-    routers: MOCK_DEVICES.filter((device) => device.category_id === "catg-0001").length,
-    switches: MOCK_DEVICES.filter((device) => device.category_id === "catg-0002").length,
-    deviceTypes: new Set(MOCK_DEVICES.map((device) => device.device_type)).size,
-  }), [])
-  return {
-    rows: MOCK_DEVICES,
-    brandName,
-    categoryName,
-    auditUserName,
-    brands: MOCK_DEVICE_BRANDS,
-    categories: MOCK_DEVICE_CATEGORIES,
-    summary,
-  }
+    total: rows.length,
+    routers: rows.filter((device) => categories.find((category) => category.id === device.category_id)?.name.toLowerCase().includes("router")).length,
+    switches: rows.filter((device) => categories.find((category) => category.id === device.category_id)?.name.toLowerCase().includes("switch")).length,
+    deviceTypes: new Set(rows.map((device) => device.device_type)).size,
+  }), [rows, categories])
+  return { rows, brands, categories, summary, brandName, categoryName, auditUserName, loading, error, reload, createDevice, updateDevice }
 }

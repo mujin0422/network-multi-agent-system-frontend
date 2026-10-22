@@ -30,10 +30,10 @@ export type ApprovalRequest = {
   operation_id: string
   title: string
   description: string
-  risk_level: "LOW" | "MEDIUM" | "HIGH"
+  risk_level: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
   devices: string[]
   commands: string[]
-  status: "PENDING" | "APPROVED" | "REJECTED"
+  status: "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED"
 }
 
 /** View model của toàn bộ workflow sinh ra từ một USER message. */

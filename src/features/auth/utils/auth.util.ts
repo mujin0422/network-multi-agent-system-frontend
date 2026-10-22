@@ -1,6 +1,6 @@
 import type { LoginCredentials } from "../types/login.type"
-import { AUTH_STORAGE_KEY, POST_LOGIN_PATH } from "../constants/auth.constants"
-import { MOCK_SUPER_ADMIN_CREDENTIALS } from "../mocks/auth.mock"
+import { POST_LOGIN_PATH } from "../constants/auth.constants"
+import { authApi, hasStoredTokens } from "@/service"
 
 /** Đọc và chuẩn hóa dữ liệu từ form đăng nhập. */
 export function readLoginCredentials(formData: FormData): LoginCredentials {
@@ -10,24 +10,12 @@ export function readLoginCredentials(formData: FormData): LoginCredentials {
   }
 }
 
-/** Kiểm tra thông tin đăng nhập demo trước khi tạo phiên. */
-export function isValidLoginCredentials(credentials: LoginCredentials) {
-  return (
-    credentials.email === MOCK_SUPER_ADMIN_CREDENTIALS.email &&
-    credentials.password === MOCK_SUPER_ADMIN_CREDENTIALS.password
-  )
-}
-
 export function hasAuthenticatedSession() {
-  return localStorage.getItem(AUTH_STORAGE_KEY) === "true"
-}
-
-export function createAuthenticatedSession() {
-  localStorage.setItem(AUTH_STORAGE_KEY, "true")
+  return hasStoredTokens()
 }
 
 export function clearAuthenticatedSession() {
-  localStorage.removeItem(AUTH_STORAGE_KEY)
+  void authApi.logout()
 }
 
 export function getSafeRedirectPath(path?: string) {

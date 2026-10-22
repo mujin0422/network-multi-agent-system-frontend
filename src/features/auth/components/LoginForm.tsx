@@ -12,11 +12,12 @@ export function LoginForm() {
     clearError,
     credentials,
     error,
+    isSubmitting,
     showPassword,
     togglePassword,
     submit,
   } = useLogin()
-  const hasError = error === "invalid-credentials"
+  const hasError = Boolean(error)
 
   return (
     <form className="space-y-4" onSubmit={submit}>
@@ -79,7 +80,11 @@ export function LoginForm() {
           className="flex items-start gap-2 rounded-lg border border-destructive/20 bg-destructive/10 px-3 py-2 text-xs leading-4 text-destructive"
         >
           <CircleAlert className="mt-px size-4 shrink-0" />
-          <span>{LOGIN_COPY.invalidCredentials}</span>
+          <span>
+            {error === "invalid-credentials"
+              ? LOGIN_COPY.invalidCredentials
+              : error}
+          </span>
         </div>
       )}
 
@@ -87,7 +92,7 @@ export function LoginForm() {
         {LOGIN_COPY.demoNotice}
       </div>
 
-      <Button type="submit" className="h-10 w-full">
+      <Button type="submit" className="h-10 w-full" disabled={isSubmitting}>
         {LOGIN_COPY.submitLabel}
       </Button>
     </form>

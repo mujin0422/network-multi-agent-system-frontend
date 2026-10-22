@@ -9,7 +9,7 @@ export type FeatureFormSheetProps = {
   entityLabel: string
   description: string
   children: ReactNode
-  onSubmit?: () => void
+  onSubmit?: (formData: FormData) => void | Promise<void>
   canEdit?: boolean
   onEdit?: () => void
 }
