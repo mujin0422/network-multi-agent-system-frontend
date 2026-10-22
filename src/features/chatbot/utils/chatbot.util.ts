@@ -17,7 +17,9 @@ export function createUserMessage(conversationId: string, message: string): Chat
   return {
     id: `mesg-local-${Date.now()}`,
     conversation_id: conversationId,
+    reply_to_message_id: null,
     sender_by: "USER",
+    message_type: "USER_REQUEST",
     message,
     created_at: new Date().toISOString(),
   }
