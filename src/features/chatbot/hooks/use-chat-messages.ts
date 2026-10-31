@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { approvalsApi, authApi, conversationsApi, tasksApi } from "@/service"
+import { approvalsApi, authApi, conversationsApi, devicesApi, tasksApi } from "@/service"
 import type { TaskActivityEvent } from "@/service"
 import type { ChatMessage } from "../types/chat-message.type"
 import type { ChatTaskPreview } from "../types/chat-task-preview.type"
@@ -42,9 +42,18 @@ export function useChatMessages() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const pollingGeneration = useRef(0)
+  const deviceNames = useRef<Map<string, string> | null>(null)
 
   const loadTaskPreviews = useCallback(async (conversationMessages: ChatMessage[]) => {
-    const allTasks = await tasksApi.list()
+    const [allTasks, names] = await Promise.all([
+      tasksApi.list(),
+      deviceNames.current
+        ? Promise.resolve(deviceNames.current)
+        : devicesApi.list({ page_size: 100 })
+            .then((page) => new Map(page.items.map((device) => [device.id, device.hostname])))
+            .catch(() => new Map<string, string>()),
+    ])
+    deviceNames.current = names
     const messageIds = new Set(conversationMessages.map((message) => message.id))
     const relevantTasks = allTasks.filter((task) => messageIds.has(task.source_message_id))
     const previews = await Promise.all(relevantTasks.map(async (task): Promise<ChatTaskPreview> => {
@@ -57,15 +66,28 @@ export function useChatMessages() {
           message.sender_by === "AGENT" &&
           message.reply_to_message_id === task.source_message_id,
       )
-      const response = responses.find(
+      const approvalResponse = responses.find(
+        (message) => message.message_type === "APPROVAL_REQUEST",
+      )
+      const finalResponse = responses.find(
         (message) => message.message_type === "FINAL_RESPONSE",
-      ) ?? responses[0]
+      )
+      // Giữ workflow và thẻ phê duyệt tại đúng vị trí của approval message.
+      // Nếu task không cần phê duyệt, workflow được đặt cạnh final response.
+      const response = approvalResponse ?? finalResponse ?? responses[0]
       const activeDuration = events.reduce((total, event) => {
         if (!event.started_at || !event.completed_at) return total
         return total + Math.max(0, Date.parse(event.completed_at) - Date.parse(event.started_at))
       }, 0)
       const approvalEntry = approvalEntries.find((item) => item.approval.approval_status === "PENDING") ?? approvalEntries[0]
       const approval = approvalEntry?.approval
+      const approvalDevices = approval
+        ? [...names.entries()].filter(([deviceId]) => approval.reason.includes(deviceId))
+        : []
+      const approvalDescription = approvalDevices.reduce(
+        (description, [deviceId, hostname]) => description.replaceAll(deviceId, hostname),
+        approval?.reason ?? "",
+      )
       return {
         source_message_id: task.source_message_id,
         response_message_id: response?.id ?? "",
@@ -92,9 +114,11 @@ export function useChatMessages() {
           id: approval.id,
           operation_id: approvalEntry.operationId,
           title: "Phê duyệt thay đổi cấu hình",
-          description: approval.reason,
+          description: approvalDescription,
           risk_level: approval.risk_level,
-          devices: [approval.operation_device_id],
+          devices: approvalDevices.length
+            ? approvalDevices.map(([, hostname]) => hostname)
+            : [approval.operation_device_id],
           commands: approval.commands_snapshot,
           status: approval.approval_status,
         } : undefined,
@@ -158,9 +182,10 @@ export function useChatMessages() {
       const preview = snapshot.previews.find(
         (item) => item.source_message_id === sourceMessageId,
       )
-      const waitingApproval = preview?.activities.some(
-        (activity) => activity.status === "WAITING_APPROVAL",
-      )
+      // APPROVAL_REQUESTED là sự kiện lịch sử nên vẫn mang WAITING_APPROVAL
+      // sau khi người dùng đã quyết định. Chỉ dừng polling theo trạng thái
+      // approval hiện tại để workflow có thể tiếp tục ngay sau phê duyệt.
+      const waitingApproval = preview?.approval?.status === "PENDING"
       const analysisFailed = preview?.activities.some(
         (activity) =>
           activity.title === activityTitle.ANALYSIS_COMPLETED &&

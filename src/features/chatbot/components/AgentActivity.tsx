@@ -33,14 +33,15 @@ function ActivityRow({ activity }: { activity: AgentActivityItem }) {
 /** Timeline thu gọn mô tả những gì các agent đã làm cho một user message. */
 export function AgentActivity({ task }: { task: ChatTaskPreview }) {
   const [open, setOpen] = useState(true)
-  const [now, setNow] = useState(Date.now())
-  const waitingApproval = task.activities.some(
-    (item) => item.status === "WAITING_APPROVAL",
-  )
-  const workflowFailed = task.activities.some(
-    (item) => item.status === "FAILED",
-  )
-  const running = !task.response_message_id && !waitingApproval && !workflowFailed
+  const [now, setNow] = useState<number | null>(null)
+  const waitingApproval = task.approval?.status === "PENDING"
+  const workflowCompleted = [
+    "SUCCESS",
+    "PARTIAL_SUCCESS",
+    "FAILED",
+    "REJECTED",
+  ].includes(task.task_status)
+  const running = !workflowCompleted && !waitingApproval
 
   useEffect(() => {
     if (!running) return
@@ -49,8 +50,9 @@ export function AgentActivity({ task }: { task: ChatTaskPreview }) {
   }, [running])
 
   const latestStartedAt = task.activities.at(-1)?.started_at ?? task.started_at
+  const latestStartedAtMs = Date.parse(latestStartedAt)
   const liveDuration = running
-    ? task.active_duration_ms + Math.max(0, now - Date.parse(latestStartedAt))
+    ? task.active_duration_ms + Math.max(0, (now ?? latestStartedAtMs) - latestStartedAtMs)
     : task.active_duration_ms
   const duration = elapsedLabel(liveDuration)
 
