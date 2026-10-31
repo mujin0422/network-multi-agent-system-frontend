@@ -17,4 +17,8 @@ export const DASHBOARD_STATUS_LABELS: Record<DashboardStatus, string> = {
   PENDING: "Pending",
   RUNNING: "Running",
   SUCCESS: "Success",
+  PARTIAL_SUCCESS: "Partial",
+  FAILED: "Failed",
+  REJECTED: "Rejected",
+  WAITING_APPROVAL: "Approval",
 }

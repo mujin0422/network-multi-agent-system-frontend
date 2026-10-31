@@ -1,1 +1,1 @@
-export type ChartBar = { label: string; height: number }
+export type ChartBar = { label: string; height: number; value?: number }
