@@ -3,7 +3,7 @@ export { authApi } from "./auth.api"
 export * from "./contracts"
 export { conversationsApi } from "./conversation.api"
 export { approvalsApi, tasksApi } from "./execution.api"
-export { rolesApi, usersApi } from "./identity.api"
+export { accessControlApi, rolesApi, usersApi } from "./identity.api"
 export { brandsApi, categoriesApi, credentialsApi, devicesApi } from "./inventory.api"
 export {
   clearTokens,

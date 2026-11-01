@@ -36,6 +36,15 @@ export type Role = {
 }
 export type RoleCreate = { name: string; description?: string | null }
 export type RoleUpdate = Partial<RoleCreate>
+export type ManagementFunction = { id: string; name: string; description: string | null }
+export type PermissionAction = { id: string; name: string; description: string | null }
+export type Permission = { id: string; function_id: string; action_id: string }
+export type RolePermission = { role_id: string; permission_id: string }
+export type PermissionCatalog = {
+  functions: ManagementFunction[]
+  actions: PermissionAction[]
+  permissions: Permission[]
+}
 
 export type Brand = { id: string; name: string; supported_drivers: string[] }
 export type BrandCreate = { name: string; supported_drivers?: string[] }
