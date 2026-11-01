@@ -1,4 +1,4 @@
-import { Activity, CircleHelp, Terminal, TriangleAlert } from "lucide-react"
+import { Activity, ScrollText, ShieldX, TriangleAlert } from "lucide-react"
 import {
   PageLayoutOverview,
   PageLayoutStat,
@@ -11,36 +11,36 @@ export function AuditLogStats({
     total: number
     successful: number
     failed: number
-    unknown: number
+    denied: number
   }
 }) {
   return (
     <PageLayoutOverview>
       <PageLayoutStat
-        label="Commands"
+        label="Events"
         value={summary.total}
-        description="Mock audit records"
-        icon={<Terminal />}
+        description="Recorded audit events"
+        icon={<ScrollText />}
       />
       <PageLayoutStat
         label="Successful"
         value={summary.successful}
-        description="Completed commands"
+        description="Successful events"
         icon={<Activity />}
         iconClassName="bg-emerald-500/10 text-emerald-400"
       />
       <PageLayoutStat
         label="Failed"
         value={summary.failed}
-        description="Confirmed failures"
+        description="Failed events"
         icon={<TriangleAlert />}
         iconClassName="bg-red-500/10 text-red-400"
       />
       <PageLayoutStat
-        label="Unknown"
-        value={summary.unknown}
-        description="Outcome requires review"
-        icon={<CircleHelp />}
+        label="Denied"
+        value={summary.denied}
+        description="Rejected actions"
+        icon={<ShieldX />}
         iconClassName="bg-amber-500/10 text-amber-400"
       />
     </PageLayoutOverview>

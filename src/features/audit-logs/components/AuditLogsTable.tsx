@@ -20,23 +20,23 @@ import {
 } from "@/components/shared/PageLayout"
 import { Button } from "@/components/ui/button"
 import {
-  AUDIT_ACTION_PHASE_LABELS,
-  AUDIT_ACTION_TYPE_LABELS,
+  AUDIT_ACTOR_TYPE_LABELS,
+  AUDIT_ACTOR_TYPE_OPTIONS,
   AUDIT_STATUS_LABELS,
   AUDIT_STATUS_OPTIONS,
 } from "../constants/audit-logs.constants"
 import { useAuditLogsData } from "../hooks/use-audit-logs-data"
-import type { DeviceActionLog } from "../types/device-action-log.type"
+import type { AuditLog } from "../types/audit-log.type"
 import { AuditLogForm } from "./AuditLogForm"
 import { AuditLogStats } from "./AuditLogStats"
 
-/** Màn hình tra cứu, lọc và xem chi tiết lịch sử lệnh đã chạy trên thiết bị. */
+/** Màn hình tra cứu, lọc và xem chi tiết lịch sử hoạt động của toàn hệ thống. */
 export function AuditLogsTable() {
   const { rows, summary, loading, error, exportCsv } = useAuditLogsData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
-    log: DeviceActionLog | null
+    log: AuditLog | null
   }>({ open: false, mode: "view", log: null })
   const headerAction = (
     <Button variant="outline" size="sm" disabled={!rows.length} onClick={exportCsv}>
@@ -49,7 +49,7 @@ export function AuditLogsTable() {
       <PageLayout>
         <PageLayoutHeader
           title="Audit Logs"
-          description="Immutable trail of commands that were actually sent to network devices."
+          description="Immutable trail of security, administrative, system, and agent events."
         >
           {headerAction}
         </PageLayoutHeader>
@@ -68,15 +68,31 @@ export function AuditLogsTable() {
             getRowId={(log) => log.id}
             filters={[
               {
-                id: "result",
-                label: "result",
-                accessorKey: "action_log_status",
-                allLabel: "All results",
+                id: "status",
+                label: "status",
+                accessorKey: "event_status",
+                allLabel: "All statuses",
                 options: AUDIT_STATUS_OPTIONS,
+              },
+              {
+                id: "actorType",
+                label: "actor type",
+                accessorKey: "actor_type",
+                allLabel: "All actor types",
+                options: AUDIT_ACTOR_TYPE_OPTIONS,
               },
             ]}
             searchValue={(log) =>
-              `${log.command} ${log.device_id} ${log.task_id} ${log.execution_id}`
+              [
+                log.action,
+                log.actor_display_name,
+                log.actor_user_id,
+                log.actor_type,
+                log.resource_type,
+                log.resource_id,
+                log.summary,
+                log.request_id,
+              ].filter(Boolean).join(" ")
             }
             columns={[
               {
@@ -85,56 +101,57 @@ export function AuditLogsTable() {
                 headerClassName: "pl-4",
                 className: "pl-4 type-caption text-muted-foreground",
                 cell: (log) =>
-                  new Date(log.executed_at).toLocaleString("vi-VN"),
+                  new Date(log.occurred_at).toLocaleString("vi-VN"),
               },
               {
-                id: "device",
-                header: "Device",
-                accessorKey: "device_id",
-                className: "font-mono type-caption",
-              },
-              {
-                id: "command",
-                header: "Command",
-                className: "max-w-[260px]",
+                id: "actor",
+                header: "Actor",
                 cell: (log) => (
                   <>
-                    <code className="block truncate rounded bg-background px-2 py-2 type-caption text-blue-300">
-                      {log.command}
-                    </code>
+                    <p className="type-body-sm font-medium">
+                      {log.actor_display_name ?? "System"}
+                    </p>
                     <p className="mt-1 type-caption text-muted-foreground">
-                      {AUDIT_ACTION_TYPE_LABELS[log.action_type]} ·{" "}
-                      {AUDIT_ACTION_PHASE_LABELS[log.action_phase]}
+                      {AUDIT_ACTOR_TYPE_LABELS[log.actor_type]}
+                      {log.actor_user_id ? ` · ${log.actor_user_id}` : ""}
                     </p>
-                    {log.error_message && (
-                      <p className="mt-1 truncate type-caption text-red-400">
-                        {log.error_message}
-                      </p>
-                    )}
                   </>
                 ),
               },
               {
-                id: "trace",
-                header: "Task trace",
+                id: "action",
+                header: "Action",
+                className: "max-w-[280px]",
                 cell: (log) => (
                   <>
-                    <p className="font-mono type-caption text-muted-foreground">
-                      {log.task_id}
-                    </p>
-                    <p className="mt-1 font-mono type-micro text-muted-foreground/60">
-                      {log.execution_id}
+                    <code className="block truncate type-caption text-blue-300">
+                      {log.action}
+                    </code>
+                    <p className="mt-1 truncate type-caption text-muted-foreground">
+                      {log.summary ?? "No summary provided"}
                     </p>
                   </>
                 ),
               },
               {
-                id: "result",
-                header: "Result",
+                id: "resource",
+                header: "Resource",
+                cell: (log) => (
+                  <>
+                    <p className="type-body-sm">{log.resource_type}</p>
+                    <p className="mt-1 max-w-[220px] truncate font-mono type-caption text-muted-foreground">
+                      {log.resource_id ?? "—"}
+                    </p>
+                  </>
+                ),
+              },
+              {
+                id: "status",
+                header: "Status",
                 cell: (log) => (
                   <StatusBadge
-                    value={log.action_log_status}
-                    label={AUDIT_STATUS_LABELS[log.action_log_status]}
+                    value={log.event_status}
+                    label={AUDIT_STATUS_LABELS[log.event_status]}
                   />
                 ),
               },
@@ -152,13 +169,13 @@ export function AuditLogsTable() {
           >
             <DataTablePanel>
               <DataTableToolbar>
-                <DataTableSearch placeholder="Search command, device, task ID..." />
+                <DataTableSearch placeholder="Search actor, action, resource, request ID..." />
                 <DataTableToolbarActions>
                   <DataTableFilters />
                 </DataTableToolbarActions>
               </DataTableToolbar>
               <DataTableContent />
-              <DataTablePagination itemLabel="logs" />
+              <DataTablePagination itemLabel="events" />
             </DataTablePanel>
           </DataTable>
         </PageLayoutContent>

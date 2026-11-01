@@ -13,6 +13,7 @@ export function StatusBadge({ value, label }: StatusBadgeProps) {
       ? STATUS_TONES.success
       : normalized.includes("FAIL") ||
           normalized === "DISABLED" ||
+          normalized === "DENIED" ||
           normalized === "REJECTED" ||
           normalized === "WRITE"
         ? STATUS_TONES.danger
