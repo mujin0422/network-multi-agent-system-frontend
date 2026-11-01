@@ -33,8 +33,11 @@ const activityTitle: Record<TaskActivityEvent["event_type"], string> = {
   TASK_FAILED: "Task thất bại",
 }
 
-export function useChatMessages() {
-  const [input, setInput] = useState("")
+type ChatOptions = { benchmarkRunId?: string; initialPrompt?: string }
+
+export function useChatMessages(options: ChatOptions = {}) {
+  const { benchmarkRunId, initialPrompt } = options
+  const [input, setInput] = useState(initialPrompt ?? "")
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [taskPreviews, setTaskPreviews] = useState<ChatTaskPreview[]>([])
   const [conversations, setConversations] = useState<Conversation[]>([draftConversation()])
@@ -43,6 +46,7 @@ export function useChatMessages() {
   const [error, setError] = useState<string | null>(null)
   const pollingGeneration = useRef(0)
   const deviceNames = useRef<Map<string, string> | null>(null)
+  const benchmarkStarted = useRef(false)
 
   const loadTaskPreviews = useCallback(async (conversationMessages: ChatMessage[]) => {
     const [allTasks, names] = await Promise.all([
@@ -141,10 +145,15 @@ export function useChatMessages() {
     try {
       const me = await authApi.me()
       const rows = await conversationsApi.list(me.id)
-      setConversations(rows.length ? rows : [draftConversation()])
-      setActiveConversationIdState((current) => current !== DRAFT_ID && rows.some((row) => row.id === current) ? current : rows[0]?.id ?? DRAFT_ID)
+      const shouldKeepBenchmarkDraft = Boolean(benchmarkRunId) && !benchmarkStarted.current
+      const visibleRows = shouldKeepBenchmarkDraft ? [draftConversation(), ...rows] : rows.length ? rows : [draftConversation()]
+      setConversations(visibleRows)
+      setActiveConversationIdState((current) => {
+        if (shouldKeepBenchmarkDraft) return DRAFT_ID
+        return current !== DRAFT_ID && rows.some((row) => row.id === current) ? current : rows[0]?.id ?? DRAFT_ID
+      })
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải danh sách hội thoại") }
-  }, [])
+  }, [benchmarkRunId])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ state với API khi mount.
   useEffect(() => { void reloadConversations() }, [reloadConversations])
@@ -210,7 +219,8 @@ export function useChatMessages() {
       let conversationId = activeConversationId
       let sourceMessage: ChatMessage
       if (conversationId === DRAFT_ID) {
-        const started = await conversationsApi.start(content)
+        const started = await conversationsApi.start(content, benchmarkRunId)
+        benchmarkStarted.current = true
         conversationId = started.conversation.id
         sourceMessage = started.message
         setActiveConversationIdState(conversationId)
