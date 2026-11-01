@@ -23,6 +23,9 @@ export function AccessControlTable() {
     roles,
     roleGrants,
     hasChanges,
+    loading,
+    saving,
+    error,
     selectRole,
     saveChanges,
     toggle,
@@ -57,6 +60,16 @@ export function AccessControlTable() {
           functions={functions.length}
         />
         <PageLayoutContent className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+          {error && (
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive lg:col-span-2">
+              {error}
+            </div>
+          )}
+          {loading && (
+            <p className="text-xs text-muted-foreground lg:col-span-2">
+              Loading access-control data...
+            </p>
+          )}
           <RoleSelector
             roles={roles}
             activeRoleId={activeRoleId}
@@ -69,6 +82,7 @@ export function AccessControlTable() {
             permissions={permissions}
             grants={roleGrants}
             hasChanges={hasChanges}
+            saving={saving}
             onToggle={toggle}
             onSave={saveChanges}
           />}
@@ -78,11 +92,9 @@ export function AccessControlTable() {
         open={form.open}
         mode={form.mode}
         role={form.role}
-        grants={roleGrants}
         onSave={(payload) => form.mode === "create" ? createRole(payload as Parameters<typeof createRole>[0]) : updateRole(form.role!.id, payload)}
         onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
         onModeChange={(mode) => setForm((current) => ({ ...current, mode }))}
-        onToggle={toggle}
       />
     </>
   )

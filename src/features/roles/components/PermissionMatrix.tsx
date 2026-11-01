@@ -19,6 +19,7 @@ export function PermissionMatrix({
   permissions,
   grants,
   hasChanges,
+  saving,
   onToggle,
   onSave,
 }: {
@@ -28,6 +29,7 @@ export function PermissionMatrix({
   permissions: Permission[]
   grants: Set<string>
   hasChanges: boolean
+  saving: boolean
   onToggle: (functionId: string, actionId: string) => void
   onSave: () => void
 }) {
@@ -54,12 +56,12 @@ export function PermissionMatrix({
           const permission = permissions.find(
             (item) =>
               item.function_id === fn.id && item.action_id === action.id,
-          )!
+          )
           return (
             <Switch
               size="sm"
-              checked={grants.has(permission.id)}
-              disabled={role.id === "role-0001"}
+              checked={permission ? grants.has(permission.id) : false}
+              disabled={!permission || role.name.toLowerCase() === "super admin"}
               onCheckedChange={() => onToggle(fn.id, action.id)}
               aria-label={`${fn.name} ${action.name}`}
             />
@@ -80,14 +82,14 @@ export function PermissionMatrix({
           <div className="space-y-1">
             <CardTitle className="text-sm">{role.name} permissions</CardTitle>
             <p className="type-caption text-muted-foreground">
-              {role.id === "role-0001"
+              {role.name.toLowerCase() === "super admin"
                 ? "System role has full access and cannot be modified."
                 : "Edit permissions directly, then save your changes."}
             </p>
           </div>
-          {role.id !== "role-0001" && (
-            <Button size="sm" disabled={!hasChanges} onClick={onSave}>
-              Save changes
+          {role.name.toLowerCase() !== "super admin" && (
+            <Button size="sm" disabled={!hasChanges || saving} onClick={onSave}>
+              {saving ? "Saving..." : "Save changes"}
             </Button>
           )}
         </div>

@@ -38,11 +38,16 @@ export function MessageList({
     )
   }
 
+  const orderedMessages = [...messages].sort(
+    (left, right) =>
+      Date.parse(left.created_at) - Date.parse(right.created_at),
+  )
+
   return (
     <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto scroll-smooth">
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-7 px-4 py-8 sm:px-6 sm:py-10">
         <TooltipProvider delay={300}>
-          {messages.map((item) => {
+          {orderedMessages.map((item) => {
             const taskPreview = taskPreviews.find(
               (preview) =>
                 item.sender_by === "AGENT" &&
@@ -86,8 +91,8 @@ export function MessageList({
                       <span
                         className={
                           taskPreview
-                            ? "mt-4 block text-sm leading-7 text-foreground"
-                            : "text-sm leading-7 text-foreground"
+                            ? "mt-4 block whitespace-pre-wrap text-sm leading-7 text-foreground"
+                            : "whitespace-pre-wrap text-sm leading-7 text-foreground"
                         }
                       >
                         {item.message}

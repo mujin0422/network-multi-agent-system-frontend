@@ -13,15 +13,22 @@ export function ApprovalRequestCard({
   approval: ApprovalRequest
   onDecision: (approvalId: string, decision: "APPROVED" | "REJECTED") => Promise<void>
 }) {
-  const [decision, setDecision] = useState(approval.status)
+  const [localDecision, setLocalDecision] = useState<
+    "APPROVED" | "REJECTED" | null
+  >(null)
   const [submitting, setSubmitting] = useState(false)
+  const decision = localDecision ?? approval.status
   const decided = decision !== "PENDING"
 
   async function decide(nextDecision: "APPROVED" | "REJECTED") {
+    // Hiển thị quyết định ngay trong khi workflow tiếp tục polling ở nền.
+    setLocalDecision(nextDecision)
     setSubmitting(true)
     try {
       await onDecision(approval.id, nextDecision)
-      setDecision(nextDecision)
+    } catch (error) {
+      setLocalDecision(null)
+      throw error
     } finally {
       setSubmitting(false)
     }

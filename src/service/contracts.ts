@@ -36,6 +36,15 @@ export type Role = {
 }
 export type RoleCreate = { name: string; description?: string | null }
 export type RoleUpdate = Partial<RoleCreate>
+export type ManagementFunction = { id: string; name: string; description: string | null }
+export type PermissionAction = { id: string; name: string; description: string | null }
+export type Permission = { id: string; function_id: string; action_id: string }
+export type RolePermission = { role_id: string; permission_id: string }
+export type PermissionCatalog = {
+  functions: ManagementFunction[]
+  actions: PermissionAction[]
+  permissions: Permission[]
+}
 
 export type Brand = { id: string; name: string; supported_drivers: string[] }
 export type BrandCreate = { name: string; supported_drivers?: string[] }
@@ -215,4 +224,22 @@ export type OperationDeviceApproval = {
   decided_at: string | null
   expires_at: string | null
   created_at: string
+}
+
+export type DeviceActionLog = {
+  id: string
+  task_id: string
+  operation_id: string
+  operation_device_id: string
+  execution_id: string
+  device_id: string
+  rollback_of_action_id: string | null
+  action_type: "READ" | "WRITE"
+  action_phase: "READ" | "PRE_CHECK" | "APPLY" | "POST_CHECK" | "ROLLBACK" | "ROLLBACK_VERIFY"
+  sequence_number: number
+  command: string
+  result: string | null
+  action_log_status: "SUCCESS" | "FAILED" | "UNKNOWN"
+  error_message: string | null
+  executed_at: string
 }

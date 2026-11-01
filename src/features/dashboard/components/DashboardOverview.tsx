@@ -1,4 +1,5 @@
 import { ChevronDown, RefreshCw } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -17,11 +18,15 @@ import { useDashboardData } from "../hooks/use-dashboard-data"
 import { ActivityList } from "./ActivityList"
 import { BarChart } from "./BarChart"
 import { StatusBadge } from "./StatusBadge"
+import { TaskAnalyticsCharts } from "./TaskAnalyticsCharts"
 
 /** Màn hình tổng quan hệ thống với KPI, biểu đồ và hoạt động gần đây. */
 export function DashboardOverview() {
-  const { activities, deviceActions, deviceBars, metrics, taskBars } =
-    useDashboardData()
+  const navigate = useNavigate()
+  const {
+    activities, deviceActions, deviceBars, metrics, taskBars,
+    taskOutcomes, executionTimes, successRate, loading, error, reload,
+  } = useDashboardData()
   return (
     <PageLayout>
       <PageLayoutHeader
@@ -31,13 +36,14 @@ export function DashboardOverview() {
         <Button
           variant="outline"
           className="bg-card type-caption"
-          onClick={() => window.location.reload()}
+          disabled={loading}
+          onClick={() => void reload()}
         >
-          <RefreshCw className="size-4" />
+          <RefreshCw className={cn("size-4", loading && "animate-spin")} />
           Refresh
         </Button>
       </PageLayoutHeader>
-      <PageLayoutOverview className="grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <PageLayoutOverview className="grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {metrics.map((metric) => {
           const Icon = metric.icon
           return (
@@ -59,8 +65,13 @@ export function DashboardOverview() {
           )
         })}
       </PageLayoutOverview>
-      <PageLayoutContent className="space-y-3">
-        <section className="grid gap-3 xl:grid-cols-2">
+      <PageLayoutContent className="space-y-4">
+        {error && (
+          <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+            {error}
+          </div>
+        )}
+        <section className="grid gap-4 xl:grid-cols-2">
           <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
             <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
@@ -72,21 +83,26 @@ export function DashboardOverview() {
                 </p>
               </div>
               <StatusBadge tone="success">
-                {`96.4% ${DASHBOARD_STATUS_LABELS.SUCCESS}`}
+                {`${successRate}% ${DASHBOARD_STATUS_LABELS.SUCCESS}`}
               </StatusBadge>
             </CardHeader>
             <CardContent className="mt-4 px-4">
-              <BarChart bars={taskBars} color="green" />
+              <BarChart
+                bars={taskBars}
+                color="green"
+                orientation="horizontal"
+                valueLabel="tasks"
+              />
             </CardContent>
           </Card>
           <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
             <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
                 <CardTitle className="type-caption text-foreground">
-                  Device Activity Overview
+                  Device Inventory by Brand
                 </CardTitle>
                 <p className="type-caption text-muted-foreground">
-                  Successful command executions by device
+                  Managed devices grouped by vendor
                 </p>
               </div>
               <Button
@@ -94,16 +110,20 @@ export function DashboardOverview() {
                 size="sm"
                 className="bg-transparent type-caption text-muted-foreground"
               >
-                Last 7 days
+                Current
                 <ChevronDown className="size-3" />
               </Button>
             </CardHeader>
             <CardContent className="mt-4 px-4">
-              <BarChart bars={deviceBars} color="blue" />
+              <BarChart bars={deviceBars} color="blue" valueLabel="devices" />
             </CardContent>
           </Card>
         </section>
-        <section className="grid gap-3 xl:grid-cols-2">
+        <TaskAnalyticsCharts
+          outcomes={taskOutcomes}
+          executionTimes={executionTimes}
+        />
+        <section className="grid gap-4 xl:grid-cols-2">
           <Card className="min-h-78 gap-1 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
             <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
@@ -118,6 +138,7 @@ export function DashboardOverview() {
                 variant="outline"
                 size="sm"
                 className="bg-transparent type-caption"
+                onClick={() => navigate("/tasks")}
               >
                 View all
               </Button>
@@ -130,18 +151,19 @@ export function DashboardOverview() {
             <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
                 <CardTitle className="type-caption text-foreground">
-                  Recent Device Actions
+                  Recent Operations
                 </CardTitle>
                 <p className="type-caption text-muted-foreground">
-                  Commands sent to managed devices
+                  Latest operations from automation tasks
                 </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
                 className="bg-transparent type-caption"
+                onClick={() => navigate("/tasks")}
               >
-                Audit logs
+                Tasks
               </Button>
             </CardHeader>
             <CardContent className="px-4">
