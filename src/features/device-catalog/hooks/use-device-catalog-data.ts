@@ -3,10 +3,8 @@ import { brandsApi, categoriesApi, devicesApi } from "@/service"
 import type { BrandCreate, BrandUpdate } from "@/service"
 import type { Brand } from "../types/brand.type"
 import type { Category } from "../types/category.type"
-import type { CatalogEntity } from "../types/catalog-entity.type"
 
 export function useDeviceCatalogData() {
-  const [entity, setEntity] = useState<CatalogEntity>("brand")
   const [brands, setBrands] = useState<Brand[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
@@ -29,5 +27,5 @@ export function useDeviceCatalogData() {
     drivers: new Set(brands.flatMap((brand) => brand.supported_drivers)).size,
     assignedDevices: categories.reduce((total, category) => total + category.device_count, 0),
   }), [brands, categories])
-  return { entity, brands, categories, summary, loading, error, reload, createBrand, updateBrand, selectEntity: setEntity }
+  return { brands, categories, summary, loading, error, reload, createBrand, updateBrand }
 }
