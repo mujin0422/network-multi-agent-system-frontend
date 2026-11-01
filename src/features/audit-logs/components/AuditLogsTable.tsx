@@ -32,14 +32,14 @@ import { AuditLogStats } from "./AuditLogStats"
 
 /** Màn hình tra cứu, lọc và xem chi tiết lịch sử lệnh đã chạy trên thiết bị. */
 export function AuditLogsTable() {
-  const { rows, summary } = useAuditLogsData()
+  const { rows, summary, loading, error, exportCsv } = useAuditLogsData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
     log: DeviceActionLog | null
   }>({ open: false, mode: "view", log: null })
   const headerAction = (
-    <Button variant="outline" size="sm">
+    <Button variant="outline" size="sm" disabled={!rows.length} onClick={exportCsv}>
       <Download />
       Export CSV
     </Button>
@@ -55,6 +55,14 @@ export function AuditLogsTable() {
         </PageLayoutHeader>
         <AuditLogStats summary={summary} />
         <PageLayoutContent>
+          {error && (
+            <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+              {error}
+            </div>
+          )}
+          {loading && (
+            <p className="mb-4 text-xs text-muted-foreground">Loading audit logs...</p>
+          )}
           <DataTable
             data={rows}
             getRowId={(log) => log.id}
