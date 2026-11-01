@@ -63,9 +63,15 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError<ApiErrorPayload>) => {
     const request = error.config as RetryableRequest | undefined
-    const isAuthenticationEndpoint = request?.url?.startsWith("/auth/")
+    const isSessionEndpoint =
+      request?.url === "/auth/login" || request?.url === "/auth/refresh"
 
-    if (error.response?.status === 401 && request && !request._retry && !isAuthenticationEndpoint) {
+    if (error.response?.status === 401 && request && !isSessionEndpoint) {
+      if (request._retry) {
+        clearTokens()
+        return Promise.reject(toApiError(error))
+      }
+
       const refreshToken = getRefreshToken()
       if (!refreshToken) {
         clearTokens()

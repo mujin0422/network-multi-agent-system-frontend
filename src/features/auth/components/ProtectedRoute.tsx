@@ -1,13 +1,20 @@
+import { useSyncExternalStore } from "react"
 import { Navigate, Outlet, useLocation } from "react-router-dom"
 
+import { hasStoredTokens, subscribeToTokenChanges } from "@/service/token-storage"
+
 import { LOGIN_PATH } from "../constants/auth.constants"
-import { hasAuthenticatedSession } from "../utils/auth.util"
 
 /** Chặn các route nội bộ khi người dùng chưa có phiên đăng nhập. */
 export function ProtectedRoute() {
   const location = useLocation()
+  const hasAuthenticatedSession = useSyncExternalStore(
+    subscribeToTokenChanges,
+    hasStoredTokens,
+    () => false,
+  )
 
-  if (!hasAuthenticatedSession()) {
+  if (!hasAuthenticatedSession) {
     return (
       <Navigate
         to={LOGIN_PATH}
