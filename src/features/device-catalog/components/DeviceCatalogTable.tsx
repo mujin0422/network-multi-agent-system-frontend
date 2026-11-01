@@ -12,13 +12,12 @@ import type { CatalogRecord } from "../types/catalog-record.type"
 import { entityLabel } from "../utils/device-catalog.util"
 import { DeviceCatalogForm } from "./DeviceCatalogForm"
 import { DeviceCatalogStats } from "./DeviceCatalogStats"
-import { DeviceCatalogTabs } from "./DeviceCatalogTabs"
 import { BrandTable } from "./BrandTable"
 import { CategoryTable } from "./CategoryTable"
 
 /** Màn hình quản lý master data brand và category cho inventory. */
-export function DeviceCatalogTable() {
-  const { entity, brands, categories, summary, selectEntity, createBrand, updateBrand } =
+export function DeviceCatalogTable({ entity }: { entity: CatalogEntity }) {
+  const { brands, categories, summary, createBrand, updateBrand } =
     useDeviceCatalogData()
   const [form, setForm] = useState<{
     open: boolean
@@ -51,17 +50,13 @@ export function DeviceCatalogTable() {
               brands={brands}
               onView={(brand) => openForm("view", "brand", brand)}
               onEdit={(brand) => openForm("edit", "brand", brand)}
-            >
-              <DeviceCatalogTabs entity={entity} onChange={selectEntity} />
-            </BrandTable>
+            />
           ) : (
             <CategoryTable
               categories={categories}
               onView={(category) => openForm("view", "category", category)}
               onEdit={undefined}
-            >
-              <DeviceCatalogTabs entity={entity} onChange={selectEntity} />
-            </CategoryTable>
+            />
           )}
         </PageLayoutContent>
       </PageLayout>

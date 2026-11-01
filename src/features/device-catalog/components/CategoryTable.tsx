@@ -1,4 +1,3 @@
-import type { ReactNode } from "react"
 import {
   DataTable,
   DataTableContent,
@@ -12,12 +11,10 @@ import type { Category } from "../types/category.type"
 
 export function CategoryTable({
   categories,
-  children,
   onView,
   onEdit,
 }: {
   categories: Category[]
-  children?: ReactNode
   onView: (category: Category) => void
   onEdit?: (category: Category) => void
 }) {
@@ -70,7 +67,6 @@ export function CategoryTable({
       ]}
     >
       <DataTablePanel>
-        {children}
         <DataTableToolbar>
           <DataTableSearch placeholder="Search category or description..." />
         </DataTableToolbar>

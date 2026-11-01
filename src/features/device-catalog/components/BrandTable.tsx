@@ -1,4 +1,3 @@
-import type { ReactNode } from "react"
 import {
   DataTable,
   DataTableContent,
@@ -12,12 +11,10 @@ import type { Brand } from "../types/brand.type"
 
 export function BrandTable({
   brands,
-  children,
   onView,
   onEdit,
 }: {
   brands: Brand[]
-  children?: ReactNode
   onView: (brand: Brand) => void
   onEdit: (brand: Brand) => void
 }) {
@@ -81,7 +78,6 @@ export function BrandTable({
       ]}
     >
       <DataTablePanel>
-        {children}
         <DataTableToolbar>
           <DataTableSearch placeholder="Search brand or Netmiko driver..." />
         </DataTableToolbar>
