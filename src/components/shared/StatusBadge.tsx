@@ -4,7 +4,10 @@ import type { StatusBadgeProps } from "@/types/components"
 
 /** Hiển thị badge theo giá trị trạng thái gốc và nhãn do feature cung cấp. */
 export function StatusBadge({ value, label }: StatusBadgeProps) {
-  const normalized = value.toUpperCase()
+  // Dữ liệu từ API có thể thiếu status khi backend và frontend chưa đồng bộ
+  // phiên bản. Badge phải suy giảm an toàn thay vì làm sập toàn bộ route.
+  const normalized = value?.trim().toUpperCase() ?? ""
+  const displayLabel = label ?? (value ? value.replaceAll("_", " ") : "Unknown")
   const tone =
     normalized.includes("SUCCESS") ||
     normalized === "ACTIVE" ||
@@ -31,7 +34,7 @@ export function StatusBadge({ value, label }: StatusBadgeProps) {
       )}
     >
       <span className="size-1 shrink-0 rounded-full bg-current" aria-hidden="true" />
-      {label ?? value.replaceAll("_", " ")}
+      {displayLabel}
     </span>
   )
 }

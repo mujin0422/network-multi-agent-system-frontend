@@ -7,6 +7,24 @@ function csvCell(value: unknown) {
   return `"${text.replaceAll('"', '""')}"`
 }
 
+function isAuditLog(value: unknown): value is AuditLog {
+  if (!value || typeof value !== "object") return false
+
+  const log = value as Partial<AuditLog>
+  return (
+    typeof log.id === "string" &&
+    typeof log.action === "string" &&
+    typeof log.resource_type === "string" &&
+    typeof log.occurred_at === "string" &&
+    (log.actor_type === "USER" ||
+      log.actor_type === "SYSTEM" ||
+      log.actor_type === "AGENT") &&
+    (log.event_status === "SUCCESS" ||
+      log.event_status === "FAILED" ||
+      log.event_status === "DENIED")
+  )
+}
+
 export function useAuditLogsData() {
   const [rows, setRows] = useState<AuditLog[]>([])
   const [loading, setLoading] = useState(true)
@@ -16,8 +34,15 @@ export function useAuditLogsData() {
     setLoading(true)
     setError(null)
     try {
-      setRows(await auditLogsApi.list())
+      const payload: unknown = await auditLogsApi.list()
+      if (!Array.isArray(payload) || !payload.every(isAuditLog)) {
+        throw new Error(
+          "Dữ liệu Audit Logs không đúng định dạng. Hãy rebuild hoặc khởi động lại Backend để sử dụng System Audit API mới.",
+        )
+      }
+      setRows(payload)
     } catch (reason) {
+      setRows([])
       setError(reason instanceof Error ? reason.message : "Không thể tải nhật ký hệ thống")
     } finally {
       setLoading(false)

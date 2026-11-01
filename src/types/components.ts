@@ -37,7 +37,7 @@ export type FormComboboxProps = {
 }
 
 export type StatusBadgeProps = {
-  value: string
+  value?: string | null
   label?: string
 }
 
