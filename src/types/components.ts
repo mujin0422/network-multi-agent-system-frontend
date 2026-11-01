@@ -12,6 +12,7 @@ export type FeatureFormSheetProps = {
   onSubmit?: (formData: FormData) => void | Promise<void>
   canEdit?: boolean
   onEdit?: () => void
+  contentClassName?: string
 }
 
 export type FormFieldProps = {

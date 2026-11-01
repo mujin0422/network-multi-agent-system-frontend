@@ -142,6 +142,68 @@ export type Conversation = {
 export type ConversationDetail = Conversation & { messages: Message[] }
 export type ConversationStarted = { conversation: Conversation; message: Message }
 
+export type BenchmarkRunStatus = "PREPARING" | "READY" | "RUNNING" | "COMPLETED" | "FAILED" | "CLEANED"
+export type BenchmarkCheck = {
+  device: string
+  command: string
+  assertion: { contains: string }
+}
+export type BenchmarkAction = {
+  device: string
+  action: "interface_shutdown" | "interface_no_shutdown"
+  interface: string
+}
+export type BenchmarkRootCause = {
+  fault_type: string
+  device: string
+  interface?: string | null
+}
+export type BenchmarkScenarioCreate = {
+  scenario_key: string
+  version: string
+  name: string
+  description: string
+  topology: string
+  initial_message: string
+  preconditions: BenchmarkCheck[]
+  injection: BenchmarkAction[]
+  fault_verification: BenchmarkCheck[]
+  ground_truth: BenchmarkRootCause[]
+  evaluation_required_terms: string[]
+  cleanup: BenchmarkAction[]
+}
+export type BenchmarkScenario = {
+  id: string
+  scenario_key: string
+  version: string
+  name: string
+  description: string
+  topology: string
+  initial_message: string
+  is_active: boolean
+  created_at: string | null
+  last_updated_at: string | null
+}
+export type BenchmarkRun = {
+  id: string
+  scenario_id: string
+  scenario_version: string
+  scenario_name: string
+  status: BenchmarkRunStatus
+  started_by: string
+  initial_message: string
+  conversation_id: string | null
+  source_message_id: string | null
+  task_id: string | null
+  evaluation_id: string | null
+  evaluation_result: "PASS" | "FAIL" | null
+  cleanup_required: boolean
+  error_message: string | null
+  started_at: string
+  completed_at: string | null
+  cleaned_at: string | null
+}
+
 export type TaskStatus = "PENDING" | "PLANNING" | "RUNNING" | "SUCCESS" | "PARTIAL_SUCCESS" | "FAILED" | "REJECTED"
 export type TaskType = "UNCLASSIFIED" | "INFORMATION_RETRIEVAL" | "DIAGNOSIS" | "CONFIGURATION" | "REMEDIATION" | "COMPOSITE"
 export type OperationStatus = "PENDING" | "WAITING_APPROVAL" | "RUNNING" | "SUCCESS" | "PARTIAL_SUCCESS" | "FAILED" | "REJECTED" | "SKIPPED"

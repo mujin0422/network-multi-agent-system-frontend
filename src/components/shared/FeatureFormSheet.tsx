@@ -20,6 +20,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet"
 import { FORM_COMBOBOX_DEFAULT_PLACEHOLDER } from "@/constants/components"
+import { cn } from "@/lib/utils"
 import type {
   FeatureFormSheetProps,
   FormComboboxProps,
@@ -40,6 +41,7 @@ export function FeatureFormSheet({
   onSubmit,
   canEdit,
   onEdit,
+  contentClassName,
 }: FeatureFormSheetProps) {
   const { t } = useTranslation()
   const [submitting, setSubmitting] = useState(false)
@@ -65,7 +67,7 @@ export function FeatureFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-lg">
+      <SheetContent className={cn("w-full sm:max-w-lg", contentClassName)}>
         <SheetHeader className="border-b">
           <SheetTitle>
             {modeLabel} {entityLabel}
@@ -73,7 +75,9 @@ export function FeatureFormSheet({
           <SheetDescription className="text-xs">{description}</SheetDescription>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">{children}</div>
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 [&_input]:text-xs! [&_input::placeholder]:text-xs [&_textarea]:text-xs! [&_textarea::placeholder]:text-xs">
+            {children}
+          </div>
           <SheetFooter className="border-t">
             {submitError && <p className="mr-auto text-xs text-destructive">{submitError}</p>}
             <div className="flex w-full justify-end gap-2">
