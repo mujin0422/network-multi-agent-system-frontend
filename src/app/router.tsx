@@ -6,6 +6,7 @@ import Login from "@/features/auth/page"
 import { ProtectedRoute } from "@/features/auth/components/ProtectedRoute"
 import AccessControl from "@/features/roles/page"
 import AuditLogs from "@/features/audit-logs/page"
+import Benchmarks from "@/features/benchmarks/page"
 import Chat from "@/features/chatbot/page"
 import Credentials from "@/features/credentials/page"
 import Dashboard from "@/features/dashboard/page"
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
           { path: "credentials", element: <Credentials /> },
           { path: "device-catalog", element: <DeviceCatalog /> },
           { path: "audit-logs", element: <AuditLogs /> },
+          { path: "benchmarks", element: <Benchmarks /> },
           { path: "users", element: <Users /> },
           { path: "access-control", element: <AccessControl /> },
           { path: "settings/system", element: <SystemSettings /> },
