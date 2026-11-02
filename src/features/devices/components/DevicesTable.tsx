@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
@@ -25,6 +26,7 @@ import { DeviceStats } from "./DeviceStats"
 /** Màn hình quản lý, lọc và theo dõi trạng thái các thiết bị mạng. */
 export function DevicesTable() {
   const {
+    loading,
     rows,
     brands,
     categories,
@@ -58,6 +60,16 @@ export function DevicesTable() {
   )
   const auditTimestamp = (timestamp: string) =>
     new Date(timestamp).toLocaleString("vi-VN")
+
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title="Devices"
+        description="Inventory and live connectivity for every managed network device."
+        stats={4}
+      />
+    )
+  }
 
   return (
     <>

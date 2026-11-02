@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
@@ -45,6 +46,17 @@ export function AccessControlTable() {
       Create role
     </Button>
   )
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title="Access Control"
+        description="Role-based permissions across every management function."
+        stats={3}
+      variant="split"
+      />
+    )
+  }
+
   return (
     <>
       <PageLayout>
@@ -64,11 +76,6 @@ export function AccessControlTable() {
             <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive lg:col-span-2">
               {error}
             </div>
-          )}
-          {loading && (
-            <p className="text-xs text-muted-foreground lg:col-span-2">
-              Loading access-control data...
-            </p>
           )}
           <RoleSelector
             roles={roles}

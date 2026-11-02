@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
@@ -29,7 +30,7 @@ import { UserStats } from "./UserStats"
 
 /** Màn hình quản lý người dùng, vai trò và trạng thái tài khoản. */
 export function UsersTable() {
-  const { rows, roles, summary, roleName, createUser, updateUser } = useUsersData()
+  const { rows, roles, summary, roleName, createUser, updateUser, loading } = useUsersData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -42,6 +43,16 @@ export function UsersTable() {
       Invite user
     </Button>
   )
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title="Users"
+        description="Manage user identities, assigned roles, and account access."
+        stats={4}
+      />
+    )
+  }
+
   return (
     <>
       <PageLayout>

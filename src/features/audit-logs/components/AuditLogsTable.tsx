@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { Download } from "lucide-react"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
@@ -44,6 +45,16 @@ export function AuditLogsTable() {
       Export CSV
     </Button>
   )
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title="Audit Logs"
+        description="Immutable trail of security, administrative, system, and agent events."
+        stats={4}
+      />
+    )
+  }
+
   return (
     <>
       <PageLayout>
@@ -59,9 +70,6 @@ export function AuditLogsTable() {
             <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
               {error}
             </div>
-          )}
-          {loading && (
-            <p className="mb-4 text-xs text-muted-foreground">Loading audit logs...</p>
           )}
           <DataTable
             data={rows}
