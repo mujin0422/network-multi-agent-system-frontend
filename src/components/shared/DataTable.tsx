@@ -264,6 +264,9 @@ function DataTableFilter({ filterId, className }: DataTableFilterProps) {
   return (
     <Combobox
       items={options}
+      // Status filters without a search input should always show every option.
+      // Base UI otherwise retains its internal input query after selection.
+      filter={filter.searchable ? undefined : null}
       value={selectedValue}
       onValueChange={(value) => value && table.setFilterValue(filter.id, value)}
     >
@@ -476,6 +479,8 @@ function DataTablePagination({
               {t("common.rowsPerPage", { defaultValue: "Rows per page" })}
             </span>
             <Combobox
+              // Page-size choices are a fixed list, not a searchable combobox.
+              filter={null}
               value={String(table.pageSize)}
               onValueChange={(value) =>
                 value && table.setPageSize(Number(value))
