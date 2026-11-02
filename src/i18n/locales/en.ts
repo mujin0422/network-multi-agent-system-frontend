@@ -99,6 +99,12 @@ const en = {
     },
   },
   benchmarkRuns: {
+    stats: {
+      totalDescription: "Recent benchmark run records",
+      inProgressDescription: "Preparing, ready, or running",
+      completedDescription: "Completed or cleaned runs",
+      attentionDescription: "Failed or cleanup required",
+    },
     title: "Benchmark Runs",
     description: "Track runs, open Chat, and restore the lab after testing.",
     detailsTitle: "Run details",
@@ -132,6 +138,13 @@ const en = {
     },
   },
   evaluationsPage: {
+    stats: {
+      totalDescription: "Saved evaluation records",
+      passDescription: "Root cause checks passed",
+      failDescription: "Root cause checks failed",
+      automated: "Automated",
+      automatedDescription: "Evaluated automatically",
+    },
     title: "Evaluations",
     description: "Review saved AI metric results and evidence.",
     refresh: "Refresh",
