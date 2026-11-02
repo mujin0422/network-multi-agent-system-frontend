@@ -3,19 +3,30 @@ import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
 import {
+  DataTable,
+  DataTableContent,
+  DataTableFilters,
+  DataTablePanel,
+  DataTablePagination,
+  DataTableSearch,
+  DataTableToolbar,
+  DataTableToolbarActions,
+} from "@/components/shared/DataTable"
+import {
   PageLayout, PageLayoutContent, PageLayoutHeader, PageLayoutOverview, PageLayoutStat,
 } from "@/components/shared/PageLayout"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { BenchmarkEvaluationSheet } from "@/features/benchmarks/components/BenchmarkEvaluationSheet"
 import { benchmarksApi, evaluationsApi } from "@/service"
-import type { BenchmarkRun, EvaluationMetricType, TaskEvaluationSummary } from "@/service"
+import type { BenchmarkRun, EvaluationResult, TaskEvaluationSummary } from "@/service"
 
-type ResultFilter = "ALL" | "PASS" | "FAIL"
-const METRIC_ORDER: EvaluationMetricType[] = ["GOAL", "RCA", "REMEDIATION", "SAFETY"]
+type EvaluationTableRow = TaskEvaluationSummary & {
+  scenarioName: string
+  run: BenchmarkRun | null
+  rcaResult: EvaluationResult
+}
 
 function readableTime(value: string | null): string {
   if (!value) return "—"
@@ -31,8 +42,6 @@ export default function EvaluationsPage() {
   const [runs, setRuns] = useState<BenchmarkRun[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [query, setQuery] = useState("")
-  const [resultFilter, setResultFilter] = useState<ResultFilter>("ALL")
   const detailTaskId = params.get("task")
 
   const refresh = useCallback(async () => {
@@ -48,7 +57,7 @@ export default function EvaluationsPage() {
         ? evaluationResult.reason.message
         : t("evaluationsPage.loadError"))
     }
-    // Optional enrichment: show benchmark names when the matching run is in the latest 100.
+    // Optional enrichment: associate evaluations with recent benchmark runs.
     if (runResult.status === "fulfilled") setRuns(runResult.value)
     setLoading(false)
   }, [t])
@@ -56,19 +65,20 @@ export default function EvaluationsPage() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch after mount.
   useEffect(() => { void refresh() }, [refresh])
 
-  const byTask = useMemo(
-    () => new Map(runs.flatMap((run) =>
-      run.task_id ? [[run.task_id, run] as const] : [],
-    )),
-    [runs],
-  )
-  const rows = useMemo(() => evaluations.filter((evaluation) => {
-    const matchingRun = byTask.get(evaluation.task_id)
-    const matchesText = [evaluation.task_id, evaluation.id, matchingRun?.scenario_name ?? ""]
-      .some((value) => value.toLowerCase().includes(query.trim().toLowerCase()))
-    return matchesText &&
-      (resultFilter === "ALL" || evaluation.results.RCA === resultFilter)
-  }), [evaluations, byTask, query, resultFilter])
+  const rows = useMemo<EvaluationTableRow[]>(() => {
+    const byTask = new Map(
+      runs.flatMap((run) => run.task_id ? [[run.task_id, run] as const] : []),
+    )
+    return evaluations.map((evaluation) => {
+      const run = byTask.get(evaluation.task_id) ?? null
+      return {
+        ...evaluation,
+        run,
+        scenarioName: run?.scenario_name ?? t("evaluationsPage.taskEvaluation"),
+        rcaResult: evaluation.results.RCA ?? "UNKNOWN",
+      }
+    })
+  }, [evaluations, runs, t])
 
   const countPass = evaluations.filter((evaluation) => evaluation.results.RCA === "PASS").length
   const countFail = evaluations.filter((evaluation) => evaluation.results.RCA === "FAIL").length
@@ -86,7 +96,7 @@ export default function EvaluationsPage() {
   }
 
   if (loading) {
-    return <PageLoadingSkeleton title={t("evaluationsPage.title")} description={t("evaluationsPage.description")} variant="cards" stats={3} />
+    return <PageLoadingSkeleton title={t("evaluationsPage.title")} description={t("evaluationsPage.description")} variant="table" stats={3} />
   }
 
   return (
@@ -99,76 +109,120 @@ export default function EvaluationsPage() {
         <PageLayoutStat label={t("evaluationsPage.rcaPass")} value={countPass} />
         <PageLayoutStat label={t("evaluationsPage.rcaFail")} value={countFail} />
       </PageLayoutOverview>
-      <PageLayoutContent className="space-y-4">
-        {error && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">{error}</p>}
-        <div className="flex flex-wrap items-center gap-2">
-          <Input
-            className="max-w-sm"
-            aria-label={t("evaluationsPage.search")}
-            placeholder={t("evaluationsPage.search")}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          {(["ALL", "PASS", "FAIL"] as const).map((filter) => (
-            <Button
-              key={filter}
-              size="sm"
-              variant={resultFilter === filter ? "secondary" : "ghost"}
-              aria-pressed={resultFilter === filter}
-              onClick={() => setResultFilter(filter)}
-            >
-              {t(`evaluationsPage.filters.${filter}`)}
-            </Button>
-          ))}
-        </div>
-        <p className="text-xs text-muted-foreground">{t("evaluationsPage.latestLimit")}</p>
-        {rows.length === 0 ? (
-          <Card size="sm"><CardContent className="p-6 text-xs text-muted-foreground">{t("evaluationsPage.empty")}</CardContent></Card>
-        ) : (
-          <div className="grid min-w-0 gap-3 xl:grid-cols-2">
-            {rows.map((evaluation) => {
-              const run = byTask.get(evaluation.task_id)
-              return (
-                <Card key={evaluation.id} size="sm" className="min-w-0">
-                  <CardContent className="space-y-3">
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div className="min-w-0 space-y-1">
-                        <p className="truncate text-sm font-semibold">
-                          {run?.scenario_name ?? t("evaluationsPage.taskEvaluation")}
-                        </p>
-                        <p className="break-all font-mono text-[11px] text-muted-foreground">{evaluation.task_id}</p>
-                      </div>
-                      <StatusBadge value={evaluation.evaluation_status} />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                      {METRIC_ORDER.map((metric) => (
-                        <div key={metric} className="space-y-1 rounded-lg border p-2">
-                          <p className="text-[11px] text-muted-foreground">{metric}</p>
-                          <StatusBadge value={evaluation.results[metric] ?? "UNKNOWN"} />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-t pt-3">
-                      <p className="text-xs text-muted-foreground">
-                        {evaluation.evaluator_type} · {readableTime(evaluation.evaluated_at ?? evaluation.created_at)}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {run && (
-                          <Button size="sm" variant="ghost" onClick={() => navigate(`/benchmark-runs?run=${encodeURIComponent(run.id)}`)}>
-                            {t("evaluationsPage.viewRun")}
-                          </Button>
-                        )}
-                        <Button size="sm" variant="outline" onClick={() => openDetails(evaluation.task_id)}>
-                          {t("evaluationsPage.viewDetails")}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
-          </div>
-        )}
+      <PageLayoutContent>
+        {error && <p role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">{error}</p>}
+        <DataTable
+          data={rows}
+          getRowId={(evaluation) => evaluation.id}
+          searchValue={(evaluation) =>
+            `${evaluation.task_id} ${evaluation.id} ${evaluation.scenarioName} ${evaluation.evaluator_type} ${evaluation.evaluator_version ?? ""}`
+          }
+          filters={[
+            {
+              id: "rca",
+              label: "RCA",
+              accessorKey: "rcaResult",
+              allLabel: t("evaluationsPage.filters.ALL"),
+              options: [
+                { value: "PASS", label: t("evaluationsPage.filters.PASS") },
+                { value: "FAIL", label: t("evaluationsPage.filters.FAIL") },
+              ],
+            },
+          ]}
+          columns={[
+            {
+              id: "scenario",
+              header: t("evaluationsPage.scenario"),
+              headerClassName: "pl-4",
+              className: "min-w-56 pl-4",
+              cell: (evaluation) => (
+                <div className="min-w-0">
+                  <p className="max-w-64 truncate text-xs font-medium" title={evaluation.scenarioName}>
+                    {evaluation.scenarioName}
+                  </p>
+                  <p className="mt-1 break-all font-mono type-caption text-muted-foreground" title={evaluation.task_id}>
+                    {evaluation.task_id}
+                  </p>
+                </div>
+              ),
+            },
+            {
+              id: "status",
+              header: t("evaluationsPage.status"),
+              cell: (evaluation) => <StatusBadge value={evaluation.evaluation_status} />,
+            },
+            {
+              id: "goal",
+              header: "GOAL",
+              cell: (evaluation) => <StatusBadge value={evaluation.results.GOAL ?? "UNKNOWN"} />,
+            },
+            {
+              id: "rca",
+              header: "RCA",
+              cell: (evaluation) => <StatusBadge value={evaluation.rcaResult} />,
+            },
+            {
+              id: "remediation",
+              header: "REMEDIATION",
+              cell: (evaluation) => <StatusBadge value={evaluation.results.REMEDIATION ?? "UNKNOWN"} />,
+            },
+            {
+              id: "safety",
+              header: "SAFETY",
+              cell: (evaluation) => <StatusBadge value={evaluation.results.SAFETY ?? "UNKNOWN"} />,
+            },
+            {
+              id: "evaluator",
+              header: t("evaluationsPage.evaluator"),
+              className: "min-w-36 text-xs",
+              cell: (evaluation) => (
+                <div>
+                  <p className="font-medium">{evaluation.evaluator_type}</p>
+                  <p className="mt-1 text-muted-foreground">{evaluation.evaluator_version ?? "—"}</p>
+                </div>
+              ),
+            },
+            {
+              id: "evaluated",
+              header: t("evaluationsPage.evaluatedAt"),
+              className: "min-w-36 text-xs text-muted-foreground",
+              cell: (evaluation) => readableTime(evaluation.evaluated_at ?? evaluation.created_at),
+            },
+            {
+              id: "actions",
+              header: t("evaluationsPage.actions"),
+              className: "whitespace-nowrap",
+              cell: (evaluation) => (
+                <div className="flex items-center gap-2">
+                  {evaluation.run && (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      onClick={() => navigate(`/benchmark-runs?run=${encodeURIComponent(evaluation.run!.id)}`)}
+                    >
+                      {t("evaluationsPage.viewRun")}
+                    </Button>
+                  )}
+                  <Button size="xs" variant="outline" onClick={() => openDetails(evaluation.task_id)}>
+                    {t("evaluationsPage.viewDetails")}
+                  </Button>
+                </div>
+              ),
+            },
+          ]}
+        >
+          <DataTablePanel>
+            <DataTableToolbar>
+              <DataTableSearch placeholder={t("evaluationsPage.search")} />
+              <DataTableToolbarActions>
+                <DataTableFilters />
+              </DataTableToolbarActions>
+            </DataTableToolbar>
+            <DataTableContent emptyMessage="evaluationsPage.empty" />
+            <DataTablePagination itemLabel="evaluations" />
+          </DataTablePanel>
+        </DataTable>
+        <p className="mt-3 text-xs text-muted-foreground">{t("evaluationsPage.latestLimit")}</p>
       </PageLayoutContent>
       <BenchmarkEvaluationSheet
         open={Boolean(detailTaskId)}
