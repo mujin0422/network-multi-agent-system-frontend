@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
+import { CheckCircle2, ListChecks, Play, ShieldAlert } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
@@ -115,10 +116,32 @@ export default function BenchmarkRunsPage() {
         </Button>
       </PageLayoutHeader>
       <PageLayoutOverview>
-        <PageLayoutStat label={t("benchmarks.stats.total.label")} value={summary.total} />
-        <PageLayoutStat label={t("benchmarks.stats.inProgress.label")} value={summary.inProgress} />
-        <PageLayoutStat label={t("benchmarks.stats.completed.label")} value={summary.completed} />
-        <PageLayoutStat label={t("benchmarks.stats.needsAttention.label")} value={summary.needsAttention} />
+        <PageLayoutStat
+          label={t("benchmarks.stats.total.label")}
+          value={summary.total}
+          description={t("benchmarkRuns.stats.totalDescription")}
+          icon={<ListChecks />}
+        />
+        <PageLayoutStat
+          label={t("benchmarks.stats.inProgress.label")}
+          value={summary.inProgress}
+          description={t("benchmarkRuns.stats.inProgressDescription")}
+          icon={<Play />}
+        />
+        <PageLayoutStat
+          label={t("benchmarks.stats.completed.label")}
+          value={summary.completed}
+          description={t("benchmarkRuns.stats.completedDescription")}
+          icon={<CheckCircle2 />}
+          iconClassName="bg-emerald-500/10 text-emerald-400"
+        />
+        <PageLayoutStat
+          label={t("benchmarks.stats.needsAttention.label")}
+          value={summary.needsAttention}
+          description={t("benchmarkRuns.stats.attentionDescription")}
+          icon={<ShieldAlert />}
+          iconClassName="bg-amber-500/10 text-amber-400"
+        />
       </PageLayoutOverview>
       <PageLayoutContent className="space-y-4">
         {error && (
