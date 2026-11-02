@@ -192,7 +192,7 @@ export default function EvaluationsPage() {
             },
             {
               id: "actions",
-              header: t("evaluationsPage.actions"),
+              header: null,
               className: "whitespace-nowrap",
               cell: (evaluation) => {
                 const runId = evaluation.run?.id
