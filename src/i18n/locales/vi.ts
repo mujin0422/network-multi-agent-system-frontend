@@ -99,6 +99,12 @@ const vi = {
     },
   },
   benchmarkRuns: {
+    stats: {
+      totalDescription: "Các lượt chạy benchmark gần đây",
+      inProgressDescription: "Đang chuẩn bị, sẵn sàng hoặc chạy",
+      completedDescription: "Đã hoàn thành hoặc khôi phục",
+      attentionDescription: "Thất bại hoặc cần khôi phục",
+    },
     title: "Lượt chạy Benchmark",
     description: "Theo dõi lượt chạy, mở Chat và khôi phục môi trường lab sau khi kiểm thử.",
     detailsTitle: "Chi tiết lượt chạy",
@@ -132,6 +138,13 @@ const vi = {
     },
   },
   evaluationsPage: {
+    stats: {
+      totalDescription: "Các kết quả đánh giá đã lưu",
+      passDescription: "Kiểm tra RCA đạt",
+      failDescription: "Kiểm tra RCA không đạt",
+      automated: "Tự động",
+      automatedDescription: "Do hệ thống tự động đánh giá",
+    },
     title: "Đánh giá AI",
     description: "Xem các tiêu chí đánh giá AI đã lưu và bằng chứng kèm theo.",
     refresh: "Làm mới",
