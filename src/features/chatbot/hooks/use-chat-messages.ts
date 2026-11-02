@@ -172,6 +172,22 @@ export function useChatMessages(options: ChatOptions = {}) {
     setActiveConversationIdState(id)
   }
 
+  async function renameConversation(conversationId: string, title: string) {
+    setError(null)
+    try {
+      const updated = await conversationsApi.renameTitle(conversationId, title)
+      setConversations((current) =>
+        current.map((conversation) =>
+          conversation.id === updated.id ? updated : conversation,
+        ),
+      )
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : "Không thể đổi tiêu đề hội thoại"
+      setError(message)
+      throw reason instanceof Error ? reason : new Error(message)
+    }
+  }
+
   const pollWorkflow = useCallback(async (
     conversationId: string,
     sourceMessageId: string,
@@ -255,5 +271,5 @@ export function useChatMessages(options: ChatOptions = {}) {
     }
   }, [activeConversationId, loadConversation, pollWorkflow, taskPreviews])
 
-  return { input, messages, taskPreviews, conversations, activeConversationId, sending, error, createNewConversation, sendMessage, decideApproval, setActiveConversationId, setInput }
+  return { input, messages, taskPreviews, conversations, activeConversationId, sending, error, createNewConversation, renameConversation, sendMessage, decideApproval, setActiveConversationId, setInput }
 }

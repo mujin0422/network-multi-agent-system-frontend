@@ -6,7 +6,7 @@ import {
 } from "@/components/shared/FeatureFormSheet"
 import { Input } from "@/components/ui/input"
 import type { FormMode } from "@/types/components"
-import type { Brand, Category, DeviceCreate } from "@/service"
+import type { Brand, Category, Credential, DeviceCreate } from "@/service"
 import type { Device } from "../types/device.type"
 
 function DeviceFormFields({
@@ -14,11 +14,13 @@ function DeviceFormFields({
   readOnly,
   brands,
   categories,
+  credentials,
 }: {
   device: Device | null
   readOnly: boolean
   brands: Brand[]
   categories: Category[]
+  credentials: Credential[]
 }) {
   const [selectedBrandId, setSelectedBrandId] = useState<string | null>(
     device?.brand_id ?? null,
@@ -117,14 +119,21 @@ function DeviceFormFields({
         </FormField>
       </div>
       <FormField
-        label="Credential ID"
+        label="Credential"
         hint="Optional; credential secrets remain encrypted."
       >
-        <Input
+        <FormCombobox
           name="credential_id"
-          defaultValue={device?.credential_id ?? ""}
+          defaultValue={device?.credential_id ?? "__none__"}
           disabled={readOnly}
-          placeholder="cred-ddmmyy-xxxx"
+          options={[
+            { value: "__none__", label: "No credential" },
+            ...credentials.map((credential) => ({
+              value: credential.id,
+              label: `${credential.name} · ${credential.username}`,
+            })),
+          ]}
+          placeholder="Select a credential"
         />
       </FormField>
       <FormField label="Location">
@@ -165,6 +174,7 @@ export function DeviceForm({
   onModeChange,
   brands,
   categories,
+  credentials,
   onSave,
 }: {
   open: boolean
@@ -174,6 +184,7 @@ export function DeviceForm({
   onModeChange: (mode: FormMode) => void
   brands: Brand[]
   categories: Category[]
+  credentials: Credential[]
   onSave: (payload: Omit<DeviceCreate, "last_updated_by">) => Promise<void>
 }) {
   const readOnly = mode === "view"
@@ -196,7 +207,7 @@ export function DeviceForm({
           port: Number(data.get("port") ?? 22),
           brand_id: String(data.get("brand_id") ?? ""),
           device_type: String(data.get("device_type") ?? ""),
-          credential_id: credentialId || null,
+          credential_id: credentialId && credentialId !== "__none__" ? credentialId : null,
           location: String(data.get("location") ?? "").trim() || null,
         })
         onOpenChange(false)
@@ -208,6 +219,7 @@ export function DeviceForm({
         readOnly={readOnly}
         brands={brands}
         categories={categories}
+        credentials={credentials}
       />
     </FeatureFormSheet>
   )

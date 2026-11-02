@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { benchmarksApi } from "@/service"
@@ -21,7 +21,7 @@ export function useBenchmarksData() {
     try {
       const [scenarioRows, runRows] = await Promise.all([
         benchmarksApi.listScenarios(),
-        benchmarksApi.listRuns(),
+        benchmarksApi.listRuns(100),
       ])
       setScenarios(scenarioRows)
       setRuns(runRows)
@@ -90,6 +90,13 @@ export function useBenchmarksData() {
     }
   }, [t])
 
+  const summary = useMemo(() => ({
+    total: runs.length,
+    inProgress: runs.filter((run) => ["PREPARING", "READY", "RUNNING"].includes(run.status)).length,
+    completed: runs.filter((run) => ["COMPLETED", "CLEANED"].includes(run.status)).length,
+    needsAttention: runs.filter((run) => run.status === "FAILED" || run.cleanup_required).length,
+  }), [runs])
+
   return {
     scenarios,
     runs,
@@ -97,6 +104,7 @@ export function useBenchmarksData() {
     loading,
     busy,
     error,
+    summary,
     setSelectedRun,
     reload,
     createScenario,

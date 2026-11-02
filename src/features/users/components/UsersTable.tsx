@@ -75,17 +75,13 @@ export function UsersTable() {
                 headerClassName: "pl-4",
                 className: "pl-4",
                 cell: (user) => (
-                  <div>
+                  <div className="min-w-0">
                     <p className="text-xs font-medium">{user.full_name}</p>
-                    <p className="type-caption text-muted-foreground">
-                      {user.email}
-                    </p>
-                    <p className="font-mono type-micro text-muted-foreground/70">
-                      {user.id}
-                    </p>
+                    <p className="type-caption text-muted-foreground">{user.email}</p>
+                    <p className="mt-1 font-mono type-caption text-success">{user.id}</p>
                   </div>
                 ),
-              },
+              },          
               {
                 id: "role",
                 header: "Role",

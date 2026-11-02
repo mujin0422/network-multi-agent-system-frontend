@@ -1,4 +1,4 @@
-import { Network, ShieldCheck } from "lucide-react"
+import { ShieldCheck } from "lucide-react"
 
 import {
   Card,
@@ -17,18 +17,6 @@ export function LoginView() {
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,var(--success),transparent_28%),radial-gradient(circle_at_bottom_right,var(--ring),transparent_25%)] opacity-10" />
 
       <div className="relative w-full max-w-sm">
-        <div className="mb-6 flex items-center justify-center gap-2">
-          <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground shadow-sm">
-            <Network className="size-5" />
-          </span>
-          <div>
-            <p className="text-sm font-semibold">{LOGIN_COPY.productName}</p>
-            <p className="type-caption text-muted-foreground">
-              {LOGIN_COPY.productDescription}
-            </p>
-          </div>
-        </div>
-
         <Card className="shadow-xl shadow-foreground/5">
           <CardHeader className="px-6 pt-2 text-center">
             <div className="mx-auto mb-2 grid size-10 place-items-center rounded-full bg-success/10 text-success">
@@ -41,10 +29,6 @@ export function LoginView() {
             <LoginForm />
           </CardContent>
         </Card>
-
-        <p className="mt-5 text-center type-caption text-muted-foreground">
-          {LOGIN_COPY.footer}
-        </p>
       </div>
     </main>
   )

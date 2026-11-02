@@ -31,6 +31,7 @@ export function ChatWorkspace() {
     conversations,
     activeConversationId,
     createNewConversation,
+    renameConversation,
     sendMessage,
     setActiveConversationId,
     setInput,
@@ -100,6 +101,7 @@ export function ChatWorkspace() {
           collapsed={sidebarCollapsed}
           onQueryChange={setConversationQuery}
           onSelect={setActiveConversationId}
+          onRename={renameConversation}
           onCreate={handleNewChat}
           onClose={() => setMobileSidebarOpen(false)}
           onCollapse={() => setSidebarCollapsed(true)}

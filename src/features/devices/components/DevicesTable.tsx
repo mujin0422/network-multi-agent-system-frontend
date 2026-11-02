@@ -28,6 +28,7 @@ export function DevicesTable() {
     rows,
     brands,
     categories,
+    credentials,
     summary,
     brandName,
     categoryName,
@@ -196,6 +197,7 @@ export function DevicesTable() {
         device={form.device}
         brands={brands}
         categories={categories}
+        credentials={credentials}
         onSave={(payload) => form.mode === "create" ? createDevice(payload) : updateDevice(form.device!.id, payload)}
         onOpenChange={(open) => setForm((current) => ({ ...current, open }))}
         onModeChange={(mode) => setForm((current) => ({ ...current, mode }))}

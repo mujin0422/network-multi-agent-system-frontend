@@ -9,6 +9,7 @@ import { BenchmarkCurrentRun } from "./components/BenchmarkCurrentRun"
 import { BenchmarkRunHistory } from "./components/BenchmarkRunHistory"
 import { BenchmarkScenarioCard } from "./components/BenchmarkScenarioCard"
 import { BenchmarkScenarioForm } from "./components/BenchmarkScenarioForm"
+import { BenchmarkStats } from "./components/BenchmarkStats"
 import { useBenchmarksData } from "./hooks/use-benchmarks-data"
 import { benchmarkChatPath } from "./utils/benchmark.util"
 
@@ -24,6 +25,7 @@ export default function BenchmarksPage() {
     loading,
     busy,
     error,
+    summary,
     setSelectedRun,
     createScenario,
     startScenario,
@@ -48,10 +50,13 @@ export default function BenchmarksPage() {
       <PageLayoutHeader title={t("benchmarks.title")} description={t("benchmarks.description")}>
         <Button size="sm" onClick={openCreateForm}>{t("benchmarks.addScenario")}</Button>
       </PageLayoutHeader>
+      <BenchmarkStats summary={summary} />
       <PageLayoutContent className="space-y-6">
-        <div className="flex items-start gap-3 rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 text-xs">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-400" />
-          <div>
+        <div className="grid grid-cols-[56px_minmax(0,1fr)] rounded-xl border border-amber-500/25 bg-amber-500/5 text-xs">
+          <div className="grid place-items-center">
+            <AlertTriangle className="size-5 text-amber-400" />
+          </div>
+          <div className="p-4">
             <p className="font-medium">{t("benchmarks.warningTitle")}</p>
             <p className="mt-1 text-muted-foreground">{t("benchmarks.warningDescription")}</p>
           </div>

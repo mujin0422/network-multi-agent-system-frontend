@@ -28,8 +28,7 @@ import { TaskExecutionPanel } from "./TaskExecutionPanel"
 
 /** Màn hình theo dõi task, trạng thái thực thi và các bước cần phê duyệt. */
 export function TasksTable() {
-  const { rows, activeId, selected, operations, summary, setActiveId } =
-    useTasksData()
+  const { rows, usersById, activeId, selected, operations, summary, setActiveId } = useTasksData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -37,6 +36,13 @@ export function TasksTable() {
   }>({ open: false, mode: "view", task: null })
   const openForm = (mode: FormMode, task: Task | null = null) =>
     setForm({ open: true, mode, task })
+  const auditTimestamp = (timestamp: string | null) => {
+    if (!timestamp) return "—"
+    const date = new Date(timestamp)
+    return Number.isNaN(date.getTime())
+      ? "—"
+      : date.toLocaleString("vi-VN")
+  }
   return (
     <>
       <PageLayout>
@@ -59,7 +65,7 @@ export function TasksTable() {
               },
             ]}
             searchValue={(task) =>
-              `${task.input_message} ${task.task_status} ${task.user_id} ${task.id}`
+              `${task.input_message} ${task.task_status} ${usersById.get(task.user_id)?.full_name ?? ""} ${usersById.get(task.user_id)?.email ?? ""} ${task.id}`
             }
             selectedRowId={activeId}
             onRowClick={(task) => setActiveId(task.id)}
@@ -68,16 +74,12 @@ export function TasksTable() {
                 id: "request",
                 header: "Task request",
                 headerClassName: "pl-4",
-                className: "max-w-[380px] pl-4",
+                className: "max-w-[240px] pl-4",
                 cell: (task) => (
-                  <>
-                    <p className="truncate text-xs font-medium">
-                      {task.input_message}
-                    </p>
-                    <p className="mt-1 font-mono type-caption text-muted-foreground">
-                      {task.id}
-                    </p>
-                  </>
+                  <div className="min-w-0">
+                    <p className="truncate text-xs font-medium">{task.input_message}</p>
+                    <p className="mt-1 font-mono type-caption text-success">{task.id}</p>
+                  </div>
                 ),
               },
               {
@@ -93,15 +95,39 @@ export function TasksTable() {
               {
                 id: "owner",
                 header: "Owner",
-                accessorKey: "user_id",
-                className: "font-mono type-caption text-muted-foreground",
+                cell: (task) => {
+                  const owner = usersById.get(task.user_id)
+                  return (
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-medium text-foreground">
+                        {owner?.full_name ?? "Unknown user"}
+                      </p>
+                      <p className="mt-1 truncate type-caption text-muted-foreground">
+                        {owner?.email ?? "—"}
+                      </p>
+                    </div>
+                  )
+                },
               },
               {
-                id: "created",
-                header: "Created",
-                className: "type-caption text-muted-foreground",
+                id: "timestamp",
+                header: "Timestamp",
+                className: "min-w-72 text-muted-foreground",
                 cell: (task) =>
-                  new Date(task.created_at).toLocaleString("vi-VN"),
+                  <div className="type-micro space-y-1 whitespace-nowrap">
+                    <p>
+                      <span className="font-medium text-foreground"> Created at: </span>
+                      {auditTimestamp(task.created_at)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-foreground"> Started at: </span>
+                      {auditTimestamp(task.started_at)}
+                    </p>
+                    <p>
+                      <span className="font-medium text-foreground"> Completed at: </span>
+                      {auditTimestamp(task.completed_at)} 
+                    </p>
+                  </div>
               },
             ]}
           >

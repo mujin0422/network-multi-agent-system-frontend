@@ -12,6 +12,8 @@ export const conversationsApi = {
     (await api.get<Conversation[]>("/conversations/", { params: { user_id: userId } })).data,
   get: async (conversationId: string) =>
     (await api.get<ConversationDetail>(`/conversations/${conversationId}`)).data,
+  renameTitle: async (conversationId: string, title: string) =>
+    (await api.patch<Conversation>(`/conversations/${conversationId}/title`, { title })).data,
   start: async (message: string, benchmarkRunId?: string) =>
     (await api.post<ConversationStarted>("/conversations/messages", {
       message,
