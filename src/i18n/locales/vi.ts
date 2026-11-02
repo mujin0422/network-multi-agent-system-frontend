@@ -101,6 +101,16 @@ const vi = {
   benchmarkRuns: {
     title: "Lượt chạy Benchmark",
     description: "Theo dõi lượt chạy, mở Chat và khôi phục môi trường lab sau khi kiểm thử.",
+    detailsTitle: "Chi tiết lượt chạy",
+    evaluation: "Đánh giá",
+    viewEvaluation: "Xem đánh giá",
+    cleanupPending: "Cần khôi phục",
+    cleanedAt: "Đã khôi phục lúc",
+    statusFilter: "Nhóm trạng thái",
+    table: {
+      scenario: "Kịch bản / Lượt chạy",
+      status: "Trạng thái",
+    },
     openRuns: "Xem lượt chạy",
     refresh: "Làm mới",
     search: "Tìm kịch bản, mã lượt chạy hoặc mã Task...",
