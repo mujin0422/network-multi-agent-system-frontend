@@ -41,9 +41,9 @@ export default function BenchmarkRunsPage() {
     }
   }, [t])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch after mount.
   useEffect(() => { void refresh() }, [refresh])
 
-  const selectedRun = runs.find((run) => run.id === selectedId) ?? runs[0] ?? null
   const rows = useMemo(() => runs.filter((run) => {
     const textMatch = [run.id, run.scenario_name, run.scenario_id, run.task_id ?? ""]
       .some((value) => value.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()))
@@ -53,6 +53,7 @@ export default function BenchmarkRunsPage() {
     if (filter === "ATTENTION") return run.status === "FAILED" || run.cleanup_required
     return true
   }), [runs, query, filter])
+  const selectedRun = rows.find((run) => run.id === selectedId) ?? rows[0] ?? null
 
   const summary = {
     total: runs.length,

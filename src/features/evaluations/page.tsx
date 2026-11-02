@@ -53,10 +53,13 @@ export default function EvaluationsPage() {
     setLoading(false)
   }, [t])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch after mount.
   useEffect(() => { void refresh() }, [refresh])
 
   const byTask = useMemo(
-    () => new Map(runs.filter((run) => run.task_id).map((run) => [run.task_id, run])),
+    () => new Map(runs.flatMap((run) =>
+      run.task_id ? [[run.task_id, run] as const] : [],
+    )),
     [runs],
   )
   const rows = useMemo(() => evaluations.filter((evaluation) => {
