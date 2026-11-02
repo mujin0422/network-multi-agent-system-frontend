@@ -1,15 +1,16 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react"
 
 import { StatusBadge } from "@/components/shared/StatusBadge"
+import { TaskEvaluationDetails } from "@/components/shared/TaskEvaluationDetails"
 import { Button } from "@/components/ui/button"
 import {
   Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ApiError, deviceActionLogsApi, devicesApi, tasksApi } from "@/service"
-import type { DeviceActionLog, TaskRecords } from "@/service"
+import { ApiError, deviceActionLogsApi, devicesApi, evaluationsApi, tasksApi } from "@/service"
+import type { DeviceActionLog, TaskEvaluationDetail, TaskRecords } from "@/service"
 
-type RecordTab = "plan" | "executions" | "devices" | "events" | "approvals" | "commands"
+type RecordTab = "plan" | "executions" | "devices" | "events" | "approvals" | "commands" | "evaluation"
 
 type TaskRecordsSheetProps = {
   open: boolean
@@ -80,6 +81,8 @@ function Section({ children }: { children: ReactNode }) {
 export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsSheetProps) {
   const [data, setData] = useState<TaskRecords | null>(null)
   const [logs, setLogs] = useState<DeviceActionLog[]>([])
+  const [evaluation, setEvaluation] = useState<TaskEvaluationDetail | null>(null)
+  const [evaluationError, setEvaluationError] = useState<string | null>(null)
   const [hostnames, setHostnames] = useState<Map<string, string>>(new Map())
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -94,15 +97,18 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
       setLoading(true)
       setData(null)
       setLogs([])
+      setEvaluation(null)
+      setEvaluationError(null)
       setError(null)
       setLogsError(null)
       setHostnames(new Map())
       try {
         // Command logs require Audit Log/View; failure must not hide other records.
-        const [result, logResult, deviceResult] = await Promise.allSettled([
+        const [result, logResult, deviceResult, evaluationResult] = await Promise.allSettled([
           tasksApi.getRecords(taskId),
           deviceActionLogsApi.byTask(taskId),
           devicesApi.list({ page: 1, page_size: 100 }),
+          evaluationsApi.byTask(taskId),
         ])
         if (cancelled) return
         if (result.status === "rejected") {
@@ -119,6 +125,12 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
         }
         if (deviceResult.status === "fulfilled") {
           setHostnames(new Map(deviceResult.value.items.map((device) => [device.id, device.hostname])))
+        }
+        if (evaluationResult.status === "fulfilled") {
+          setEvaluation(evaluationResult.value)
+        } else {
+          setEvaluationError(evaluationResult.reason instanceof Error
+            ? evaluationResult.reason.message : "Không thể tải evaluation.")
         }
       } catch (reason) {
         if (!cancelled) setError(reason instanceof Error ? reason.message : "Không thể tải dữ liệu")
@@ -148,6 +160,7 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
     { id: "events", label: "Activity", count: data?.activity_events.length ?? 0 },
     { id: "approvals", label: "Approvals", count: data?.approvals.length ?? 0 },
     { id: "commands", label: "Command logs", count: logs.length },
+    { id: "evaluation", label: "Evaluation", count: evaluation?.metrics.length ?? 0 },
   ]
 
   return (
@@ -309,6 +322,10 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
                     ))}
                     {data.approvals.length === 0 && <EmptyRecords label="approval requests" />}
                   </Section>
+                )}
+
+                {activeTab === "evaluation" && (
+                  <TaskEvaluationDetails evaluation={evaluation} error={evaluationError} />
                 )}
 
                 {activeTab === "commands" && (

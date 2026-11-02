@@ -61,6 +61,7 @@ export type BenchmarkCurrentRunProps = {
   busy: boolean
   onOpenChat: () => void
   onCleanup: () => void
+  onViewEvaluation: () => void
 }
 
 export type BenchmarkRunHistoryProps = {

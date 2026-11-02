@@ -302,6 +302,32 @@ export type TaskExecution = {
   created_at: string
 }
 
+export type EvaluationStatus = "PENDING" | "COMPLETED" | "ERROR"
+export type EvaluationResult = "PASS" | "FAIL" | "UNKNOWN" | "NOT_APPLICABLE"
+export type EvaluationMetricType = "GOAL" | "RCA" | "REMEDIATION" | "SAFETY"
+export type TaskEvaluationMetric = {
+  id: string
+  evaluation_id: string
+  metric_type: EvaluationMetricType
+  result: EvaluationResult
+  is_required: boolean
+  was_attempted: boolean | null
+  expected_value: unknown
+  actual_value: unknown
+  evidence: unknown
+  created_at: string
+}
+export type TaskEvaluationDetail = {
+  id: string
+  task_id: string
+  evaluation_status: EvaluationStatus
+  evaluator_type: "AUTOMATED" | "HUMAN"
+  evaluator_version: string | null
+  created_at: string
+  evaluated_at: string | null
+  metrics: TaskEvaluationMetric[]
+}
+
 export type TaskRecords = {
   task: TaskDetail
   operation_devices: TaskOperationDevice[]

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { benchmarksApi } from "@/service"
 import type { BenchmarkScenarioCreate, BenchmarkScenarioDetail, BenchmarkScenarioUpdate } from "@/service"
 import { BenchmarkCurrentRun } from "./components/BenchmarkCurrentRun"
+import { BenchmarkEvaluationSheet } from "./components/BenchmarkEvaluationSheet"
 import { BenchmarkRunHistory } from "./components/BenchmarkRunHistory"
 import { BenchmarkScenarioCard } from "./components/BenchmarkScenarioCard"
 import { BenchmarkScenarioForm } from "./components/BenchmarkScenarioForm"
@@ -20,6 +21,7 @@ export default function BenchmarksPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
+  const [evaluationOpen, setEvaluationOpen] = useState(false)
   const [editingScenario, setEditingScenario] = useState<BenchmarkScenarioDetail | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editError, setEditError] = useState<string | null>(null)
@@ -128,6 +130,7 @@ export default function BenchmarksPage() {
             busy={busy}
             onOpenChat={openChat}
             onCleanup={() => void cleanupRun(selectedRun.id)}
+            onViewEvaluation={() => setEvaluationOpen(true)}
           />
         )}
 
@@ -149,6 +152,11 @@ export default function BenchmarksPage() {
         <BenchmarkRunHistory runs={runs} onSelect={setSelectedRun} />
       </PageLayoutContent>
 
+      <BenchmarkEvaluationSheet
+        open={evaluationOpen}
+        taskId={selectedRun?.task_id ?? null}
+        onOpenChange={setEvaluationOpen}
+      />
       <BenchmarkScenarioForm
         key={formVersion}
         scenario={editingScenario}
