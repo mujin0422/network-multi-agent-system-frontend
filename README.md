@@ -1,8 +1,8 @@
 # Network Multi-Agent System — Frontend
 
-Giao diện quản trị cho hệ thống đa tác tử mạng, được xây dựng bằng React, TypeScript và Vite. Ứng dụng hiện cung cấp các màn hình tổng quan, trò chuyện với agent, quản lý tác vụ, mạng, thiết bị, thông tin xác thực, nhật ký kiểm toán, người dùng và phân quyền.
+Giao diện quản trị cho hệ thống đa tác tử mạng, được xây dựng bằng React, TypeScript và Vite. Ứng dụng cung cấp dashboard, trò chuyện với AI agent, quản lý tác vụ, thiết bị, danh mục thiết bị, thông tin xác thực, nhật ký kiểm toán, benchmark, người dùng và phân quyền.
 
-> Trạng thái hiện tại: phần lớn màn hình đang sử dụng dữ liệu mẫu trong từng feature; `src/service/api.ts` và `src/service/websocket.ts` là vị trí dành cho lớp tích hợp backend.
+> **Trạng thái hiện tại:** frontend đã tích hợp REST API của backend FastAPI cho các module nghiệp vụ chính. Các màn hình dùng dữ liệu trả về từ backend thông qua các service theo domain trong `src/service/`. Một số tệp mock còn nằm trong mã nguồn, nhưng không phản ánh nguồn dữ liệu chính của các màn hình đã kết nối API.
 
 ## Công nghệ chính
 
@@ -65,10 +65,11 @@ npm run build
 | `/`                | Dashboard tổng quan        |
 | `/chat`            | Trò chuyện với agent       |
 | `/tasks`           | Quản lý tác vụ             |
-| `/network`         | Theo dõi mạng              |
+| `/device-catalog`  | Danh mục thiết bị          |
 | `/devices`         | Quản lý thiết bị           |
 | `/credentials`     | Quản lý thông tin xác thực |
 | `/audit-logs`      | Nhật ký kiểm toán          |
+| `/benchmarks`      | Quản lý benchmark          |
 | `/users`           | Quản lý người dùng         |
 | `/access-control`  | Phân quyền truy cập        |
 | `/settings/system` | Cài đặt hệ thống           |
@@ -85,12 +86,16 @@ frontend/
 │   ├── app/                # App gốc và cấu hình router
 │   ├── assets/             # Ảnh và tài nguyên được bundle
 │   ├── components/
-│   │   ├── layout/         # Layout dùng chung
-│   │   └── ui/             # Các UI primitive dùng lại
-│   ├── features/           # Module nghiệp vụ theo từng màn hình
-│   ├── hooks/              # Hook dùng chung toàn ứng dụng
+│   │   ├── layout/         # Layout ứng dụng
+│   │   ├── shared/         # Component nghiệp vụ tái sử dụng
+│   │   └── ui/             # UI primitives
+│   ├── features/           # Các module/màn hình nghiệp vụ
+│   ├── hooks/              # Hook dùng chung
+│   ├── i18n/               # Bản dịch tiếng Việt/tiếng Anh
 │   ├── lib/                # Hàm tiện ích
-│   └── service/            # Lớp API và WebSocket
+│   ├── service/            # Axios client, contract, REST API theo domain
+│   ├── styles/             # CSS toàn cục
+│   └── types/              # Types dùng chung
 ├── components.json         # Cấu hình shadcn/ui
 ├── eslint.config.js        # Cấu hình ESLint
 ├── vite.config.ts          # Cấu hình Vite và alias @/
@@ -118,16 +123,53 @@ Kết quả build nằm trong thư mục `dist/`. Khi triển khai, máy chủ c
 
 ## Tích hợp backend
 
-Hai tệp sau đã được dành sẵn cho lớp giao tiếp với backend:
+Frontend **đã gọi REST API thực tế** của [Network Multi-Agent System Backend](https://github.com/mujin0422/network-multi-agent-system-backend), không còn chỉ là giao diện mock. Các API nghiệp vụ dùng prefix `/api/v1`.
 
-- `src/service/api.ts`: cấu hình HTTP client và các lời gọi REST API.
-- `src/service/websocket.ts`: cấu hình kết nối thời gian thực qua Socket.IO.
+### Cấu hình môi trường
 
-Khi thêm cấu hình môi trường, nên khai báo ví dụ trong `.env.example`:
+Tạo file `.env` từ mẫu đã có trong repository:
 
-```dotenv
-VITE_API_BASE_URL=http://localhost:8000
-VITE_SOCKET_URL=http://localhost:8000
+```bash
+cp .env.example .env
 ```
 
-Không đưa token, mật khẩu hoặc URL nội bộ nhạy cảm vào repository.
+Giá trị mặc định trong `.env.example`:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+```
+
+`src/service/api.ts` sử dụng giá trị này làm Axios `baseURL` (fallback về `http://localhost:8000/api/v1` khi không thiết lập). Backend cần chạy và cho phép origin của Vite trong `CORS_ORIGINS`, ví dụ `http://localhost:5173`.
+
+### Các module đã kết nối API
+
+| Module | Client/service | Chức năng chính |
+| --- | --- | --- |
+| Authentication | `auth.api.ts` | Đăng nhập, lấy người dùng hiện tại, refresh và logout |
+| Conversation / Chatbot | `conversation.api.ts` | Danh sách hội thoại, gửi tin nhắn, tạo hội thoại từ tin nhắn đầu tiên, đổi tiêu đề |
+| Dashboard | `inventory.api.ts`, `execution.api.ts` | Tổng hợp dữ liệu thiết bị, tác vụ và hoạt động từ API |
+| Tasks / Execution | `execution.api.ts` | Danh sách/chi tiết task, operation, activity events và phê duyệt |
+| Devices / Device Catalog | `inventory.api.ts` | Thiết bị, thương hiệu, danh mục và thông tin xác thực thiết bị |
+| Users / Roles / Access Control | `identity.api.ts` | Quản lý người dùng, vai trò và quyền |
+| Audit Logs | `audit.api.ts` | Lấy nhật ký kiểm toán và hỗ trợ xuất CSV trên giao diện |
+| Benchmarks | `benchmark.api.ts` | Quản lý scenario, benchmark run và cleanup |
+| Profile | `auth.api.ts`, `identity.api.ts` | Hiển thị và cập nhật thông tin tài khoản |
+
+Các màn hình gọi API thông qua hook trong từng `src/features/<feature>/hooks/`. Phần `Settings` quản lý các tùy chọn giao diện/ngôn ngữ trên trình duyệt; không phải module API nghiệp vụ.
+
+### Cơ chế xác thực và xử lý dữ liệu
+
+- `src/service/api.ts`: Axios client dùng chung, bearer token, chuẩn hóa lỗi và interceptor xử lý HTTP `401`.
+- `src/service/token-storage.ts`: lưu cặp access/refresh token trong `localStorage` và đồng bộ thay đổi phiên đăng nhập.
+- Khi access token hết hạn, interceptor thử refresh token và gửi lại request ban đầu một lần; các request đồng thời chia sẻ một refresh promise.
+- `src/service/contracts.ts`: các kiểu request/response dùng khi giao tiếp với backend.
+- `src/service/*.api.ts`: nhóm hàm gọi endpoint theo domain; UI không cần gọi Axios trực tiếp.
+- Chat hiện nhận trạng thái workflow bằng **HTTP polling** (`use-chat-messages.ts`). `src/service/websocket.ts` hiện chưa triển khai; không nên hiểu ứng dụng đang sử dụng Socket.IO để nhận sự kiện chat.
+
+### Chạy cùng backend
+
+1. Cài đặt và khởi chạy backend theo [README của backend](https://github.com/mujin0422/network-multi-agent-system-backend#readme), kiểm tra `http://localhost:8000/health` và Swagger tại `http://localhost:8000/docs`.
+2. Thiết lập `.env` cho frontend như trên.
+3. Chạy `npm ci` rồi `npm run dev` và đăng nhập bằng tài khoản hợp lệ của backend.
+
+> Không commit `.env`, access token, mật khẩu, private key hoặc bất kỳ secret nào lên repository. Các tệp mock còn tồn tại không thay thế dữ liệu API thực tế.
