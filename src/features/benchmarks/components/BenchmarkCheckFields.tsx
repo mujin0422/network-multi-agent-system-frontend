@@ -30,7 +30,33 @@ export function BenchmarkCheckFields({ title, items, onChange }: BenchmarkCheckF
               <Input value={item.device} required placeholder="P3" onChange={(event) => update(index, { ...item, device: event.target.value })} />
             </FormField>
             <FormField label={t("benchmarks.form.fields.expectedOutput")} required>
-              <Input value={item.assertion.contains} required placeholder="administratively down" onChange={(event) => update(index, { ...item, assertion: { contains: event.target.value } })} />
+              <div className="flex gap-2">
+                <select
+                  aria-label={t("benchmarks.form.fields.assertionType")}
+                  className="h-control-md w-36 shrink-0 rounded-lg border border-input bg-background px-2 text-xs"
+                  value={item.assertion.not_contains != null ? "not_contains" : "contains"}
+                  onChange={(event) => update(index, {
+                    ...item,
+                    assertion: event.target.value === "not_contains"
+                      ? { not_contains: "" }
+                      : { contains: "" },
+                  })}
+                >
+                  <option value="contains">contains</option>
+                  <option value="not_contains">not contains</option>
+                </select>
+                <Input
+                  value={item.assertion.not_contains ?? item.assertion.contains ?? ""}
+                  required
+                  placeholder="administratively down"
+                  onChange={(event) => update(index, {
+                    ...item,
+                    assertion: item.assertion.not_contains != null
+                      ? { not_contains: event.target.value }
+                      : { contains: event.target.value },
+                  })}
+                />
+              </div>
             </FormField>
           </div>
           <FormField label={t("benchmarks.form.fields.command")} required>

@@ -146,12 +146,34 @@ export type BenchmarkRunStatus = "PREPARING" | "READY" | "RUNNING" | "COMPLETED"
 export type BenchmarkCheck = {
   device: string
   command: string
-  assertion: { contains: string }
+  assertion: { contains?: string | null; not_contains?: string | null }
 }
 export type BenchmarkAction = {
   device: string
-  action: "interface_shutdown" | "interface_no_shutdown"
-  interface: string
+  action:
+    | "interface_shutdown"
+    | "interface_no_shutdown"
+    | "ospf_network_add"
+    | "ospf_network_remove"
+    | "mpls_enable"
+    | "mpls_disable"
+    | "default_route_add"
+    | "default_route_remove"
+    | "interface_ip_set"
+    | "acl_block"
+    | "acl_remove"
+  interface?: string | null
+  process_id?: number | null
+  network?: string | null
+  wildcard?: string | null
+  area?: number | null
+  next_hop?: string | null
+  ip_address?: string | null
+  subnet_mask?: string | null
+  acl_number?: number | null
+  direction?: "in" | "out" | null
+  source_network?: string | null
+  source_wildcard?: string | null
 }
 export type BenchmarkRootCause = {
   fault_type: string
