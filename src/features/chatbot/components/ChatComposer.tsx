@@ -1,4 +1,4 @@
-import { Send, Sparkles } from "lucide-react"
+import { Send } from "lucide-react"
 import type { KeyboardEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -26,32 +26,29 @@ export function ChatComposer({
   }
 
   return (
-    <div className="shrink-0 bg-gradient-to-t from-background via-background to-transparent px-3 pt-3 pb-4 sm:px-6">
+    <div className="shrink-0 bg-gradient-to-t from-background via-background to-transparent px-3 pt-2 pb-3 sm:px-6">
       <div className="mx-auto w-full max-w-3xl">
         <div className="relative">
           <Textarea
             value={input}
             onChange={(event) => onInputChange(event.target.value)}
             onKeyDown={handleKeyDown}
-            className="max-h-36 min-h-12 resize-none rounded-2xl bg-card py-3 pr-12 pl-4 text-sm shadow-sm"
+            className="h-10 max-h-32 min-h-10 resize-none rounded-xl bg-card py-[11px] pr-11 pl-3 text-xs leading-4 placeholder:text-xs shadow-sm"
             placeholder={CHAT_COPY.placeholder}
             rows={1}
             disabled={disabled}
           />
           <Button
+            variant="ghost"
             size="icon-sm"
             aria-label="Send message"
             onClick={onSend}
             disabled={disabled || !input.trim()}
-            className="absolute right-2 bottom-2 rounded-full"
+            className="absolute top-1/2 right-1 -translate-y-1/2 rounded-none bg-transparent text-white shadow-none hover:bg-transparent hover:text-white"
           >
             <Send />
           </Button>
         </div>
-        <p className="mt-2 flex items-center justify-center gap-1 text-center type-caption text-muted-foreground">
-          <Sparkles className="size-3" />
-          AI responses may require approval before network changes are applied.
-        </p>
       </div>
     </div>
   )
