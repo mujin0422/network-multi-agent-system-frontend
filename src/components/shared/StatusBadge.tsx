@@ -28,7 +28,10 @@ export function StatusBadge({ value, label }: StatusBadgeProps) {
   const normalized = value?.trim().toUpperCase() ?? ""
   const displayLabel = label ?? (value ? statusLabel(value) : "Unknown")
   const tone =
-    normalized.includes("SUCCESS") ||
+    // A partially completed task still needs attention; never color it as success.
+    normalized === "PARTIAL_SUCCESS"
+      ? STATUS_TONES.warning
+      : normalized.includes("SUCCESS") ||
     normalized === "PASS" ||
     normalized === "COMPLETED" ||
     normalized === "ACTIVE" ||
