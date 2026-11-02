@@ -10,6 +10,8 @@ export function StatusBadge({ value, label }: StatusBadgeProps) {
   const displayLabel = label ?? (value ? value.replaceAll("_", " ") : "Unknown")
   const tone =
     normalized.includes("SUCCESS") ||
+    normalized === "PASS" ||
+    normalized === "COMPLETED" ||
     normalized === "ACTIVE" ||
     normalized === "CONNECTED" ||
     normalized === "READ"
@@ -17,6 +19,7 @@ export function StatusBadge({ value, label }: StatusBadgeProps) {
       : normalized.includes("FAIL") ||
           normalized === "DISABLED" ||
           normalized === "DENIED" ||
+          normalized === "ERROR" ||
           normalized === "REJECTED" ||
           normalized === "WRITE"
         ? STATUS_TONES.danger
