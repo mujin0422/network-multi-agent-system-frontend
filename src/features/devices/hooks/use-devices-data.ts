@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { authApi, brandsApi, categoriesApi, devicesApi, usersApi } from "@/service"
-import type { Brand, Category, DeviceCreate, DeviceUpdate, User } from "@/service"
+import { authApi, brandsApi, categoriesApi, credentialsApi, devicesApi, usersApi } from "@/service"
+import type { Brand, Category, Credential, DeviceCreate, DeviceUpdate, User } from "@/service"
 import type { Device } from "../types/device.type"
 import { catalogName } from "../utils/devices.util"
 
@@ -8,16 +8,17 @@ export function useDevicesData() {
   const [rows, setRows] = useState<Device[]>([])
   const [brands, setBrands] = useState<Brand[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [credentials, setCredentials] = useState<Credential[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [currentUserId, setCurrentUserId] = useState("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const reload = useCallback(async () => {
     try {
-      const [page, brandRows, categoryRows, me, userRows] = await Promise.all([
-        devicesApi.list({ page_size: 100 }), brandsApi.list(), categoriesApi.list(), authApi.me(), usersApi.list().catch(() => []),
+      const [page, brandRows, categoryRows, credentialRows, me, userRows] = await Promise.all([
+        devicesApi.list({ page_size: 100 }), brandsApi.list(), categoriesApi.list(), credentialsApi.list(), authApi.me(), usersApi.list().catch(() => []),
       ])
-      setRows(page.items); setBrands(brandRows); setCategories(categoryRows); setCurrentUserId(me.id); setUsers(userRows)
+      setRows(page.items); setBrands(brandRows); setCategories(categoryRows); setCredentials(credentialRows); setCurrentUserId(me.id); setUsers(userRows)
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải thiết bị") }
     finally { setLoading(false) }
   }, [])
@@ -38,5 +39,5 @@ export function useDevicesData() {
     switches: rows.filter((device) => categories.find((category) => category.id === device.category_id)?.name.toLowerCase().includes("switch")).length,
     deviceTypes: new Set(rows.map((device) => device.device_type)).size,
   }), [rows, categories])
-  return { rows, brands, categories, summary, brandName, categoryName, auditUserName, loading, error, reload, createDevice, updateDevice }
+  return { rows, brands, categories, credentials, summary, brandName, categoryName, auditUserName, loading, error, reload, createDevice, updateDevice }
 }
