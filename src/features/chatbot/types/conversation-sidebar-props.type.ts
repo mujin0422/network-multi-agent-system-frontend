@@ -2,6 +2,7 @@ import type { Conversation } from "./conversation.type"
 
 export type ConversationSidebarProps = {
   conversations: Conversation[]
+  loading?: boolean
   activeConversationId: string
   query: string
   mobileOpen: boolean

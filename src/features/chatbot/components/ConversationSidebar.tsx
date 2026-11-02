@@ -1,3 +1,4 @@
+import { Skeleton } from "@/components/ui/skeleton"
 import { PanelLeftClose, Search } from "lucide-react"
 import { useState } from "react"
 
@@ -18,6 +19,7 @@ import { ConversationTitleDialog } from "./ConversationTitleDialog"
 /** Sidebar hội thoại theo bố cục ứng dụng chat, hỗ trợ desktop và mobile drawer. */
 export function ConversationSidebar({
   conversations,
+  loading = false,
   activeConversationId,
   query,
   mobileOpen,
@@ -71,6 +73,14 @@ export function ConversationSidebar({
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {loading ? (
+            <div role="status" aria-label="Loading conversations" className="space-y-2 px-1">
+              <span className="sr-only">Loading conversations...</span>
+              {Array.from({ length: 6 }, (_, index) => (
+                <Skeleton key={index} className="h-11 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : (
           <TooltipProvider delay={300}>
             {visibleConversations.map((conversation) => (
               <Tooltip key={conversation.id}>
@@ -104,7 +114,8 @@ export function ConversationSidebar({
               </Tooltip>
             ))}
           </TooltipProvider>
-          {visibleConversations.length === 0 && (
+          )}
+          {!loading && visibleConversations.length === 0 && (
             <p className="px-3 py-8 text-center text-xs text-muted-foreground">
               No conversations found.
             </p>

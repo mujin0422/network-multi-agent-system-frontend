@@ -1,3 +1,4 @@
+import { Skeleton } from "@/components/ui/skeleton"
 import { FlaskConical, RotateCcw } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -36,6 +37,8 @@ export function ChatWorkspace() {
     setActiveConversationId,
     setInput,
     sending,
+    loadingConversations,
+    loadingMessages,
     error,
     decideApproval,
   } = useChatMessages({ benchmarkRunId, initialPrompt })
@@ -95,6 +98,7 @@ export function ChatWorkspace() {
 
         <ConversationSidebar
           conversations={conversations}
+          loading={loadingConversations}
           activeConversationId={activeConversationId}
           query={conversationQuery}
           mobileOpen={mobileSidebarOpen}
@@ -125,11 +129,22 @@ export function ChatWorkspace() {
               )}
             </div>
           )}
+          {loadingConversations || loadingMessages ? (
+            <div role="status" aria-label="Loading messages" className="min-h-0 flex-1 overflow-y-auto px-5 py-8">
+              <span className="sr-only">Loading messages...</span>
+              <div className="mx-auto w-full max-w-3xl space-y-6">
+                <Skeleton className="ml-auto h-14 w-2/3 rounded-2xl" />
+                <Skeleton className="h-24 w-4/5 rounded-2xl" />
+                <Skeleton className="ml-auto h-12 w-1/2 rounded-2xl" />
+              </div>
+            </div>
+          ) : (
           <MessageList
             messages={visibleMessages}
             taskPreviews={taskPreviews}
             onApprovalDecision={decideApproval}
           />
+          )}
           {error && (
             <p className="mx-auto w-full max-w-3xl px-6 text-xs text-destructive">{error}</p>
           )}
