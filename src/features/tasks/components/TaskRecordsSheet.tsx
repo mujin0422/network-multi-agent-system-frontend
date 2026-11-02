@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react"
-import { useTranslation } from "react-i18next"
 
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Button } from "@/components/ui/button"
@@ -8,9 +7,7 @@ import {
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError, deviceActionLogsApi, devicesApi, tasksApi } from "@/service"
-import type {
-  DeviceActionLog, Operation, TaskRecords,
-} from "@/service"
+import type { DeviceActionLog, TaskRecords } from "@/service"
 
 type RecordTab = "plan" | "executions" | "devices" | "events" | "approvals" | "commands"
 
@@ -81,7 +78,6 @@ function Section({ children }: { children: ReactNode }) {
 
 /** GROUP 3 AI Execution Management, filtered by task ID and read-only. */
 export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsSheetProps) {
-  const { t } = useTranslation()
   const [data, setData] = useState<TaskRecords | null>(null)
   const [logs, setLogs] = useState<DeviceActionLog[]>([])
   const [hostnames, setHostnames] = useState<Map<string, string>>(new Map())
@@ -136,8 +132,8 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
 
   const operations = data?.task.operations ?? []
   const operationNames = useMemo(
-    () => new Map(operations.map((operation) => [operation.id, operation])),
-    [operations],
+    () => new Map((data?.task.operations ?? []).map((operation) => [operation.id, operation])),
+    [data],
   )
   const operationLabel = (id: string | null) => {
     if (!id) return "—"

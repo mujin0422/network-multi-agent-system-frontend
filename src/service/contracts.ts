@@ -254,6 +254,7 @@ export type Task = {
   source_message_id: string
   user_id: string
   input_message: string
+  task_type: TaskType
   task_status: TaskStatus
   task_type: TaskType
   started_at: string | null
