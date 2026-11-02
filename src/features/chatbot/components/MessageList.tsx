@@ -5,6 +5,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Fragment } from "react"
+import { Button } from "@/components/ui/button"
 import { MESSAGE_SENDER_LABELS } from "../constants/chatbot.constants"
 import type { ChatMessage } from "../types/chat-message.type"
 import type { ChatTaskPreview } from "../types/chat-task-preview.type"
@@ -17,10 +18,12 @@ export function MessageList({
   messages,
   taskPreviews,
   onApprovalDecision,
+  onRetryConversation,
 }: {
   messages: ChatMessage[]
   taskPreviews: ChatTaskPreview[]
   onApprovalDecision: (approvalId: string, decision: "APPROVED" | "REJECTED") => Promise<void>
+  onRetryConversation: () => void
 }) {
   if (messages.length === 0) {
     return (
@@ -109,7 +112,10 @@ export function MessageList({
                   </TooltipContent>
                 </Tooltip>
                 {taskPreview?.approval && (
-                  <ApprovalRequestCard approval={taskPreview.approval} onDecision={onApprovalDecision} />
+                  <ApprovalRequestCard key={taskPreview.approval.id} approval={taskPreview.approval} onDecision={onApprovalDecision} />
+                )}
+                {taskPreview?.approvalLoadError && (
+                  <ApprovalLoadWarning message={taskPreview.approvalLoadError} onRetry={onRetryConversation} />
                 )}
               </div>
             </article>
@@ -117,6 +123,12 @@ export function MessageList({
               <article aria-label="AI processing" className="flex items-start">
                 <div className="min-w-0 flex-1">
                   <AgentActivity task={pendingTaskPreview} />
+                  {pendingTaskPreview.approval && (
+                    <ApprovalRequestCard key={pendingTaskPreview.approval.id} approval={pendingTaskPreview.approval} onDecision={onApprovalDecision} />
+                  )}
+                  {pendingTaskPreview.approvalLoadError && (
+                    <ApprovalLoadWarning message={pendingTaskPreview.approvalLoadError} onRetry={onRetryConversation} />
+                  )}
                 </div>
               </article>
             )}
@@ -125,6 +137,17 @@ export function MessageList({
           })}
         </TooltipProvider>
       </div>
+    </div>
+  )
+}
+
+function ApprovalLoadWarning({ message, onRetry }: { message: string; onRetry: () => void }) {
+  return (
+    <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs text-amber-700 dark:text-amber-300">
+      <p>{message}</p>
+      <Button type="button" size="sm" variant="outline" onClick={onRetry}>
+        Tải lại phiếu phê duyệt
+      </Button>
     </div>
   )
 }

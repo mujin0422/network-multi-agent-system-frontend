@@ -64,9 +64,33 @@ export function useChatMessages(options: ChatOptions = {}) {
     const relevantTasks = allTasks.filter((task) => messageIds.has(task.source_message_id))
     const previews = await Promise.all(relevantTasks.map(async (task): Promise<ChatTaskPreview> => {
       const [detail, events] = await Promise.all([tasksApi.get(task.id), tasksApi.listActivityEvents(task.id)])
-      const approvalEntries = (await Promise.all(detail.operations.map(async (operation) =>
-        (await approvalsApi.listByOperation(operation.id)).map((approval) => ({ approval, operationId: operation.id })),
-      ))).flat()
+      // Chỉ tải approvals của các operation đã yêu cầu phê duyệt; không tạo
+      // request cho tất cả operations trong mỗi vòng polling.
+      const approvalOperationIds = new Set(
+        events
+          .filter((event) => event.event_type === "APPROVAL_REQUESTED" && event.operation_id)
+          .map((event) => event.operation_id),
+      )
+      const approvalOperations = detail.operations.filter(
+        (operation) =>
+          operation.operation_status === "WAITING_APPROVAL" ||
+          approvalOperationIds.has(operation.id),
+      )
+      // Một endpoint lỗi không được làm mất timeline hoặc approval khác.
+      const approvalResponses = await Promise.allSettled(
+        approvalOperations.map(async (operation) =>
+          (await approvalsApi.listByOperation(operation.id)).map((approval) => ({
+            approval,
+            operationId: operation.id,
+          })),
+        ),
+      )
+      const approvalEntries = approvalResponses.flatMap((response) =>
+        response.status === "fulfilled" ? response.value : [],
+      )
+      const approvalFetchFailed = approvalResponses.some(
+        (response) => response.status === "rejected",
+      )
       const responses = conversationMessages.filter(
         (message) =>
           message.sender_by === "AGENT" &&
@@ -128,6 +152,14 @@ export function useChatMessages(options: ChatOptions = {}) {
           commands: approval.commands_snapshot,
           status: approval.approval_status,
         } : undefined,
+        approvalLoadError:
+          task.task_status === "RUNNING" &&
+          (approvalResponse || approvalOperationIds.size > 0) &&
+          !approval
+            ? approvalFetchFailed
+              ? "Không thể tải phiếu phê duyệt. Hãy thử tải lại hội thoại, không gửi yêu cầu cấu hình lần nữa."
+              : "Phiếu phê duyệt chưa sẵn sàng. Bạn có thể tải lại hội thoại."
+            : undefined,
       }
     }))
     setTaskPreviews(previews)

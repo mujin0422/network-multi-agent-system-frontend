@@ -50,4 +50,6 @@ export type ChatTaskPreview = {
   active_duration_ms: number
   activities: AgentActivity[]
   approval?: ApprovalRequest
+  /** Lỗi tải approval không được làm mất timeline của task. */
+  approvalLoadError?: string
 }
