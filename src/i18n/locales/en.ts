@@ -116,6 +116,7 @@ const en = {
     table: {
       scenario: "Scenario / Run",
       status: "Status",
+      timestamp: "Timestamp",
     },
     openRuns: "View runs",
     refresh: "Refresh",
@@ -159,6 +160,8 @@ const en = {
     status: "Status",
     evaluator: "Evaluator",
     evaluatedAt: "Evaluated at",
+    createdAt: "Created at",
+    timestamp: "Timestamp",
     actions: "Actions",
     taskEvaluation: "Task evaluation",
     viewDetails: "View details",

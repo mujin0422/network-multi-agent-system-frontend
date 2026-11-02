@@ -1,4 +1,5 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
+import { TableTimestamp } from "@/components/shared/TableTimestamp"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { CheckCircle2, ListChecks, Play, ShieldAlert } from "lucide-react"
 import { useTranslation } from "react-i18next"
@@ -32,11 +33,6 @@ function groupRun(run: BenchmarkRun): RunGroup {
   if (run.status === "FAILED" || run.cleanup_required) return "ATTENTION"
   if (["PREPARING", "READY", "RUNNING"].includes(run.status)) return "ACTIVE"
   return "COMPLETED"
-}
-
-function displayTime(value: string): string {
-  const date = new Date(value)
-  return Number.isNaN(date.getTime()) ? "—" : date.toLocaleString()
 }
 
 export default function BenchmarkRunsPage() {
@@ -219,10 +215,18 @@ export default function BenchmarkRunsPage() {
                   ),
                 },
                 {
-                  id: "started",
-                  header: t("benchmarkRuns.started"),
-                  className: "min-w-32 text-xs text-muted-foreground",
-                  cell: (run) => displayTime(run.started_at),
+                  id: "timestamp",
+                  header: t("benchmarkRuns.table.timestamp"),
+                  className: "min-w-64 text-muted-foreground",
+                  cell: (run) => (
+                    <TableTimestamp
+                      items={[
+                        { label: t("benchmarkRuns.started"), value: run.started_at },
+                        { label: t("benchmarkRuns.completed"), value: run.completed_at },
+                        { label: t("benchmarkRuns.cleanedAt"), value: run.cleaned_at },
+                      ]}
+                    />
+                  ),
                 },
               ]}
             >

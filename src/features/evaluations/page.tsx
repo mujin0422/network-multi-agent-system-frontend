@@ -1,4 +1,5 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
+import { TableTimestamp } from "@/components/shared/TableTimestamp"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -29,12 +30,6 @@ type EvaluationTableRow = TaskEvaluationSummary & {
   scenarioName: string
   run: BenchmarkRun | null
   rcaResult: EvaluationResult
-}
-
-function readableTime(value: string | null): string {
-  if (!value) return "—"
-  const timestamp = new Date(value)
-  return Number.isNaN(timestamp.getTime()) ? value : timestamp.toLocaleString()
 }
 
 export default function EvaluationsPage() {
@@ -211,10 +206,17 @@ export default function EvaluationsPage() {
               ),
             },
             {
-              id: "evaluated",
-              header: t("evaluationsPage.evaluatedAt"),
-              className: "min-w-36 text-xs text-muted-foreground",
-              cell: (evaluation) => readableTime(evaluation.evaluated_at ?? evaluation.created_at),
+              id: "timestamp",
+              header: t("evaluationsPage.timestamp"),
+              className: "min-w-64 text-muted-foreground",
+              cell: (evaluation) => (
+                <TableTimestamp
+                  items={[
+                    { label: t("evaluationsPage.createdAt"), value: evaluation.created_at },
+                    { label: t("evaluationsPage.evaluatedAt"), value: evaluation.evaluated_at },
+                  ]}
+                />
+              ),
             },
             {
               id: "actions",

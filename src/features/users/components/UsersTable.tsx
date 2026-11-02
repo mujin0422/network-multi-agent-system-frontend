@@ -1,4 +1,5 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
+import { TableTimestamp } from "@/components/shared/TableTimestamp"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
@@ -114,20 +115,18 @@ export function UsersTable() {
                 ),
               },
               {
-                id: "last-login",
-                header: "Last login",
-                className: "type-caption text-muted-foreground",
-                cell: (user) =>
-                  user.last_login_at
-                    ? new Date(user.last_login_at).toLocaleString("vi-VN")
-                    : "Never",
-              },
-              {
-                id: "created",
-                header: "Created",
-                className: "type-caption text-muted-foreground",
-                cell: (user) =>
-                  new Date(user.created_at).toLocaleDateString("vi-VN"),
+                id: "timestamp",
+                header: "Timestamp",
+                className: "min-w-64 text-muted-foreground",
+                cell: (user) => (
+                  <TableTimestamp
+                    items={[
+                      { label: "Created at", value: user.created_at },
+                      { label: "Updated at", value: user.last_updated_at },
+                      { label: "Last login", value: user.last_login_at, emptyLabel: "Never" },
+                    ]}
+                  />
+                ),
               },
               {
                 id: "actions",

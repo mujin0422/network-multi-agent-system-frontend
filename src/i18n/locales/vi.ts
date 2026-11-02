@@ -116,6 +116,7 @@ const vi = {
     table: {
       scenario: "Kịch bản / Lượt chạy",
       status: "Trạng thái",
+      timestamp: "Timestamp",
     },
     openRuns: "Xem lượt chạy",
     refresh: "Làm mới",
@@ -159,6 +160,8 @@ const vi = {
     status: "Trạng thái",
     evaluator: "Người đánh giá",
     evaluatedAt: "Thời gian đánh giá",
+    createdAt: "Thời gian tạo",
+    timestamp: "Timestamp",
     actions: "Thao tác",
     taskEvaluation: "Đánh giá Task",
     viewDetails: "Xem chi tiết",
