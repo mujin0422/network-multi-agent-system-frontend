@@ -1,4 +1,5 @@
 import { FormField } from "@/components/shared/FeatureFormSheet"
+import { BenchmarkDeviceCombobox } from "./BenchmarkDeviceCombobox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkRootCause } from "@/service"
@@ -6,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import type { BenchmarkGroundTruthFieldsProps } from "../types/benchmark.type"
 import { createEmptyRootCause } from "../utils/benchmark-scenario-form.util"
 
-export function BenchmarkGroundTruthFields({ items, onChange }: BenchmarkGroundTruthFieldsProps) {
+export function BenchmarkGroundTruthFields({ deviceOptions, items, onChange }: BenchmarkGroundTruthFieldsProps) {
   const { t } = useTranslation()
 
   function update(index: number, next: BenchmarkRootCause) {
@@ -28,7 +29,12 @@ export function BenchmarkGroundTruthFields({ items, onChange }: BenchmarkGroundT
               <Input value={item.fault_type} required placeholder="link_down" onChange={(event) => update(index, { ...item, fault_type: event.target.value })} />
             </FormField>
             <FormField label={t("benchmarks.form.fields.device")} required>
-              <Input value={item.device} required placeholder="P3" onChange={(event) => update(index, { ...item, device: event.target.value })} />
+              <BenchmarkDeviceCombobox
+                name={`benchmark-ground-truth-device-${index}`}
+                value={item.device}
+                options={deviceOptions}
+                onChange={(value) => update(index, { ...item, device: value })}
+              />
             </FormField>
             <FormField label={t("benchmarks.form.fields.interface")}>
               <Input value={item.interface ?? ""} placeholder="FastEthernet0/0" onChange={(event) => update(index, { ...item, interface: event.target.value || null })} />

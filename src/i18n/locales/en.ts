@@ -144,8 +144,13 @@ const en = {
       cleanup: "Unable to restore the environment.",
       update: "Unable to update the scenario.",
       requiredTerms: "Add at least one required evaluation term.",
+      loadDevices: "Unable to load device inventory. Existing scenario device names are retained.",
+      noDevices: "No network devices found. Add a device before creating a benchmark.",
+      deviceRequired: "Select a device for every check, action, and root cause.",
     },
     form: {
+      loadingDevices: "Loading network devices...",
+      selectDevice: "Select device",
       entity: "benchmark scenario",
       description: "Define a reproducible GNS3 fault, its expected diagnosis, and the cleanup procedure.",
       sections: {

@@ -1,4 +1,5 @@
 import { FormField } from "@/components/shared/FeatureFormSheet"
+import { BenchmarkDeviceCombobox } from "./BenchmarkDeviceCombobox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkCheck } from "@/service"
@@ -6,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import type { BenchmarkCheckFieldsProps } from "../types/benchmark.type"
 import { createEmptyCheck } from "../utils/benchmark-scenario-form.util"
 
-export function BenchmarkCheckFields({ title, items, onChange }: BenchmarkCheckFieldsProps) {
+export function BenchmarkCheckFields({ section, deviceOptions, title, items, onChange }: BenchmarkCheckFieldsProps) {
   const { t } = useTranslation()
 
   function update(index: number, next: BenchmarkCheck) {
@@ -27,7 +28,12 @@ export function BenchmarkCheckFields({ title, items, onChange }: BenchmarkCheckF
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label={t("benchmarks.form.fields.device")} required>
-              <Input value={item.device} required placeholder="P3" onChange={(event) => update(index, { ...item, device: event.target.value })} />
+              <BenchmarkDeviceCombobox
+                name={`benchmark-${section}-device-${index}`}
+                value={item.device}
+                options={deviceOptions}
+                onChange={(value) => update(index, { ...item, device: value })}
+              />
             </FormField>
             <FormField label={t("benchmarks.form.fields.expectedOutput")} required>
               <div className="flex gap-2">

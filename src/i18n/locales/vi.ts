@@ -144,8 +144,13 @@ const vi = {
       cleanup: "Không thể khôi phục môi trường.",
       update: "Không thể cập nhật kịch bản.",
       requiredTerms: "Hãy thêm ít nhất một từ khóa đánh giá bắt buộc.",
+      loadDevices: "Không thể tải danh sách thiết bị. Tên thiết bị của benchmark hiện có vẫn được giữ nguyên.",
+      noDevices: "Chưa có thiết bị mạng. Hãy thêm thiết bị trước khi tạo benchmark.",
+      deviceRequired: "Hãy chọn thiết bị cho mọi điều kiện, thao tác và nguyên nhân lỗi.",
     },
     form: {
+      loadingDevices: "Đang tải thiết bị mạng...",
+      selectDevice: "Chọn thiết bị",
       entity: "kịch bản benchmark",
       description: "Định nghĩa lỗi GNS3 có thể tái lập, kết quả chẩn đoán mong đợi và quy trình khôi phục.",
       sections: {

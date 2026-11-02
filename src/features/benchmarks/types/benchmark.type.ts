@@ -8,6 +8,7 @@ import type {
   BenchmarkScenarioDetail,
 } from "@/service"
 import type { ReactNode } from "react"
+import type { ComboboxOption } from "@/types/components"
 
 export type BenchmarkScenarioFormProps = {
   scenario?: BenchmarkScenarioDetail | null
@@ -17,12 +18,16 @@ export type BenchmarkScenarioFormProps = {
 }
 
 export type BenchmarkCheckFieldsProps = {
+  section: "preconditions" | "verification"
+  deviceOptions: readonly ComboboxOption[]
   title: string
   items: BenchmarkCheck[]
   onChange: (items: BenchmarkCheck[]) => void
 }
 
 export type BenchmarkActionFieldsProps = {
+  section: "injection" | "cleanup"
+  deviceOptions: readonly ComboboxOption[]
   title: string
   items: BenchmarkAction[]
   defaultAction: BenchmarkAction["action"]
@@ -30,6 +35,7 @@ export type BenchmarkActionFieldsProps = {
 }
 
 export type BenchmarkGroundTruthFieldsProps = {
+  deviceOptions: readonly ComboboxOption[]
   items: BenchmarkRootCause[]
   onChange: (items: BenchmarkRootCause[]) => void
 }
