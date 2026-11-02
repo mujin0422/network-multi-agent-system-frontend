@@ -20,11 +20,12 @@ export function ApprovalRequestCard({
   const [localError, setLocalError] = useState<string | null>(null)
   const decision = localDecision ?? approval.status
   const decided = decision !== "PENDING"
-  const decisionLabel = {
+  const decisionLabel: Record<ApprovalRequest["status"], string> = {
+    PENDING: "Đang chờ phê duyệt",
     APPROVED: "Đã phê duyệt",
     REJECTED: "Đã từ chối",
     EXPIRED: "Đã hết thời hạn phê duyệt",
-  } as const
+  }
   const expiresAt = approval.expires_at ? new Date(approval.expires_at) : null
   const expiryLabel = expiresAt && !Number.isNaN(expiresAt.getTime())
     ? expiresAt.toLocaleString("vi-VN")
