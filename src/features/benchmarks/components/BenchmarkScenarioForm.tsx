@@ -21,19 +21,19 @@ import { BenchmarkGroundTruthFields } from "./BenchmarkGroundTruthFields"
 import { BenchmarkScenarioSection } from "./BenchmarkScenarioSection"
 
 /** Form có cấu trúc để tạo benchmark scenario mà không phải nhập JSON thô. */
-export function BenchmarkScenarioForm({ open, onOpenChange, onSave }: BenchmarkScenarioFormProps) {
+export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: BenchmarkScenarioFormProps) {
   const { t } = useTranslation()
-  const [preconditions, setPreconditions] = useState<BenchmarkCheck[]>([createEmptyCheck()])
-  const [injection, setInjection] = useState<BenchmarkAction[]>([createEmptyAction("interface_shutdown")])
-  const [verification, setVerification] = useState<BenchmarkCheck[]>([createEmptyCheck()])
-  const [groundTruth, setGroundTruth] = useState<BenchmarkRootCause[]>([createEmptyRootCause()])
-  const [cleanup, setCleanup] = useState<BenchmarkAction[]>([createEmptyAction("interface_no_shutdown")])
+  const [preconditions, setPreconditions] = useState<BenchmarkCheck[]>(scenario?.preconditions ?? [createEmptyCheck()])
+  const [injection, setInjection] = useState<BenchmarkAction[]>(scenario?.injection ?? [createEmptyAction("interface_shutdown")])
+  const [verification, setVerification] = useState<BenchmarkCheck[]>(scenario?.fault_verification ?? [createEmptyCheck()])
+  const [groundTruth, setGroundTruth] = useState<BenchmarkRootCause[]>(scenario?.ground_truth ?? [createEmptyRootCause()])
+  const [cleanup, setCleanup] = useState<BenchmarkAction[]>(scenario?.cleanup ?? [createEmptyAction("interface_no_shutdown")])
 
   return (
     <FeatureFormSheet
       open={open}
       onOpenChange={onOpenChange}
-      mode="create"
+      mode={scenario ? "edit" : "create"}
       entityLabel={t("benchmarks.form.entity")}
       description={t("benchmarks.form.description")}
       contentClassName="data-[side=right]:sm:max-w-3xl!"
@@ -67,23 +67,23 @@ export function BenchmarkScenarioForm({ open, onOpenChange, onSave }: BenchmarkS
       <BenchmarkScenarioSection title={t("benchmarks.form.sections.information")} description={t("benchmarks.form.sections.informationDescription")}>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label={t("benchmarks.form.fields.name")} required>
-            <Input name="name" required placeholder="P3 interface link-down diagnosis" />
+            <Input name="name" required defaultValue={scenario?.name} placeholder="P3 interface link-down diagnosis" />
           </FormField>
           <FormField label={t("benchmarks.form.fields.scenarioKey")} required hint={t("benchmarks.form.hints.scenarioKey")}>
-            <Input name="scenario_key" required pattern="[a-z0-9][a-z0-9-]*" placeholder="p3-interface-link-down" />
+            <Input name="scenario_key" required readOnly={Boolean(scenario)} defaultValue={scenario?.scenario_key} pattern="[a-z0-9][a-z0-9-]*" placeholder="p3-interface-link-down" />
           </FormField>
           <FormField label={t("benchmarks.form.fields.version")} required>
-            <Input name="version" required defaultValue="1.0" placeholder="1.0" />
+            <Input name="version" required defaultValue={scenario?.version ?? "1.0"} placeholder="1.0" />
           </FormField>
           <FormField label={t("benchmarks.form.fields.topology")} required>
-            <Input name="topology" required defaultValue="mpls-core" placeholder="mpls-core" />
+            <Input name="topology" required defaultValue={scenario?.topology ?? "mpls-core"} placeholder="mpls-core" />
           </FormField>
         </div>
         <FormField label={t("benchmarks.form.fields.description")} required>
-          <Textarea name="description" required rows={3} placeholder={t("benchmarks.form.placeholders.description")} />
+          <Textarea name="description" required defaultValue={scenario?.description} rows={3} placeholder={t("benchmarks.form.placeholders.description")} />
         </FormField>
         <FormField label={t("benchmarks.form.fields.initialMessage")} required hint={t("benchmarks.form.hints.initialMessage")}>
-          <Textarea name="initial_message" required rows={4} placeholder={t("benchmarks.form.placeholders.initialMessage")} />
+          <Textarea name="initial_message" required defaultValue={scenario?.initial_message} rows={4} placeholder={t("benchmarks.form.placeholders.initialMessage")} />
         </FormField>
       </BenchmarkScenarioSection>
 
@@ -104,6 +104,7 @@ export function BenchmarkScenarioForm({ open, onOpenChange, onSave }: BenchmarkS
         <FormField label={t("benchmarks.form.fields.requiredTerms")} required hint={t("benchmarks.form.hints.requiredTerms")}>
           <Textarea
             name="evaluation_required_terms"
+            defaultValue={scenario?.evaluation_required_terms.join("\n")}
             required
             rows={4}
             className="font-mono text-xs"
