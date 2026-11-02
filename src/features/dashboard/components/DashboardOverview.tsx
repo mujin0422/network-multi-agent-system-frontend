@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { ChevronDown, RefreshCw } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
@@ -27,6 +28,17 @@ export function DashboardOverview() {
     activities, deviceActions, deviceBars, metrics, taskBars,
     taskOutcomes, executionTimes, successRate, loading, error, reload,
   } = useDashboardData()
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title={DASHBOARD_COPY.title}
+        description={DASHBOARD_COPY.description}
+        stats={5}
+        variant="dashboard"
+      />
+    )
+  }
+
   return (
     <PageLayout>
       <PageLayoutHeader

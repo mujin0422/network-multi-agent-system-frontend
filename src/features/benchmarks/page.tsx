@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { AlertTriangle } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
@@ -45,6 +46,17 @@ export default function BenchmarksPage() {
 
   const runInProgress = selectedRun !== null && selectedRun.status !== "CLEANED"
 
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title={t("benchmarks.title")}
+        description={t("benchmarks.description")}
+        stats={4}
+        variant="cards"
+      />
+    )
+  }
+
   return (
     <PageLayout>
       <PageLayoutHeader title={t("benchmarks.title")} description={t("benchmarks.description")}>
@@ -73,10 +85,7 @@ export default function BenchmarksPage() {
           />
         )}
 
-        {loading ? (
-          <p className="text-xs text-muted-foreground">{t("benchmarks.loading")}</p>
-        ) : (
-          <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-4 xl:grid-cols-2">
             {scenarios.map((scenario) => (
               <BenchmarkScenarioCard
                 key={scenario.id}
@@ -87,8 +96,7 @@ export default function BenchmarksPage() {
                 onToggle={(row) => void toggleScenario(row)}
               />
             ))}
-          </div>
-        )}
+        </div>
 
         <BenchmarkRunHistory runs={runs} onSelect={setSelectedRun} />
       </PageLayoutContent>

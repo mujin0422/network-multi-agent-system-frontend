@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { Pencil, Save, X } from "lucide-react"
 import { useState, type FormEvent } from "react"
 import {
@@ -13,7 +14,7 @@ import { ProfileSummaryCard } from "./ProfileSummaryCard"
 
 /** Điều phối dữ liệu và chế độ chỉnh sửa cho các component hồ sơ. */
 export function ProfileDetails() {
-  const { profile, role, session, mode, setMode, saveProfile } =
+  const { profile, role, session, mode, loading, error, setMode, saveProfile } =
     useProfileData()
   const [fullName, setFullName] = useState(profile.full_name)
   const [email, setEmail] = useState(profile.email)
@@ -48,6 +49,17 @@ export function ProfileDetails() {
     </Button>
   )
 
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title={PROFILE_COPY.title}
+        description={PROFILE_COPY.description}
+        stats={0}
+        variant="profile"
+      />
+    )
+  }
+
   return (
     <PageLayout>
       <PageLayoutHeader
@@ -56,6 +68,7 @@ export function ProfileDetails() {
       >
         {headerAction}
       </PageLayoutHeader>
+      {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
       <PageLayoutContent className="grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)]">
         <ProfileSummaryCard profile={profile} roleName={role.name} />
         <ProfileInformationForm

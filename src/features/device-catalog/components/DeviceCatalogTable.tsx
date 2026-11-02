@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import {
   PageLayout,
@@ -17,7 +18,7 @@ import { CategoryTable } from "./CategoryTable"
 
 /** Màn hình quản lý master data brand và category cho inventory. */
 export function DeviceCatalogTable({ entity }: { entity: CatalogEntity }) {
-  const { brands, categories, summary, createBrand, updateBrand } =
+  const { brands, categories, summary, createBrand, updateBrand, loading } =
     useDeviceCatalogData()
   const [form, setForm] = useState<{
     open: boolean
@@ -30,6 +31,16 @@ export function DeviceCatalogTable({ entity }: { entity: CatalogEntity }) {
     formEntity: CatalogEntity,
     record: CatalogRecord | null = null,
   ) => setForm({ open: true, mode, entity: formEntity, record })
+
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title="Device Catalog"
+        description="Manage inventory brands, categories, and the Netmiko drivers allowed for each vendor."
+        stats={4}
+      />
+    )
+  }
 
   return (
     <>

@@ -42,6 +42,8 @@ export function useChatMessages(options: ChatOptions = {}) {
   const [taskPreviews, setTaskPreviews] = useState<ChatTaskPreview[]>([])
   const [conversations, setConversations] = useState<Conversation[]>([draftConversation()])
   const [activeConversationId, setActiveConversationIdState] = useState(DRAFT_ID)
+  const [loadingConversations, setLoadingConversations] = useState(true)
+  const [loadingMessages, setLoadingMessages] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const pollingGeneration = useRef(0)
@@ -132,13 +134,15 @@ export function useChatMessages(options: ChatOptions = {}) {
     return previews
   }, [])
 
-  const loadConversation = useCallback(async (conversationId: string) => {
+  const loadConversation = useCallback(async (conversationId: string, showSkeleton = false) => {
+    if (showSkeleton) setLoadingMessages(true)
     try {
       const rows = await conversationsApi.listMessages(conversationId)
       setMessages(rows)
       const previews = await loadTaskPreviews(rows)
       return { rows, previews }
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải hội thoại") }
+    finally { if (showSkeleton) setLoadingMessages(false) }
   }, [loadTaskPreviews])
 
   const reloadConversations = useCallback(async () => {
@@ -153,19 +157,20 @@ export function useChatMessages(options: ChatOptions = {}) {
         return current !== DRAFT_ID && rows.some((row) => row.id === current) ? current : rows[0]?.id ?? DRAFT_ID
       })
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải danh sách hội thoại") }
+    finally { setLoadingConversations(false) }
   }, [benchmarkRunId])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ state với API khi mount.
   useEffect(() => { void reloadConversations() }, [reloadConversations])
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ message khi đổi conversation.
-    if (activeConversationId !== DRAFT_ID) void loadConversation(activeConversationId)
+    if (activeConversationId !== DRAFT_ID) void loadConversation(activeConversationId, true)
   }, [activeConversationId, loadConversation])
 
   function createNewConversation() {
     pollingGeneration.current += 1
     if (!conversations.some((conversation) => conversation.id === DRAFT_ID)) setConversations((current) => [draftConversation(), ...current])
-    setActiveConversationIdState(DRAFT_ID); setMessages([]); setTaskPreviews([]); setInput(""); setError(null)
+    setActiveConversationIdState(DRAFT_ID); setMessages([]); setTaskPreviews([]); setLoadingMessages(false); setInput(""); setError(null)
   }
   function setActiveConversationId(id: string) {
     pollingGeneration.current += 1
@@ -271,5 +276,5 @@ export function useChatMessages(options: ChatOptions = {}) {
     }
   }, [activeConversationId, loadConversation, pollWorkflow, taskPreviews])
 
-  return { input, messages, taskPreviews, conversations, activeConversationId, sending, error, createNewConversation, renameConversation, sendMessage, decideApproval, setActiveConversationId, setInput }
+  return { input, messages, taskPreviews, conversations, activeConversationId, sending, loadingConversations, loadingMessages, error, createNewConversation, renameConversation, sendMessage, decideApproval, setActiveConversationId, setInput }
 }

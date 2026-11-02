@@ -23,12 +23,14 @@ export function useProfileData() {
   const [session] = useState(readSession)
   const [mode, setMode] = useState<ProfileMode>("view")
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
   const reload = useCallback(async () => {
     try {
       const user = await authApi.me()
       const userRole = await rolesApi.get(user.role_id)
       setProfile(user); setRole(userRole)
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải hồ sơ") }
+    finally { setLoading(false) }
   }, [])
   // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ state với API khi mount.
   useEffect(() => { void reload() }, [reload])
@@ -36,5 +38,5 @@ export function useProfileData() {
     const updated = await usersApi.update(profile.id, changes)
     setProfile(updated); setMode("view")
   }
-  return { profile, role, session, mode, error, setMode, saveProfile }
+  return { profile, role, session, mode, error, loading, setMode, saveProfile }
 }

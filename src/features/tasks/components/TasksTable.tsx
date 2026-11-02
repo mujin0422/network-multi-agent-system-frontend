@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
@@ -28,7 +29,7 @@ import { TaskExecutionPanel } from "./TaskExecutionPanel"
 
 /** Màn hình theo dõi task, trạng thái thực thi và các bước cần phê duyệt. */
 export function TasksTable() {
-  const { rows, usersById, activeId, selected, operations, summary, setActiveId } = useTasksData()
+  const { rows, usersById, activeId, selected, operations, summary, setActiveId, loading } = useTasksData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -43,6 +44,17 @@ export function TasksTable() {
       ? "—"
       : date.toLocaleString("vi-VN")
   }
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title="Tasks"
+        description="Track AI plans, execution progress, and human approvals."
+        stats={4}
+      variant="split"
+      />
+    )
+  }
+
   return (
     <>
       <PageLayout>

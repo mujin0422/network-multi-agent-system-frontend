@@ -1,3 +1,4 @@
+import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
@@ -22,7 +23,7 @@ import { CredentialStats } from "./CredentialStats"
 
 /** Màn hình quản lý, tìm kiếm và kiểm tra các bộ thông tin xác thực. */
 export function CredentialsTable() {
-  const { rows, summary, auditUserName, createCredential, updateCredential } = useCredentialsData()
+  const { rows, summary, auditUserName, createCredential, updateCredential, loading } = useCredentialsData()
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -37,6 +38,16 @@ export function CredentialsTable() {
   )
   const auditTimestamp = (timestamp: string) =>
     new Date(timestamp).toLocaleString("vi-VN")
+
+  if (loading) {
+    return (
+      <PageLoadingSkeleton
+        title="Credentials"
+        description="Encrypted access profiles used by agents to connect to devices."
+        stats={4}
+      />
+    )
+  }
 
   return (
     <>
