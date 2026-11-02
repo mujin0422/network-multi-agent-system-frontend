@@ -20,6 +20,15 @@ export function ApprovalRequestCard({
   const [localError, setLocalError] = useState<string | null>(null)
   const decision = localDecision ?? approval.status
   const decided = decision !== "PENDING"
+  const decisionLabel = {
+    APPROVED: "Đã phê duyệt",
+    REJECTED: "Đã từ chối",
+    EXPIRED: "Đã hết thời hạn phê duyệt",
+  } as const
+  const expiresAt = approval.expires_at ? new Date(approval.expires_at) : null
+  const expiryLabel = expiresAt && !Number.isNaN(expiresAt.getTime())
+    ? expiresAt.toLocaleString("vi-VN")
+    : null
 
   async function decide(nextDecision: "APPROVED" | "REJECTED") {
     // Hiển thị quyết định ngay trong khi workflow tiếp tục polling ở nền.
@@ -71,10 +80,15 @@ export function ApprovalRequestCard({
             <div key={command}>$ {command}</div>
           ))}
         </div>
+        {expiryLabel && (
+          <p className="text-xs text-muted-foreground">
+            Hạn phê duyệt: <time dateTime={approval.expires_at ?? undefined}>{expiryLabel}</time>
+          </p>
+        )}
         {localError && <p role="alert" className="text-xs text-destructive">{localError}</p>}
         {decided ? (
           <div className="rounded-lg border bg-background/70 px-3 py-2 text-xs font-medium">
-            Quyết định: {decision === "APPROVED" ? "Đã phê duyệt" : "Đã từ chối"}
+            Trạng thái: {decisionLabel[decision]}
           </div>
         ) : (
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">

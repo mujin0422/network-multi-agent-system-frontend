@@ -34,6 +34,7 @@ export type ApprovalRequest = {
   devices: string[]
   commands: string[]
   status: "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED"
+  expires_at: string | null
 }
 
 /** View model của toàn bộ workflow sinh ra từ một USER message. */

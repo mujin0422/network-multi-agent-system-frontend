@@ -9,6 +9,7 @@ const STATUS_LABELS: Record<string, string> = {
   FAIL: "Fail",
   NOT_APPLICABLE: "Not applicable",
   PENDING: "Pending",
+  EXPIRED: "Expired",
   ERROR: "Error",
   UNKNOWN: "Unknown",
 }
@@ -47,7 +48,7 @@ export function StatusBadge({ value, label }: StatusBadgeProps) {
         ? STATUS_TONES.danger
         : normalized.includes("RUNNING") || normalized === "PLANNING"
           ? STATUS_TONES.info
-          : normalized.includes("WAIT") || normalized === "PENDING"
+          : normalized.includes("WAIT") || normalized === "PENDING" || normalized === "EXPIRED"
             ? STATUS_TONES.warning
             : STATUS_TONES.neutral
 

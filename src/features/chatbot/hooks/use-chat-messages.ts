@@ -136,7 +136,9 @@ export function useChatMessages(options: ChatOptions = {}) {
               ? event.event_data.detail
               : typeof event.event_data.error === "string"
                 ? event.event_data.error
-                : undefined,
+                : event.event_data.reason === "APPROVAL_TIMEOUT"
+                  ? "Hết thời gian chờ phê duyệt; tác vụ đã tự kết thúc."
+                  : undefined,
           status: event.event_status,
           started_at: event.started_at ?? undefined,
           completed_at: event.completed_at ?? undefined,
@@ -152,6 +154,7 @@ export function useChatMessages(options: ChatOptions = {}) {
             : [approval.operation_device_id],
           commands: approval.commands_snapshot,
           status: approval.approval_status,
+          expires_at: approval.expires_at,
         } : undefined,
         approvalLoadError:
           task.task_status === "RUNNING" &&
@@ -210,6 +213,22 @@ export function useChatMessages(options: ChatOptions = {}) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ message khi đổi conversation.
     if (activeConversationId !== DRAFT_ID) void loadConversation(activeConversationId, true)
   }, [activeConversationId, loadConversation])
+
+  // Once the workflow pauses, the initial polling loop stops. Keep refreshing
+  // while the user is viewing a pending approval so server-side expiry appears
+  // without a manual reload. Backend expiry is independent of this UI polling.
+  const hasPendingApproval = taskPreviews.some(
+    (preview) =>
+      preview.task_status === "RUNNING" &&
+      preview.approval?.status === "PENDING",
+  )
+  useEffect(() => {
+    if (activeConversationId === DRAFT_ID || !hasPendingApproval) return
+    const timer = window.setInterval(() => {
+      void loadConversation(activeConversationId, false, true)
+    }, 10_000)
+    return () => window.clearInterval(timer)
+  }, [activeConversationId, hasPendingApproval, loadConversation])
 
   function createNewConversation() {
     pollingGeneration.current += 1
