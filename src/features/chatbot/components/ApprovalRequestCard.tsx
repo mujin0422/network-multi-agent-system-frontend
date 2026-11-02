@@ -17,18 +17,21 @@ export function ApprovalRequestCard({
     "APPROVED" | "REJECTED" | null
   >(null)
   const [submitting, setSubmitting] = useState(false)
+  const [localError, setLocalError] = useState<string | null>(null)
   const decision = localDecision ?? approval.status
   const decided = decision !== "PENDING"
 
   async function decide(nextDecision: "APPROVED" | "REJECTED") {
     // Hiển thị quyết định ngay trong khi workflow tiếp tục polling ở nền.
+    setLocalError(null)
     setLocalDecision(nextDecision)
     setSubmitting(true)
     try {
       await onDecision(approval.id, nextDecision)
     } catch (error) {
+      // Không đánh dấu đã duyệt khi API POST thực sự thất bại.
       setLocalDecision(null)
-      throw error
+      setLocalError(error instanceof Error ? error.message : "Không thể gửi quyết định phê duyệt")
     } finally {
       setSubmitting(false)
     }
@@ -68,6 +71,7 @@ export function ApprovalRequestCard({
             <div key={command}>$ {command}</div>
           ))}
         </div>
+        {localError && <p role="alert" className="text-xs text-destructive">{localError}</p>}
         {decided ? (
           <div className="rounded-lg border bg-background/70 px-3 py-2 text-xs font-medium">
             Quyết định: {decision === "APPROVED" ? "Đã phê duyệt" : "Đã từ chối"}

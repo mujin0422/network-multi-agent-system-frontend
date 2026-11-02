@@ -6,8 +6,9 @@ import type { ChatTaskPreview } from "../types/chat-task-preview.type"
 import type { Conversation } from "../types/conversation.type"
 
 const DRAFT_ID = "new-conversation"
-const POLL_INTERVAL_MS = 750
-const MAX_POLL_ATTEMPTS = 800
+const POLL_INTERVAL_MS = 1500
+const MAX_POLL_ATTEMPTS = 400
+const MAX_CONSECUTIVE_POLL_FAILURES = 6
 const wait = (duration: number) => new Promise((resolve) => window.setTimeout(resolve, duration))
 const draftConversation = (): Conversation => ({
   id: DRAFT_ID, user_id: "", title: "New conversation",
@@ -166,15 +167,26 @@ export function useChatMessages(options: ChatOptions = {}) {
     return previews
   }, [])
 
-  const loadConversation = useCallback(async (conversationId: string, showSkeleton = false) => {
+  const loadConversation = useCallback(async (
+    conversationId: string,
+    showSkeleton = false,
+    silentFailure = false,
+  ) => {
     if (showSkeleton) setLoadingMessages(true)
     try {
       const rows = await conversationsApi.listMessages(conversationId)
       setMessages(rows)
       const previews = await loadTaskPreviews(rows)
       return { rows, previews }
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải hội thoại") }
-    finally { if (showSkeleton) setLoadingMessages(false) }
+    } catch (reason) {
+      // Polling xử lý retry riêng; giữ lại timeline đang hiển thị khi mất mạng.
+      if (!silentFailure) {
+        setError(reason instanceof Error ? reason.message : "Không thể tải hội thoại")
+      }
+      return undefined
+    } finally {
+      if (showSkeleton) setLoadingMessages(false)
+    }
   }, [loadTaskPreviews])
 
   const reloadConversations = useCallback(async () => {
@@ -230,10 +242,23 @@ export function useChatMessages(options: ChatOptions = {}) {
     sourceMessageId: string,
     generation: number,
   ) => {
+    let consecutiveFailures = 0
     for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt += 1) {
       if (pollingGeneration.current !== generation) return
-      const snapshot = await loadConversation(conversationId)
-      if (!snapshot) return
+      const snapshot = await loadConversation(conversationId, false, true)
+      if (pollingGeneration.current !== generation) return
+
+      if (!snapshot) {
+        consecutiveFailures += 1
+        if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+          setError("Mất kết nối khi cập nhật tiến trình. Hãy tải lại hội thoại, không gửi yêu cầu cấu hình lần nữa.")
+          return
+        }
+        await wait(Math.min(POLL_INTERVAL_MS * 2 ** consecutiveFailures, 8000))
+        continue
+      }
+      consecutiveFailures = 0
+      setError(null)
 
       const finalResponse = snapshot.rows.some(
         (message) =>
@@ -291,6 +316,32 @@ export function useChatMessages(options: ChatOptions = {}) {
     } finally { setSending(false) }
   }
 
+  async function retryConversation() {
+    setError(null)
+    if (activeConversationId === DRAFT_ID) {
+      await reloadConversations()
+      return
+    }
+
+    // Tải lại dữ liệu đã lưu, không POST thêm message/configuration request.
+    const generation = pollingGeneration.current + 1
+    pollingGeneration.current = generation
+    const snapshot = await loadConversation(activeConversationId, true)
+    if (!snapshot) return
+
+    const lastUserMessage = [...snapshot.rows]
+      .filter((message) => message.sender_by === "USER")
+      .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0]
+    if (!lastUserMessage) return
+    const preview = snapshot.previews.find(
+      (task) => task.source_message_id === lastUserMessage.id,
+    )
+    const completed = preview && ["SUCCESS", "PARTIAL_SUCCESS", "FAILED", "REJECTED"].includes(preview.task_status)
+    if (!completed && preview?.approval?.status !== "PENDING") {
+      void pollWorkflow(activeConversationId, lastUserMessage.id, generation)
+    }
+  }
+
   const decideApproval = useCallback(async (approvalId: string, decision: "APPROVED" | "REJECTED") => {
     setSending(true)
     setError(null)
@@ -303,10 +354,11 @@ export function useChatMessages(options: ChatOptions = {}) {
       else await loadConversation(activeConversationId)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Không thể xử lý phê duyệt")
+      throw reason
     } finally {
       setSending(false)
     }
   }, [activeConversationId, loadConversation, pollWorkflow, taskPreviews])
 
-  return { input, messages, taskPreviews, conversations, activeConversationId, sending, loadingConversations, loadingMessages, error, createNewConversation, renameConversation, sendMessage, decideApproval, setActiveConversationId, setInput }
+  return { input, messages, taskPreviews, conversations, activeConversationId, sending, loadingConversations, loadingMessages, error, createNewConversation, renameConversation, sendMessage, decideApproval, retryConversation, setActiveConversationId, setInput }
 }
