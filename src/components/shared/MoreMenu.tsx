@@ -14,7 +14,7 @@ import type { MoreMenuProps } from "@/types/components"
  * Menu thao tác nhanh cho một bản ghi.
  * Chỉ hiển thị những hành động đã được truyền callback tương ứng.
  */
-export function MoreMenu({ onView, onEdit, onCopy }: MoreMenuProps) {
+export function MoreMenu({ onView, onEdit, onCopy, actions = [] }: MoreMenuProps) {
   const { t } = useTranslation()
 
   return (
@@ -31,6 +31,12 @@ export function MoreMenu({ onView, onEdit, onCopy }: MoreMenuProps) {
         <Ellipsis />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36">
+        {actions.map((action) => (
+          <DropdownMenuItem key={action.id} onClick={action.onClick}>
+            {action.icon}
+            {action.label}
+          </DropdownMenuItem>
+        ))}
         {onView && (
           <DropdownMenuItem onClick={onView}>
             <Eye />
