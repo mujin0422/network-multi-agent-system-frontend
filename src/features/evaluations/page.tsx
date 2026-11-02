@@ -1,3 +1,4 @@
+import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -166,8 +167,9 @@ export default function EvaluationsPage() {
                   <p className="max-w-64 truncate text-xs font-medium" title={evaluation.scenarioName}>
                     {evaluation.scenarioName}
                   </p>
-                  <p className="mt-1 break-all font-mono type-caption text-identifier" title={evaluation.task_id}>
-                    {evaluation.task_id}
+                  <TableIdentifier value={evaluation.id} className="mt-1 break-all" />
+                  <p className="mt-1 type-caption text-muted-foreground">
+                    Task: <TableIdentifier value={evaluation.task_id} variant="reference" inline />
                   </p>
                 </div>
               ),

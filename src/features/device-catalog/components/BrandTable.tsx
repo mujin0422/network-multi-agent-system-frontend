@@ -1,3 +1,4 @@
+import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import {
   DataTable,
   DataTableContent,
@@ -34,7 +35,7 @@ export function BrandTable({
           cell: (brand) => (
             <div className="min-w-0">
               <p className="text-xs font-medium">{brand.name}</p>
-              <p className="mt-1 font-mono type-caption text-identifier">{brand.id}</p>
+              <TableIdentifier value={brand.id} className="mt-1" />
             </div>
           ),
         },
@@ -47,7 +48,7 @@ export function BrandTable({
               {brand.supported_drivers.map((driver) => (
                 <code
                   key={driver}
-                  className="rounded-md border bg-background px-2 py-1 type-caption text-blue-400"
+                  className="rounded-md border bg-background px-2 py-1 type-caption text-muted-foreground"
                 >
                   {driver}
                 </code>

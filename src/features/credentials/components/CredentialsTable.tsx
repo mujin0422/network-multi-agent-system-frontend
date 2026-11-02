@@ -1,3 +1,4 @@
+import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
@@ -73,7 +74,7 @@ export function CredentialsTable() {
                 cell: (item) => (
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium">{item.name}</p>
-                    <p className="font-mono type-caption text-identifier">{item.id}</p>
+                    <TableIdentifier value={item.id} />
                   </div>
                 ),
               },
@@ -95,7 +96,7 @@ export function CredentialsTable() {
                 id: "encryption",
                 header: "Encryption",
                 cell: (item) => (
-                  <span className="rounded-md border border-success/20 bg-success/10 px-2 py-1 type-caption text-success">
+                  <span className="rounded-md border border-border bg-muted/50 px-2 py-1 type-caption text-muted-foreground">
                     {item.encryption_type}
                   </span>
                 ),

@@ -1,3 +1,4 @@
+import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { Download } from "lucide-react"
 import { useState } from "react"
@@ -147,9 +148,7 @@ export function AuditLogsTable() {
                 cell: (log) => (
                   <>
                     <p className="type-body-sm">{log.resource_type}</p>
-                    <p className={`mt-1 max-w-[220px] truncate font-mono type-caption ${log.resource_id ? "text-identifier" : "text-muted-foreground"}`}>
-                      {log.resource_id ?? "—"}
-                    </p>
+                    <TableIdentifier value={log.resource_id} variant="reference" className="mt-1 max-w-[220px] truncate" />
                   </>
                 ),
               },

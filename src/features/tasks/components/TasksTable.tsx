@@ -1,3 +1,4 @@
+import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
@@ -92,7 +93,7 @@ export function TasksTable() {
                 cell: (task) => (
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium">{task.input_message}</p>
-                    <p className="mt-1 font-mono type-caption text-identifier">{task.id}</p>
+                    <TableIdentifier value={task.id} className="mt-1" />
                   </div>
                 ),
               },
