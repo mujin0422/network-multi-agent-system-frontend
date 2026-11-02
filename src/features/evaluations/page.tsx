@@ -166,7 +166,7 @@ export default function EvaluationsPage() {
                   <p className="max-w-64 truncate text-xs font-medium" title={evaluation.scenarioName}>
                     {evaluation.scenarioName}
                   </p>
-                  <p className="mt-1 break-all font-mono type-caption text-muted-foreground" title={evaluation.task_id}>
+                  <p className="mt-1 break-all font-mono type-caption text-identifier" title={evaluation.task_id}>
                     {evaluation.task_id}
                   </p>
                 </div>

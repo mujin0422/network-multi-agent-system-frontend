@@ -147,7 +147,7 @@ export function AuditLogsTable() {
                 cell: (log) => (
                   <>
                     <p className="type-body-sm">{log.resource_type}</p>
-                    <p className="mt-1 max-w-[220px] truncate font-mono type-caption text-muted-foreground">
+                    <p className={`mt-1 max-w-[220px] truncate font-mono type-caption ${log.resource_id ? "text-identifier" : "text-muted-foreground"}`}>
                       {log.resource_id ?? "—"}
                     </p>
                   </>

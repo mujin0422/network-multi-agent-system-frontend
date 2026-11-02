@@ -184,7 +184,7 @@ export default function BenchmarkRunsPage() {
                       <p className="max-w-64 truncate text-xs font-medium" title={run.scenario_name}>
                         {run.scenario_name}
                       </p>
-                      <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">
+                      <p className="mt-1 break-all font-mono text-[11px] text-identifier">
                         {run.id}
                       </p>
                     </div>
@@ -216,7 +216,7 @@ export default function BenchmarkRunsPage() {
                   header: "Task ID",
                   className: "min-w-36 max-w-44",
                   cell: (run) => (
-                    <span className="block max-w-40 truncate font-mono text-[11px] text-muted-foreground" title={run.task_id ?? undefined}>
+                    <span className={`block max-w-40 truncate font-mono text-[11px] ${run.task_id ? "text-identifier" : "text-muted-foreground"}`} title={run.task_id ?? undefined}>
                       {run.task_id ?? "—"}
                     </span>
                   ),

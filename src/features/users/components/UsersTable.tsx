@@ -89,7 +89,7 @@ export function UsersTable() {
                   <div className="min-w-0">
                     <p className="text-xs font-medium">{user.full_name}</p>
                     <p className="type-caption text-muted-foreground">{user.email}</p>
-                    <p className="mt-1 font-mono type-caption text-success">{user.id}</p>
+                    <p className="mt-1 font-mono type-caption text-identifier">{user.id}</p>
                   </div>
                 ),
               },          
