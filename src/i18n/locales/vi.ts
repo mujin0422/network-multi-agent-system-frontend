@@ -86,6 +86,14 @@ const vi = {
     WAITING_APPROVAL: "Chờ phê duyệt",
     WRITE: "Ghi",
   },
+  chatbot: {
+    rename: {
+      title: "Đổi tên cuộc hội thoại",
+      description: "Đặt một tiêu đề ngắn để dễ dàng tìm lại cuộc hội thoại này.",
+      placeholder: "Tiêu đề cuộc hội thoại",
+      error: "Không thể đổi tên cuộc hội thoại.",
+    },
+  },
   benchmarks: {
     title: "Kiểm thử GNS3",
     description: "Quản lý kịch bản trong cơ sở dữ liệu, chẩn đoán qua Chat và tự động lưu kết quả đánh giá tác vụ.",
@@ -103,6 +111,24 @@ const vi = {
     recentRuns: "Các lần chạy benchmark gần đây",
     recentRunsDescription: "Lịch sử chạy được lưu bền vững trong PostgreSQL.",
     emptyRuns: "Chưa có lần chạy benchmark.",
+    stats: {
+      total: {
+        label: "Tổng lượt chạy",
+        description: "Các lần benchmark đã lưu",
+      },
+      inProgress: {
+        label: "Đang xử lý",
+        description: "Đang chuẩn bị, sẵn sàng hoặc chạy",
+      },
+      completed: {
+        label: "Đã hoàn tất",
+        description: "Đã đánh giá hoặc khôi phục",
+      },
+      needsAttention: {
+        label: "Cần chú ý",
+        description: "Thất bại hoặc đang chờ dọn dẹp",
+      },
+    },
     status: {
       PREPARING: "Đang chuẩn bị",
       READY: "Sẵn sàng chẩn đoán",

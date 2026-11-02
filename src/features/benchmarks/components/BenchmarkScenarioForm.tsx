@@ -36,7 +36,7 @@ export function BenchmarkScenarioForm({ open, onOpenChange, onSave }: BenchmarkS
       mode="create"
       entityLabel={t("benchmarks.form.entity")}
       description={t("benchmarks.form.description")}
-      contentClassName="sm:max-w-2xl"
+      contentClassName="data-[side=right]:sm:max-w-3xl!"
       onSubmit={async (data) => {
         const requiredTerms = String(data.get("evaluation_required_terms") ?? "")
           .split(/[\n,]+/)

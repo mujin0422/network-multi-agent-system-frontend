@@ -57,3 +57,10 @@ export type BenchmarkRunHistoryProps = {
   runs: BenchmarkRun[]
   onSelect: (run: BenchmarkRun) => void
 }
+
+export type BenchmarkSummary = {
+  total: number
+  inProgress: number
+  completed: number
+  needsAttention: number
+}

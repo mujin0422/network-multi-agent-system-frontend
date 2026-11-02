@@ -86,6 +86,14 @@ const en = {
     WAITING_APPROVAL: "Waiting approval",
     WRITE: "Write",
   },
+  chatbot: {
+    rename: {
+      title: "Rename conversation",
+      description: "Choose a short title that makes this conversation easy to find.",
+      placeholder: "Conversation title",
+      error: "Unable to rename the conversation.",
+    },
+  },
   benchmarks: {
     title: "GNS3 Benchmarks",
     description: "Manage database-backed scenarios, diagnose through Chat, and automatically store Task Evaluations.",
@@ -103,6 +111,24 @@ const en = {
     recentRuns: "Recent benchmark runs",
     recentRunsDescription: "Run history is stored persistently in PostgreSQL.",
     emptyRuns: "No benchmark runs yet.",
+    stats: {
+      total: {
+        label: "Total runs",
+        description: "Stored benchmark executions",
+      },
+      inProgress: {
+        label: "In progress",
+        description: "Preparing, ready, or running",
+      },
+      completed: {
+        label: "Completed",
+        description: "Evaluated or cleaned runs",
+      },
+      needsAttention: {
+        label: "Needs attention",
+        description: "Failed or awaiting cleanup",
+      },
+    },
     status: {
       PREPARING: "Preparing",
       READY: "Ready for diagnosis",
