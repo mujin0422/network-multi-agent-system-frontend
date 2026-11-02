@@ -32,12 +32,10 @@ export function BrandTable({
           headerClassName: "pl-4",
           className: "pl-4",
           cell: (brand) => (
-            <>
+            <div className="min-w-0">
               <p className="text-xs font-medium">{brand.name}</p>
-              <p className="mt-1 font-mono type-caption text-muted-foreground">
-                {brand.id}
-              </p>
-            </>
+              <p className="mt-1 font-mono type-caption text-success">{brand.id}</p>
+            </div>
           ),
         },
         {

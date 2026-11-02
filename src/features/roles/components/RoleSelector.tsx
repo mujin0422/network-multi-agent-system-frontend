@@ -34,9 +34,7 @@ export function RoleSelector({
           >
             <div>
               <p className="text-xs font-medium">{role.name}</p>
-              <p className="mt-1 font-mono type-caption opacity-60">
-                {role.id}
-              </p>
+              <p className="mt-1 font-mono type-caption opacity-60">{role.id}</p>
             </div>
             {role.id === activeRoleId && <Check className="size-4" />}
           </button>

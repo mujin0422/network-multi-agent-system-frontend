@@ -67,15 +67,15 @@ export function FeatureFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className={cn("w-full sm:max-w-lg", contentClassName)}>
+      <SheetContent className={cn("w-full data-[side=right]:sm:max-w-lg!", contentClassName)}>
         <SheetHeader className="border-b">
           <SheetTitle>
             {modeLabel} {entityLabel}
           </SheetTitle>
           <SheetDescription className="text-xs">{description}</SheetDescription>
         </SheetHeader>
-        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-          <div className="flex-1 space-y-4 overflow-y-auto p-4 [&_input]:text-xs! [&_input::placeholder]:text-xs [&_textarea]:text-xs! [&_textarea::placeholder]:text-xs">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col [&_button]:text-xs!">
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&_input]:text-xs! [&_input::placeholder]:text-xs [&_textarea]:text-xs! [&_textarea::placeholder]:text-xs">
             {children}
           </div>
           <SheetFooter className="border-t">
@@ -83,18 +83,19 @@ export function FeatureFormSheet({
             <div className="flex w-full justify-end gap-2">
               <Button
                 type="button"
+                size="sm"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
               >
                 {mode === "view" ? t("common.close") : t("common.cancel")}
               </Button>
               {mode === "view" && canEdit && (
-                <Button type="button" onClick={onEdit}>
+                <Button type="button" size="sm" onClick={onEdit}>
                   {t("common.edit")}
                 </Button>
               )}
               {mode !== "view" && (
-                <Button type="submit" disabled={submitting}>
+                <Button type="submit" size="sm" disabled={submitting}>
                   {mode === "create"
                     ? t("common.create")
                     : t("common.saveChanges")}

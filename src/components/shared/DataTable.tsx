@@ -186,10 +186,7 @@ function DataTableToolbar({ className, ...props }: DataTableToolbarProps) {
   )
 }
 
-function DataTableToolbarActions({
-  className,
-  ...props
-}: DataTableToolbarActionsProps) {
+function DataTableToolbarActions({ className, ...props}: DataTableToolbarActionsProps) {
   return (
     <div
       data-slot="data-table-toolbar-actions"
@@ -223,7 +220,7 @@ function DataTableSearch({
         placeholder={translatedPlaceholder}
         aria-label={props["aria-label"] ?? translatedPlaceholder}
         className={cn(
-          "pr-9 pl-9 [&::-webkit-search-cancel-button]:hidden",
+          "pr-9 pl-9 text-xs md:text-xs placeholder:text-xs [&::-webkit-search-cancel-button]:hidden",
           className,
         )}
       />
@@ -289,6 +286,22 @@ function DataTableFilter({ filterId, className }: DataTableFilterProps) {
           <ComboboxInput
             placeholder={filter.searchPlaceholder ?? filter.label}
             showTrigger={false}
+            className="
+                [&_input]:!text-xs
+                [&_input::placeholder]:!text-xs
+                !outline-none
+                !ring-0
+                !ring-offset-0
+                focus:!outline-none
+                focus:!ring-0
+                focus-visible:!outline-none
+                focus-visible:!ring-0
+                focus-within:!outline-none
+                focus-within:!ring-0
+                focus-within:!border-input
+                [&_input:focus]:!outline-none
+                [&_input:focus-visible]:!outline-none
+              "
           />
         )}
         <ComboboxEmpty>
@@ -477,7 +490,7 @@ function DataTablePagination({
               <ComboboxContent>
                 <ComboboxList>
                   {pageSizeOptions.map((option) => (
-                    <ComboboxItem key={option} value={String(option)}>
+                    <ComboboxItem key={option} value={String(option)} className="text-xs">
                       {option}
                     </ComboboxItem>
                   ))}
@@ -503,7 +516,7 @@ function DataTablePagination({
                 )}
               >
                 <ChevronLeftIcon />
-                <span className="hidden sm:inline">{t("common.previous")}</span>
+                <span className="hidden text-xs sm:inline">{t("common.previous")}</span>
               </PaginationLink>
             </PaginationItem>
             {table.pageItems.map((page, index) =>
@@ -517,6 +530,7 @@ function DataTablePagination({
                     href="#"
                     isActive={page === table.currentPage}
                     size="icon-sm"
+                    className="text-xs"
                     onClick={(event) => {
                       event.preventDefault()
                       table.goToPage(page)
@@ -541,7 +555,7 @@ function DataTablePagination({
                   !table.canGoNext && "pointer-events-none opacity-50",
                 )}
               >
-                <span className="hidden sm:inline">{t("common.next")}</span>
+                <span className="hidden text-xs sm:inline">{t("common.next")}</span>
                 <ChevronRightIcon />
               </PaginationLink>
             </PaginationItem>
