@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Eye, History } from "lucide-react"
+import { Bot, CheckCircle2, ClipboardCheck, Eye, History, XCircle } from "lucide-react"
 
 import {
   DataTable,
@@ -84,6 +84,7 @@ export default function EvaluationsPage() {
 
   const countPass = evaluations.filter((evaluation) => evaluation.results.RCA === "PASS").length
   const countFail = evaluations.filter((evaluation) => evaluation.results.RCA === "FAIL").length
+  const countAutomated = evaluations.filter((evaluation) => evaluation.evaluator_type === "AUTOMATED").length
 
   function openDetails(taskId: string) {
     setParams({ task: taskId })
@@ -98,7 +99,7 @@ export default function EvaluationsPage() {
   }
 
   if (loading) {
-    return <PageLoadingSkeleton title={t("evaluationsPage.title")} description={t("evaluationsPage.description")} variant="table" stats={3} />
+    return <PageLoadingSkeleton title={t("evaluationsPage.title")} description={t("evaluationsPage.description")} variant="table" stats={4} />
   }
 
   return (
@@ -107,9 +108,32 @@ export default function EvaluationsPage() {
         <Button size="sm" variant="outline" onClick={() => void refresh()}>{t("evaluationsPage.refresh")}</Button>
       </PageLayoutHeader>
       <PageLayoutOverview>
-        <PageLayoutStat label={t("evaluationsPage.total")} value={evaluations.length} />
-        <PageLayoutStat label={t("evaluationsPage.rcaPass")} value={countPass} />
-        <PageLayoutStat label={t("evaluationsPage.rcaFail")} value={countFail} />
+        <PageLayoutStat
+          label={t("evaluationsPage.total")}
+          value={evaluations.length}
+          description={t("evaluationsPage.stats.totalDescription")}
+          icon={<ClipboardCheck />}
+        />
+        <PageLayoutStat
+          label={t("evaluationsPage.rcaPass")}
+          value={countPass}
+          description={t("evaluationsPage.stats.passDescription")}
+          icon={<CheckCircle2 />}
+          iconClassName="bg-emerald-500/10 text-emerald-400"
+        />
+        <PageLayoutStat
+          label={t("evaluationsPage.rcaFail")}
+          value={countFail}
+          description={t("evaluationsPage.stats.failDescription")}
+          icon={<XCircle />}
+          iconClassName="bg-red-500/10 text-red-400"
+        />
+        <PageLayoutStat
+          label={t("evaluationsPage.stats.automated")}
+          value={countAutomated}
+          description={t("evaluationsPage.stats.automatedDescription")}
+          icon={<Bot />}
+        />
       </PageLayoutOverview>
       <PageLayoutContent>
         {error && <p role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">{error}</p>}
