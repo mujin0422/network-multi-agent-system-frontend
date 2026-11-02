@@ -8,14 +8,13 @@ import { PageLayout, PageLayoutContent, PageLayoutHeader } from "@/components/sh
 import { Button } from "@/components/ui/button"
 import { benchmarksApi } from "@/service"
 import type { BenchmarkScenarioCreate, BenchmarkScenarioDetail, BenchmarkScenarioUpdate } from "@/service"
-import { benchmarkErrorMessage } from "./utils/benchmark.util"
 import { BenchmarkCurrentRun } from "./components/BenchmarkCurrentRun"
 import { BenchmarkRunHistory } from "./components/BenchmarkRunHistory"
 import { BenchmarkScenarioCard } from "./components/BenchmarkScenarioCard"
 import { BenchmarkScenarioForm } from "./components/BenchmarkScenarioForm"
 import { BenchmarkStats } from "./components/BenchmarkStats"
 import { useBenchmarksData } from "./hooks/use-benchmarks-data"
-import { benchmarkChatPath } from "./utils/benchmark.util"
+import { benchmarkChatPath, benchmarkErrorMessage } from "./utils/benchmark.util"
 
 export default function BenchmarksPage() {
   const { t } = useTranslation()

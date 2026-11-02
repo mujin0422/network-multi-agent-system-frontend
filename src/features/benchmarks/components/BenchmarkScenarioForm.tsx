@@ -20,7 +20,7 @@ import { BenchmarkCheckFields } from "./BenchmarkCheckFields"
 import { BenchmarkGroundTruthFields } from "./BenchmarkGroundTruthFields"
 import { BenchmarkScenarioSection } from "./BenchmarkScenarioSection"
 
-/** Form có cấu trúc để tạo benchmark scenario mà không phải nhập JSON thô. */
+/** Form có cấu trúc để tạo mới hoặc chỉnh sửa toàn bộ benchmark scenario. */
 export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: BenchmarkScenarioFormProps) {
   const { t } = useTranslation()
   const [preconditions, setPreconditions] = useState<BenchmarkCheck[]>(scenario?.preconditions ?? [createEmptyCheck()])
