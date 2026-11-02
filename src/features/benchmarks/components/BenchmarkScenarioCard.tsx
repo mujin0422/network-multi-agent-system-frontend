@@ -19,9 +19,23 @@ export function BenchmarkScenarioCard({
 
   return (
     <Card size="sm" className="h-full gap-0">
-      <CardHeader className="space-y-1 pb-3">
-        <CardTitle className="text-sm leading-5">{scenario.name}</CardTitle>
-        <CardDescription className="text-xs leading-5">{scenario.description}</CardDescription>
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 space-y-1">
+            <CardTitle className="text-sm leading-5">{scenario.name}</CardTitle>
+            <CardDescription className="text-xs leading-5">{scenario.description}</CardDescription>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className="shrink-0"
+            onClick={() => onEdit(scenario.id)}
+            disabled={busy || editLoading}
+          >
+            {editLoading ? <LoaderCircle className="size-3.5 animate-spin" /> : <Pencil className="size-3.5" />}
+            {t("common.edit")}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="flex flex-1 flex-col justify-between gap-4">
         <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
@@ -32,10 +46,6 @@ export function BenchmarkScenarioCard({
         <div className="flex flex-wrap items-center gap-2">
           <Button size="sm" onClick={() => onStart(scenario.id)} disabled={!scenario.is_active || startDisabled}>
             {t("benchmarks.startBenchmark")}
-          </Button>
-          <Button size="sm" variant="outline" onClick={() => onEdit(scenario.id)} disabled={busy || editLoading}>
-            {editLoading ? <LoaderCircle className="size-3.5 animate-spin" /> : <Pencil className="size-3.5" />}
-            {t("common.edit")}
           </Button>
           <Button size="sm" variant="outline" onClick={() => onToggle(scenario)} disabled={busy || editLoading}>
             {scenario.is_active ? t("benchmarks.disable") : t("benchmarks.enable")}
