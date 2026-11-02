@@ -6,6 +6,9 @@ import { useNavigate } from "react-router-dom"
 
 import { PageLayout, PageLayoutContent, PageLayoutHeader } from "@/components/shared/PageLayout"
 import { Button } from "@/components/ui/button"
+import { benchmarksApi } from "@/service"
+import type { BenchmarkScenarioCreate, BenchmarkScenarioDetail, BenchmarkScenarioUpdate } from "@/service"
+import { benchmarkErrorMessage } from "./utils/benchmark.util"
 import { BenchmarkCurrentRun } from "./components/BenchmarkCurrentRun"
 import { BenchmarkRunHistory } from "./components/BenchmarkRunHistory"
 import { BenchmarkScenarioCard } from "./components/BenchmarkScenarioCard"
@@ -18,6 +21,9 @@ export default function BenchmarksPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [createOpen, setCreateOpen] = useState(false)
+  const [editingScenario, setEditingScenario] = useState<BenchmarkScenarioDetail | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editError, setEditError] = useState<string | null>(null)
   const [formVersion, setFormVersion] = useState(0)
   const {
     scenarios,
@@ -29,14 +35,55 @@ export default function BenchmarksPage() {
     summary,
     setSelectedRun,
     createScenario,
+    updateScenario,
     startScenario,
     cleanupRun,
     toggleScenario,
   } = useBenchmarksData()
 
   function openCreateForm() {
+    setEditingScenario(null)
+    setEditError(null)
     setFormVersion((current) => current + 1)
     setCreateOpen(true)
+  }
+
+  async function openEditForm(scenarioId: string) {
+    if (editingId) return
+    setEditingId(scenarioId)
+    setEditError(null)
+    try {
+      const detail = await benchmarksApi.getScenario(scenarioId)
+      setEditingScenario(detail)
+      setFormVersion((current) => current + 1)
+      setCreateOpen(true)
+    } catch (reason) {
+      setEditError(benchmarkErrorMessage(reason, t("benchmarks.errors.load")))
+    } finally {
+      setEditingId(null)
+    }
+  }
+
+  async function saveScenario(payload: BenchmarkScenarioCreate) {
+    if (!editingScenario) {
+      await createScenario(payload)
+      return
+    }
+    // scenario_key là định danh bất biến.
+    const changes: BenchmarkScenarioUpdate = {
+      version: payload.version,
+      name: payload.name,
+      description: payload.description,
+      topology: payload.topology,
+      initial_message: payload.initial_message,
+      preconditions: payload.preconditions,
+      injection: payload.injection,
+      fault_verification: payload.fault_verification,
+      ground_truth: payload.ground_truth,
+      evaluation_required_terms: payload.evaluation_required_terms,
+      cleanup: payload.cleanup,
+    }
+    await updateScenario(editingScenario.id, changes)
   }
 
   function openChat() {
@@ -74,7 +121,7 @@ export default function BenchmarksPage() {
           </div>
         </div>
 
-        {error && <p className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">{error}</p>}
+        {(error || editError) && <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">{editError || error}</p>}
 
         {selectedRun && (
           <BenchmarkCurrentRun
@@ -92,6 +139,8 @@ export default function BenchmarksPage() {
                 scenario={scenario}
                 busy={busy}
                 startDisabled={busy || runInProgress}
+                editLoading={editingId === scenario.id}
+                onEdit={(scenarioId) => void openEditForm(scenarioId)}
                 onStart={(scenarioId) => void startScenario(scenarioId)}
                 onToggle={(row) => void toggleScenario(row)}
               />
@@ -103,9 +152,10 @@ export default function BenchmarksPage() {
 
       <BenchmarkScenarioForm
         key={formVersion}
+        scenario={editingScenario}
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onSave={createScenario}
+        onSave={saveScenario}
       />
     </PageLayout>
   )

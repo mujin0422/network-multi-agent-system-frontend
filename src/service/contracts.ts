@@ -172,6 +172,9 @@ export type BenchmarkScenarioCreate = {
   evaluation_required_terms: string[]
   cleanup: BenchmarkAction[]
 }
+export type BenchmarkScenarioUpdate = Partial<Omit<BenchmarkScenarioCreate, "scenario_key">> & {
+  is_active?: boolean
+}
 export type BenchmarkScenario = {
   id: string
   scenario_key: string
@@ -184,6 +187,8 @@ export type BenchmarkScenario = {
   created_at: string | null
   last_updated_at: string | null
 }
+export type BenchmarkScenarioDetail = BenchmarkScenario & BenchmarkScenarioCreate
+
 export type BenchmarkRun = {
   id: string
   scenario_id: string

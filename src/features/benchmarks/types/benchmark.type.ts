@@ -5,10 +5,12 @@ import type {
   BenchmarkRun,
   BenchmarkScenario,
   BenchmarkScenarioCreate,
+  BenchmarkScenarioDetail,
 } from "@/service"
 import type { ReactNode } from "react"
 
 export type BenchmarkScenarioFormProps = {
+  scenario?: BenchmarkScenarioDetail | null
   open: boolean
   onOpenChange: (open: boolean) => void
   onSave: (payload: BenchmarkScenarioCreate) => Promise<void>
@@ -42,6 +44,8 @@ export type BenchmarkScenarioCardProps = {
   scenario: BenchmarkScenario
   busy: boolean
   startDisabled: boolean
+  editLoading: boolean
+  onEdit: (scenarioId: string) => void
   onStart: (scenarioId: string) => void
   onToggle: (scenario: BenchmarkScenario) => void
 }
