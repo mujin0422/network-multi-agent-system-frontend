@@ -1,4 +1,4 @@
-import { FormField } from "@/components/shared/FeatureFormSheet"
+import { FormCombobox, FormField } from "@/components/shared/FeatureFormSheet"
 import { BenchmarkDeviceCombobox } from "./BenchmarkDeviceCombobox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -54,16 +54,16 @@ export function BenchmarkActionFields({ section, deviceOptions, title, items, de
     if (field === "direction") {
       return (
         <FormField key={field} label={label} required>
-          <select
-            value={item.direction ?? ""}
-            required
-            className="h-control-md w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            onChange={(event) => update(index, { ...item, direction: event.target.value as "in" | "out" })}
-          >
-            <option value="" disabled>—</option>
-            <option value="in">in</option>
-            <option value="out">out</option>
-          </select>
+          <FormCombobox
+            name={`benchmark-${section}-direction-${index}`}
+            value={item.direction ?? null}
+            options={[{ value: "in", label: "in" }, { value: "out", label: "out" }]}
+            placeholder={t("benchmarks.form.fields.direction")}
+            onValueChange={(direction) => update(index, {
+              ...item,
+              direction: direction === "in" || direction === "out" ? direction : null,
+            })}
+          />
         </FormField>
       )
     }
@@ -112,13 +112,21 @@ export function BenchmarkActionFields({ section, deviceOptions, title, items, de
               />
             </FormField>
             <FormField label={t("benchmarks.form.fields.action")} required>
-              <select
+              <FormCombobox
+                name={`benchmark-${section}-action-${index}`}
                 value={item.action}
-                className="h-control-md w-full rounded-lg border border-input bg-background px-3 text-xs outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-                onChange={(event) => update(index, { ...createEmptyAction(event.target.value as BenchmarkAction["action"]), device: item.device })}
-              >
-                {BENCHMARK_ACTION_OPTIONS.map((option) => <option key={option.value} value={option.value}>{t(option.labelKey)}</option>)}
-              </select>
+                options={BENCHMARK_ACTION_OPTIONS.map((option) => ({
+                  value: option.value,
+                  label: t(option.labelKey),
+                }))}
+                onValueChange={(value) => {
+                  if (!value || value === item.action) return
+                  update(index, {
+                    ...createEmptyAction(value as BenchmarkAction["action"]),
+                    device: item.device,
+                  })
+                }}
+              />
             </FormField>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

@@ -151,6 +151,7 @@ const en = {
     form: {
       loadingDevices: "Loading network devices...",
       selectDevice: "Select device",
+      assertions: { contains: "Contains", notContains: "Does not contain" },
       entity: "benchmark scenario",
       description: "Define a reproducible GNS3 fault, its expected diagnosis, and the cleanup procedure.",
       sections: {

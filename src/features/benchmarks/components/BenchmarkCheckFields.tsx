@@ -1,4 +1,4 @@
-import { FormField } from "@/components/shared/FeatureFormSheet"
+import { FormCombobox, FormField } from "@/components/shared/FeatureFormSheet"
 import { BenchmarkDeviceCombobox } from "./BenchmarkDeviceCombobox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -37,20 +37,25 @@ export function BenchmarkCheckFields({ section, deviceOptions, title, items, onC
             </FormField>
             <FormField label={t("benchmarks.form.fields.expectedOutput")} required>
               <div className="flex gap-2">
-                <select
-                  aria-label={t("benchmarks.form.fields.assertionType")}
-                  className="h-control-md w-36 shrink-0 rounded-lg border border-input bg-background px-2 text-xs"
-                  value={item.assertion.not_contains != null ? "not_contains" : "contains"}
-                  onChange={(event) => update(index, {
-                    ...item,
-                    assertion: event.target.value === "not_contains"
-                      ? { not_contains: "" }
-                      : { contains: "" },
-                  })}
-                >
-                  <option value="contains">contains</option>
-                  <option value="not_contains">not contains</option>
-                </select>
+                <div className="w-40 shrink-0">
+                  <FormCombobox
+                    name={`benchmark-${section}-assertion-${index}`}
+                    value={item.assertion.not_contains != null ? "not_contains" : "contains"}
+                    options={[
+                      { value: "contains", label: t("benchmarks.form.assertions.contains") },
+                      { value: "not_contains", label: t("benchmarks.form.assertions.notContains") },
+                    ]}
+                    onValueChange={(value) => {
+                      if (!value) return
+                      update(index, {
+                        ...item,
+                        assertion: value === "not_contains"
+                          ? { not_contains: "" }
+                          : { contains: "" },
+                      })
+                    }}
+                  />
+                </div>
                 <Input
                   value={item.assertion.not_contains ?? item.assertion.contains ?? ""}
                   required

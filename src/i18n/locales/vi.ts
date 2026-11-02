@@ -151,6 +151,7 @@ const vi = {
     form: {
       loadingDevices: "Đang tải thiết bị mạng...",
       selectDevice: "Chọn thiết bị",
+      assertions: { contains: "Có chứa", notContains: "Không chứa" },
       entity: "kịch bản benchmark",
       description: "Định nghĩa lỗi GNS3 có thể tái lập, kết quả chẩn đoán mong đợi và quy trình khôi phục.",
       sections: {
