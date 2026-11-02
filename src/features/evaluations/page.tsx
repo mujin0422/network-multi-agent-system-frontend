@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
+import { Eye, History } from "lucide-react"
 
 import {
   DataTable,
@@ -16,6 +17,7 @@ import {
   PageLayout, PageLayoutContent, PageLayoutHeader, PageLayoutOverview, PageLayoutStat,
 } from "@/components/shared/PageLayout"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
+import { MoreMenu } from "@/components/shared/MoreMenu"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { BenchmarkEvaluationSheet } from "@/features/benchmarks/components/BenchmarkEvaluationSheet"
@@ -192,26 +194,31 @@ export default function EvaluationsPage() {
               id: "actions",
               header: t("evaluationsPage.actions"),
               className: "whitespace-nowrap",
-              cell: (evaluation) => (
-                <div className="flex items-center gap-2">
-                  {evaluation.run && (
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      onClick={() => {
-                        if (evaluation.run) {
-                          navigate(`/benchmark-runs?run=${encodeURIComponent(evaluation.run.id)}`)
-                        }
-                      }}
-                    >
-                      {t("evaluationsPage.viewRun")}
-                    </Button>
-                  )}
-                  <Button size="xs" variant="outline" onClick={() => openDetails(evaluation.task_id)}>
-                    {t("evaluationsPage.viewDetails")}
-                  </Button>
-                </div>
-              ),
+              cell: (evaluation) => {
+                const runId = evaluation.run?.id
+                return (
+                  <MoreMenu
+                    actions={[
+                      ...(runId
+                        ? [{
+                            id: "view-run",
+                            label: t("evaluationsPage.viewRun"),
+                            icon: <History className="size-4" />,
+                            onClick: () => navigate(
+                              `/benchmark-runs?run=${encodeURIComponent(runId)}`,
+                            ),
+                          }]
+                        : []),
+                      {
+                        id: "view-details",
+                        label: t("evaluationsPage.viewDetails"),
+                        icon: <Eye className="size-4" />,
+                        onClick: () => openDetails(evaluation.task_id),
+                      },
+                    ]}
+                  />
+                )
+              },
             },
           ]}
         >
