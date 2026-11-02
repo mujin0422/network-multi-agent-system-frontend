@@ -263,6 +263,53 @@ export type Task = {
 export type TaskCreate = Pick<Task, "conversation_id" | "source_message_id" | "user_id" | "input_message">
 export type TaskDetail = Task & { operations: Operation[] }
 
+export type TaskOperationDevice = {
+  id: string
+  operation_id: string
+  device_id: string
+  operation_device_status: OperationStatus
+  device_role: "SOURCE" | "TARGET" | "CONTEXT"
+  access_mode: "READ" | "WRITE"
+  error_message: string | null
+  started_at: string | null
+  completed_at: string | null
+}
+
+export type OperationDependency = {
+  id: string
+  operation_id: string
+  depends_on_operation_id: string
+  dependency_type: "ON_SUCCESS" | "ON_COMPLETION"
+  created_at: string
+}
+
+export type TaskExecution = {
+  id: string
+  task_id: string
+  operation_id: string | null
+  operation_device_id: string | null
+  agent_name: string
+  tool_name: string | null
+  step_order: number
+  input: unknown
+  output: unknown
+  execution_status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"
+  error_message: string | null
+  started_at: string | null
+  completed_at: string | null
+  duration_ms: number | null
+  created_at: string
+}
+
+export type TaskRecords = {
+  task: TaskDetail
+  operation_devices: TaskOperationDevice[]
+  dependencies: OperationDependency[]
+  executions: TaskExecution[]
+  activity_events: TaskActivityEvent[]
+  approvals: OperationDeviceApproval[]
+}
+
 export type ActivityActorType = "ORCHESTRATOR" | "PLANNER" | "NETWORK" | "ANALYST" | "TOOL"
 export type ActivityEventStatus = "PENDING" | "RUNNING" | "WAITING_APPROVAL" | "SUCCESS" | "FAILED" | "SKIPPED"
 export type ActivityEventType =
