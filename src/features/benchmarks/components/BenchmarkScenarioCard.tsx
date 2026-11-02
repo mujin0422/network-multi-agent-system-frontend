@@ -1,4 +1,4 @@
-import { Pencil } from "lucide-react"
+import { LoaderCircle, Pencil } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
@@ -34,7 +34,7 @@ export function BenchmarkScenarioCard({
             {t("benchmarks.startBenchmark")}
           </Button>
           <Button size="sm" variant="outline" onClick={() => onEdit(scenario.id)} disabled={busy || editLoading}>
-            <Pencil className="size-3.5" />
+            {editLoading ? <LoaderCircle className="size-3.5 animate-spin" /> : <Pencil className="size-3.5" />}
             {t("common.edit")}
           </Button>
           <Button size="sm" variant="outline" onClick={() => onToggle(scenario)} disabled={busy || editLoading}>
