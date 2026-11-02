@@ -26,6 +26,8 @@ const en = {
     chatbot: "Chatbot",
     tasks: "Tasks",
     benchmarks: "Benchmarks",
+    benchmarkRuns: "Benchmark Runs",
+    evaluations: "Evaluations",
     devices: "Devices",
     credentials: "Credentials",
     deviceCatalog: "Device Catalog",

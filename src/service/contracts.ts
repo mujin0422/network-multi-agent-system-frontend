@@ -256,7 +256,6 @@ export type Task = {
   input_message: string
   task_type: TaskType
   task_status: TaskStatus
-  task_type: TaskType
   started_at: string | null
   completed_at: string | null
   created_at: string
@@ -316,6 +315,16 @@ export type TaskEvaluationMetric = {
   actual_value: unknown
   evidence: unknown
   created_at: string
+}
+export type TaskEvaluationSummary = {
+  id: string
+  task_id: string
+  evaluation_status: EvaluationStatus
+  evaluator_type: "AUTOMATED" | "HUMAN"
+  evaluator_version: string | null
+  created_at: string
+  evaluated_at: string | null
+  results: Partial<Record<EvaluationMetricType, EvaluationResult>>
 }
 export type TaskEvaluationDetail = {
   id: string

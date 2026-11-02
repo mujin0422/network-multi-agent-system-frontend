@@ -2,6 +2,8 @@ import {
   BrainCircuit,
   Fingerprint,
   FlaskConical,
+  History,
+  ClipboardCheck,
   LibraryBig,
   KeyRound,
   LayoutDashboard,
@@ -36,6 +38,8 @@ export const SIDEBAR_SECTIONS: SidebarMenuSection[] = [
       { nameKey: "navigation.chatbot", path: "/chat", icon: MessageSquareText },
       { nameKey: "navigation.tasks", path: "/tasks", icon: ListChecks },
       { nameKey: "navigation.benchmarks", path: "/benchmarks", icon: FlaskConical },
+      { nameKey: "navigation.benchmarkRuns", path: "/benchmark-runs", icon: History },
+      { nameKey: "navigation.evaluations", path: "/evaluations", icon: ClipboardCheck },
     ],
   },
   {
