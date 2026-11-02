@@ -65,6 +65,7 @@ export type BenchmarkCurrentRunProps = {
 }
 
 export type BenchmarkRunHistoryProps = {
+  selectedRunId?: string
   runs: BenchmarkRun[]
   onSelect: (run: BenchmarkRun) => void
 }

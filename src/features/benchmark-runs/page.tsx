@@ -141,7 +141,7 @@ export default function BenchmarkRunsPage() {
                         <Button size="sm" variant="outline" onClick={() => setConfirmCleanup(false)} disabled={busy}>
                           {t("benchmarkRuns.cancel")}
                         </Button>
-                        <Button size="sm" color="danger" disabled={busy} onClick={() => void confirmAndCleanup()}>
+                        <Button size="sm" variant="destructive" disabled={busy} onClick={() => void confirmAndCleanup()}>
                           {t("benchmarkRuns.confirmCleanup")}
                         </Button>
                       </div>

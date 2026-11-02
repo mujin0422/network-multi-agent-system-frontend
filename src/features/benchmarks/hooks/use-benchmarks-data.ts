@@ -66,6 +66,7 @@ export function useBenchmarksData() {
       const nextRun = await benchmarksApi.start(scenarioId)
       setSelectedRun(nextRun)
       setRuns((current) => [nextRun, ...current])
+      return nextRun
     } catch (reason) {
       setError(benchmarkErrorMessage(reason, t("benchmarks.errors.start")))
     } finally {
