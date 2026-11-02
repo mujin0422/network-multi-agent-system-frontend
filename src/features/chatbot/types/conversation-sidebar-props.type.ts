@@ -8,6 +8,7 @@ export type ConversationSidebarProps = {
   collapsed: boolean
   onQueryChange: (query: string) => void
   onSelect: (conversationId: string) => void
+  onRename: (conversationId: string, title: string) => Promise<void>
   onCreate: () => void
   onClose: () => void
   onCollapse: () => void

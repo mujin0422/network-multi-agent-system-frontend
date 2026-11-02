@@ -1,4 +1,5 @@
-import { MessageSquare, PanelLeftClose, Search } from "lucide-react"
+import { PanelLeftClose, Search } from "lucide-react"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -10,7 +11,9 @@ import {
 } from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 import type { ConversationSidebarProps } from "../types/conversation-sidebar-props.type"
+import type { Conversation } from "../types/conversation.type"
 import { formatMessageTimestamp } from "../utils/chatbot.util"
+import { ConversationTitleDialog } from "./ConversationTitleDialog"
 
 /** Sidebar hội thoại theo bố cục ứng dụng chat, hỗ trợ desktop và mobile drawer. */
 export function ConversationSidebar({
@@ -21,10 +24,12 @@ export function ConversationSidebar({
   collapsed,
   onQueryChange,
   onSelect,
+  onRename,
   onCreate,
   onClose,
   onCollapse,
 }: ConversationSidebarProps) {
+  const [renamingConversation, setRenamingConversation] = useState<Conversation | null>(null)
   const normalizedQuery = query.trim().toLocaleLowerCase()
   const visibleConversations = conversations.filter((conversation) =>
     conversation.title.toLocaleLowerCase().includes(normalizedQuery),
@@ -42,29 +47,13 @@ export function ConversationSidebar({
     >
       <div className="flex h-full w-[280px] flex-col lg:w-[260px]">
         <div className="flex items-center gap-2 p-3">
-          <Button
-            className="flex-1 justify-start"
-            variant="outline"
-            onClick={onCreate}
-          >
+          <Button className="flex-1 justify-start text-xs" variant="outline" onClick={onCreate}>
             New chat
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            aria-label="Close conversation sidebar"
-            onClick={onClose}
-          >
+          <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Close conversation sidebar" onClick={onClose}>
             <PanelLeftClose />
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hidden lg:inline-flex"
-            aria-label="Collapse conversation sidebar"
-            onClick={onCollapse}
-          >
+          <Button variant="ghost" size="icon" className="hidden lg:inline-flex" aria-label="Collapse conversation sidebar" onClick={onCollapse} >
             <PanelLeftClose />
           </Button>
         </div>
@@ -75,16 +64,13 @@ export function ConversationSidebar({
             <Input
               value={query}
               onChange={(event) => onQueryChange(event.target.value)}
-              className="h-9 bg-background pl-9 text-xs"
+              className="h-9 bg-background pl-9 text-xs md:text-xs placeholder:text-xs"
               placeholder="Search conversations..."
             />
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
-          <p className="px-2 py-2 type-caption font-medium uppercase tracking-[0.14em] text-muted-foreground">
-            Recent
-          </p>
+        <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <TooltipProvider delay={300}>
             {visibleConversations.map((conversation) => (
               <Tooltip key={conversation.id}>
@@ -96,6 +82,9 @@ export function ConversationSidebar({
                         onSelect(conversation.id)
                         onClose()
                       }}
+                      onDoubleClick={() => {
+                        if (conversation.user_id) setRenamingConversation(conversation)
+                      }}
                       className={cn(
                         "group mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors",
                         activeConversationId === conversation.id
@@ -105,7 +94,6 @@ export function ConversationSidebar({
                     />
                   }
                 >
-                  <MessageSquare className="size-4 shrink-0" />
                   <p className="min-w-0 flex-1 truncate text-xs font-medium">
                     {conversation.title}
                   </p>
@@ -123,6 +111,18 @@ export function ConversationSidebar({
           )}
         </div>
       </div>
+      <ConversationTitleDialog
+        key={renamingConversation?.id ?? "closed"}
+        open={renamingConversation !== null}
+        title={renamingConversation?.title ?? ""}
+        onOpenChange={(open) => {
+          if (!open) setRenamingConversation(null)
+        }}
+        onSave={async (title) => {
+          if (!renamingConversation) return
+          await onRename(renamingConversation.id, title)
+        }}
+      />
     </aside>
   )
 }
