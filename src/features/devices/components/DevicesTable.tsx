@@ -115,7 +115,7 @@ export function DevicesTable() {
                 cell: (device) => (
                   <div>
                     <p className="text-xs font-medium">{device.hostname}</p>
-                    <p className="font-mono type-caption text-success">
+                    <p className="font-mono type-caption text-identifier">
                       {device.id}
                     </p>
                   </div>
@@ -129,7 +129,7 @@ export function DevicesTable() {
                     <p className="font-mono text-xs">
                       {device.host}:{device.port}
                     </p>
-                    <p className="mt-1 type-caption text-muted-foreground">
+                    <p className={`mt-1 type-caption ${device.credential_id ? "font-mono text-identifier" : "text-muted-foreground"}`}>
                       {device.credential_id ?? "No credential"}
                     </p>
                   </>

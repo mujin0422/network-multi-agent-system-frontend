@@ -73,7 +73,7 @@ export function CredentialsTable() {
                 cell: (item) => (
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium">{item.name}</p>
-                    <p className="font-mono type-caption text-success">{item.id}</p>
+                    <p className="font-mono type-caption text-identifier">{item.id}</p>
                   </div>
                 ),
               },

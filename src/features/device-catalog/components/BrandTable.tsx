@@ -34,7 +34,7 @@ export function BrandTable({
           cell: (brand) => (
             <div className="min-w-0">
               <p className="text-xs font-medium">{brand.name}</p>
-              <p className="mt-1 font-mono type-caption text-success">{brand.id}</p>
+              <p className="mt-1 font-mono type-caption text-identifier">{brand.id}</p>
             </div>
           ),
         },

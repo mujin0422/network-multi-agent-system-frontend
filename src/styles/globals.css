@@ -33,6 +33,8 @@
   --accent: #e8eef6;
   --accent-foreground: #17202c;
   --success: #16885c;
+  /* Informational record IDs have a separate color from success statuses. */
+  --identifier: #2763ad;
   --destructive: #dc3545;
   --border: #d8dee7;
   --input: #cbd3df;
@@ -69,6 +71,7 @@
   --accent: #18202a;
   --accent-foreground: #eef2f7;
   --success: #36bd83;
+  --identifier: #77b5ef;
   --destructive: #ef5b65;
   --border: #28313d;
   --input: #303a47;
@@ -116,6 +119,7 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-success: var(--success);
+  --color-identifier: var(--identifier);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);

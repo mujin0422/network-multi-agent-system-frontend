@@ -92,7 +92,7 @@ export function TasksTable() {
                 cell: (task) => (
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium">{task.input_message}</p>
-                    <p className="mt-1 font-mono type-caption text-success">{task.id}</p>
+                    <p className="mt-1 font-mono type-caption text-identifier">{task.id}</p>
                   </div>
                 ),
               },

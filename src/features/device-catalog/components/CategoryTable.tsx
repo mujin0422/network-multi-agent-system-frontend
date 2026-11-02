@@ -34,7 +34,7 @@ export function CategoryTable({
           cell: (category) => (
             <div className="min-w-0">
               <p className="text-xs font-medium">{category.name}</p>
-              <p className="mt-1 font-mono type-caption text-success">{category.id}</p>
+              <p className="mt-1 font-mono type-caption text-identifier">{category.id}</p>
             </div>
           ),
         },
