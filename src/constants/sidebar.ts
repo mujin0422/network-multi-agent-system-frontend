@@ -37,8 +37,18 @@ export const SIDEBAR_SECTIONS: SidebarMenuSection[] = [
     items: [
       { nameKey: "navigation.chatbot", path: "/chat", icon: MessageSquareText },
       { nameKey: "navigation.tasks", path: "/tasks", icon: ListChecks },
+    ],
+  },
+  {
+    labelKey: "navigation.sections.benchmarks",
+    items: [
       { nameKey: "navigation.benchmarks", path: "/benchmarks", icon: FlaskConical },
       { nameKey: "navigation.benchmarkRuns", path: "/benchmark-runs", icon: History },
+    ],
+  },
+  {
+    labelKey: "navigation.sections.evaluations",
+    items: [
       { nameKey: "navigation.evaluations", path: "/evaluations", icon: ClipboardCheck },
     ],
   },

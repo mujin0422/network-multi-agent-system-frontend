@@ -38,6 +38,8 @@ const en = {
     sections: {
       overview: "OVERVIEW",
       automation: "AI AUTOMATION",
+      benchmarks: "BENCHMARKS",
+      evaluations: "EVALUATIONS",
       network: "NETWORK",
       monitoring: "MONITORING",
       administration: "ADMINISTRATION",

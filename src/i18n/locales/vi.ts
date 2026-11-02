@@ -38,6 +38,8 @@ const vi = {
     sections: {
       overview: "TỔNG QUAN",
       automation: "TỰ ĐỘNG HÓA AI",
+      benchmarks: "KIỂM THỬ BENCHMARK",
+      evaluations: "ĐÁNH GIÁ AI",
       network: "MẠNG",
       monitoring: "GIÁM SÁT",
       administration: "QUẢN TRỊ",
