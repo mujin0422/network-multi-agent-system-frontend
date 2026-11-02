@@ -28,7 +28,7 @@ export function BenchmarkScenarioCard({
           <Button
             size="sm"
             variant="outline"
-            className="shrink-0"
+            className="shrink-0 border-white bg-white text-slate-900 hover:bg-slate-100 hover:text-slate-900 dark:border-white dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 dark:hover:text-slate-900"
             onClick={() => onEdit(scenario.id)}
             disabled={busy || editLoading}
           >
