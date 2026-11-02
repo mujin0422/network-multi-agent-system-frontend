@@ -127,28 +127,7 @@ export default function BenchmarkRunsPage() {
           </p>
         )}
 
-        <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(300px,.85fr)_minmax(0,1.65fr)]">
-          <div className="min-w-0">
-            <BenchmarkRunDetailsPanel
-              run={selectedRun}
-              busy={busy}
-              confirmCleanup={confirmCleanup}
-              onOpenChat={() => {
-                if (selectedRun) {
-                  navigate(benchmarkChatPath(selectedRun.id, selectedRun.initial_message))
-                }
-              }}
-              onViewEvaluation={() => {
-                if (selectedRun?.task_id) {
-                  navigate(`/evaluations?task=${encodeURIComponent(selectedRun.task_id)}`)
-                }
-              }}
-              onRequestCleanup={() => setConfirmCleanup(true)}
-              onCancelCleanup={() => setConfirmCleanup(false)}
-              onConfirmCleanup={() => void confirmAndCleanup()}
-            />
-          </div>
-
+        <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1.65fr)_minmax(300px,.85fr)]">
           <div className="min-w-0 space-y-3">
             <DataTable
               data={rows}
@@ -239,6 +218,27 @@ export default function BenchmarkRunsPage() {
               </DataTablePanel>
             </DataTable>
             <p className="text-xs text-muted-foreground">{t("benchmarkRuns.latestLimit")}</p>
+          </div>
+
+          <div className="min-w-0">
+            <BenchmarkRunDetailsPanel
+              run={selectedRun}
+              busy={busy}
+              confirmCleanup={confirmCleanup}
+              onOpenChat={() => {
+                if (selectedRun) {
+                  navigate(benchmarkChatPath(selectedRun.id, selectedRun.initial_message))
+                }
+              }}
+              onViewEvaluation={() => {
+                if (selectedRun?.task_id) {
+                  navigate(`/evaluations?task=${encodeURIComponent(selectedRun.task_id)}`)
+                }
+              }}
+              onRequestCleanup={() => setConfirmCleanup(true)}
+              onCancelCleanup={() => setConfirmCleanup(false)}
+              onConfirmCleanup={() => void confirmAndCleanup()}
+            />
           </div>
         </div>
       </PageLayoutContent>
