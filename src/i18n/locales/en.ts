@@ -101,6 +101,16 @@ const en = {
   benchmarkRuns: {
     title: "Benchmark Runs",
     description: "Track runs, open Chat, and restore the lab after testing.",
+    detailsTitle: "Run details",
+    evaluation: "Evaluation",
+    viewEvaluation: "View evaluation",
+    cleanupPending: "Cleanup required",
+    cleanedAt: "Cleaned at",
+    statusFilter: "Run group",
+    table: {
+      scenario: "Scenario / Run",
+      status: "Status",
+    },
     openRuns: "View runs",
     refresh: "Refresh",
     search: "Search scenario, run or task ID...",
