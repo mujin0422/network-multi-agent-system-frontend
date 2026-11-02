@@ -198,7 +198,11 @@ export default function EvaluationsPage() {
                     <Button
                       size="xs"
                       variant="ghost"
-                      onClick={() => navigate(`/benchmark-runs?run=${encodeURIComponent(evaluation.run!.id)}`)}
+                      onClick={() => {
+                        if (evaluation.run) {
+                          navigate(`/benchmark-runs?run=${encodeURIComponent(evaluation.run.id)}`)
+                        }
+                      }}
                     >
                       {t("evaluationsPage.viewRun")}
                     </Button>
