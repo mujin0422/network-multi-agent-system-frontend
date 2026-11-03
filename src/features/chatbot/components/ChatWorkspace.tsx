@@ -133,11 +133,7 @@ export function ChatWorkspace() {
           {loadingConversations || loadingMessages ? (
             <div role="status" aria-label="Loading messages" className="min-h-0 flex-1 overflow-y-auto px-5 py-8">
               <span className="sr-only">Loading messages...</span>
-              <div className="mx-auto w-full max-w-3xl space-y-6">
-                <Skeleton className="ml-auto h-14 w-2/3 rounded-2xl" />
-                <Skeleton className="h-24 w-4/5 rounded-2xl" />
-                <Skeleton className="ml-auto h-12 w-1/2 rounded-2xl" />
-              </div>
+              <Skeleton aria-hidden="true" className="mx-auto h-64 w-full max-w-3xl rounded-2xl border border-border bg-card/80" />
             </div>
           ) : (
           <MessageList
