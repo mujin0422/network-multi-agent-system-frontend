@@ -24,6 +24,8 @@ export const BENCHMARK_ACTION_OPTIONS: Array<{
   { value: "interface_ip_set", labelKey: "benchmarks.form.actions.interfaceIpSet" },
   { value: "acl_block", labelKey: "benchmarks.form.actions.aclBlock" },
   { value: "acl_remove", labelKey: "benchmarks.form.actions.aclRemove" },
+  { value: "bgp_neighbor_shutdown", labelKey: "benchmarks.form.actions.bgpNeighborShutdown" },
+  { value: "bgp_neighbor_no_shutdown", labelKey: "benchmarks.form.actions.bgpNeighborNoShutdown" },
 ]
 
 /** IPv4 fields expected by each benchmark action (without subnet/wildcard policy checks). */
@@ -35,6 +37,7 @@ export type BenchmarkIPv4ActionField =
   | "subnet_mask"
   | "source_network"
   | "source_wildcard"
+  | "neighbor_ip"
 
 export const BENCHMARK_ACTION_IPV4_FIELDS: Partial<
   Record<BenchmarkAction["action"], readonly BenchmarkIPv4ActionField[]>
@@ -45,4 +48,6 @@ export const BENCHMARK_ACTION_IPV4_FIELDS: Partial<
   default_route_remove: ["next_hop"],
   interface_ip_set: ["ip_address", "subnet_mask"],
   acl_block: ["source_network", "source_wildcard"],
+  bgp_neighbor_shutdown: ["neighbor_ip"],
+  bgp_neighbor_no_shutdown: ["neighbor_ip"],
 }
