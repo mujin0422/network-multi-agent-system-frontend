@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import type { DateRange } from "react-day-picker"
 import { auditLogsApi } from "@/service"
 import type { AuditLog } from "../types/audit-log.type"
 
@@ -25,32 +26,58 @@ function isAuditLog(value: unknown): value is AuditLog {
   )
 }
 
-export function useAuditLogsData() {
+function rangeEnd(range: DateRange | undefined): Date | undefined {
+  if (!range?.from) return undefined
+  if (range.to) return range.to
+  // A single selected day includes all events until 23:59:59.999 local time.
+  return new Date(
+    range.from.getFullYear(), range.from.getMonth(), range.from.getDate(),
+    23, 59, 59, 999,
+  )
+}
+
+export function useAuditLogsData(dateRange?: DateRange) {
   const [rows, setRows] = useState<AuditLog[]>([])
   const [loading, setLoading] = useState(true)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const latestRequestId = useRef(0)
+  const occurredFrom = dateRange?.from?.toISOString()
+  const occurredTo = rangeEnd(dateRange)?.toISOString()
 
   const reload = useCallback(async () => {
+    const requestId = ++latestRequestId.current
     setLoading(true)
     setError(null)
     try {
-      const payload: unknown = await auditLogsApi.list()
+      const payload: unknown = await auditLogsApi.list({
+        occurred_from: occurredFrom,
+        occurred_to: occurredTo,
+      })
       if (!Array.isArray(payload) || !payload.every(isAuditLog)) {
         throw new Error(
           "Dữ liệu Audit Logs không đúng định dạng. Hãy rebuild hoặc khởi động lại Backend để sử dụng System Audit API mới.",
         )
       }
-      setRows(payload)
+      if (requestId === latestRequestId.current) setRows(payload)
     } catch (reason) {
-      setRows([])
-      setError(reason instanceof Error ? reason.message : "Không thể tải nhật ký hệ thống")
+      if (requestId === latestRequestId.current) {
+        setRows([])
+        setError(reason instanceof Error ? reason.message : "Không thể tải nhật ký hệ thống")
+      }
     } finally {
-      setLoading(false)
+      if (requestId === latestRequestId.current) {
+        setLoading(false)
+        setHasLoaded(true)
+      }
     }
-  }, [])
+  }, [occurredFrom, occurredTo])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ audit logs với API khi mount.
-  useEffect(() => { void reload() }, [reload])
+  useEffect(() => {
+    void reload()
+    return () => { latestRequestId.current += 1 }
+  }, [reload])
 
   const summary = useMemo(() => ({
     total: rows.length,
@@ -79,5 +106,5 @@ export function useAuditLogsData() {
     URL.revokeObjectURL(url)
   }
 
-  return { rows, summary, loading, error, reload, exportCsv }
+  return { rows, summary, loading, initialLoading: loading && !hasLoaded, error, reload, exportCsv }
 }

@@ -1,11 +1,13 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
-import { Download } from "lucide-react"
+import { Download, LoaderCircle } from "lucide-react"
+import type { DateRange } from "react-day-picker"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
   DataTable,
   DataTableContent,
+  DataTableDateRangeFilter,
   DataTableFilters,
   DataTablePanel,
   DataTablePagination,
@@ -34,7 +36,8 @@ import { AuditLogStats } from "./AuditLogStats"
 
 /** Màn hình tra cứu, lọc và xem chi tiết lịch sử hoạt động của toàn hệ thống. */
 export function AuditLogsTable() {
-  const { rows, summary, loading, error, exportCsv } = useAuditLogsData()
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
+  const { rows, summary, loading, initialLoading, error, exportCsv } = useAuditLogsData(dateRange)
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -46,7 +49,7 @@ export function AuditLogsTable() {
       Export CSV
     </Button>
   )
-  if (loading) {
+  if (initialLoading) {
     return (
       <PageLoadingSkeleton
         title="Audit Logs"
@@ -178,7 +181,17 @@ export function AuditLogsTable() {
               <DataTableToolbar>
                 <DataTableSearch placeholder="Search actor, action, resource, request ID..." />
                 <DataTableToolbarActions>
+                  <DataTableDateRangeFilter
+                    value={dateRange}
+                    onChange={setDateRange}
+                  />
                   <DataTableFilters />
+                  {loading && (
+                    <LoaderCircle
+                      aria-label="Loading audit events"
+                      className="size-4 animate-spin text-muted-foreground"
+                    />
+                  )}
                 </DataTableToolbarActions>
               </DataTableToolbar>
               <DataTableContent />
