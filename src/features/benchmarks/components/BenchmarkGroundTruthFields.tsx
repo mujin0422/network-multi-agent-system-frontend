@@ -1,5 +1,6 @@
 import { FormField } from "@/components/shared/FeatureFormSheet"
 import { BenchmarkDeviceCombobox } from "./BenchmarkDeviceCombobox"
+import { BenchmarkInterfacePicker } from "./BenchmarkInterfacePicker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkRootCause } from "@/service"
@@ -37,7 +38,11 @@ export function BenchmarkGroundTruthFields({ deviceOptions, items, onChange }: B
               />
             </FormField>
             <FormField label={t("benchmarks.form.fields.interface")}>
-              <Input value={item.interface ?? ""} placeholder="FastEthernet0/0" onChange={(event) => update(index, { ...item, interface: event.target.value || null })} />
+              <BenchmarkInterfacePicker
+                name={`benchmark-ground-truth-interface-${index}`}
+                value={item.interface}
+                onChange={(value) => update(index, { ...item, interface: value })}
+              />
             </FormField>
           </div>
         </div>
