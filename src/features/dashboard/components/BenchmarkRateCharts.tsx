@@ -15,17 +15,14 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
   ]
 
   const textValue = hasData ? `${value.toFixed(1)}%` : "—"
-  const showCounts = hasData && metric.numerator != null && metric.sampleSize != null
-  const positiveValue = !hasData
-    ? "—"
-    : showCounts
-      ? metric.numerator!.toLocaleString()
-      : `${value.toFixed(1)}%`
-  const negativeValue = !hasData
-    ? "—"
-    : showCounts
-      ? Math.max(0, metric.sampleSize! - metric.numerator!).toLocaleString()
-      : `${(100 - value).toFixed(1)}%`
+  const counts = hasData && metric.numerator != null && metric.sampleSize != null
+    ? {
+        positive: metric.numerator.toLocaleString(),
+        negative: Math.max(0, metric.sampleSize - metric.numerator).toLocaleString(),
+      }
+    : null
+  const positiveValue = !hasData ? "—" : counts?.positive ?? `${value.toFixed(1)}%`
+  const negativeValue = !hasData ? "—" : counts?.negative ?? `${(100 - value).toFixed(1)}%`
   const sample = metric.sampleSize == null ? "unavailable" : `n = ${metric.sampleSize.toLocaleString()}`
 
 
@@ -93,7 +90,7 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
           </div>
         ))}
       </div>
-      {hasData && !showCounts && metric.sampleSize != null && (
+      {hasData && counts == null && metric.sampleSize != null && (
         <p className="mt-2 text-[10px] tabular-nums text-muted-foreground">{sample}</p>
       )}
     </div>
