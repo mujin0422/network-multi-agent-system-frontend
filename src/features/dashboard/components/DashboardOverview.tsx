@@ -1,6 +1,5 @@
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { RefreshCw } from "lucide-react"
-import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -16,17 +15,15 @@ import {
   DASHBOARD_STATUS_LABELS,
 } from "../constants/dashboard.constants"
 import { useDashboardData } from "../hooks/use-dashboard-data"
-import { ActivityList } from "./ActivityList"
 import { BenchmarkRateCharts } from "./BenchmarkRateCharts"
 import { BarChart } from "./BarChart"
 import { StatusBadge } from "./StatusBadge"
 import { TaskAnalyticsCharts } from "./TaskAnalyticsCharts"
 
-/** Màn hình tổng quan hệ thống với KPI, biểu đồ và hoạt động gần đây. */
+/** Màn hình tổng quan hệ thống với KPI và biểu đồ thống kê. */
 export function DashboardOverview() {
-  const navigate = useNavigate()
   const {
-    activities, deviceActions, metrics, taskBars,
+    metrics, taskBars,
     taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
   } = useDashboardData()
   // Keep the existing KPI charts mounted during Refresh so identical data
@@ -117,54 +114,6 @@ export function DashboardOverview() {
           outcomes30={taskOutcomes30}
           executionTimes={executionTimes}
         />
-        <section className="grid gap-4 xl:grid-cols-2">
-          <Card className="min-h-78 gap-1 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
-              <div>
-                <CardTitle className="type-caption text-foreground">
-                  Recent Activities
-                </CardTitle>
-                <p className="type-caption text-muted-foreground">
-                  Latest automation events
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-transparent type-caption"
-                onClick={() => navigate("/tasks")}
-              >
-                View all
-              </Button>
-            </CardHeader>
-            <CardContent className="px-4">
-              <ActivityList items={activities} />
-            </CardContent>
-          </Card>
-          <Card className="min-h-78 gap-1 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
-              <div>
-                <CardTitle className="type-caption text-foreground">
-                  Recent Operations
-                </CardTitle>
-                <p className="type-caption text-muted-foreground">
-                  Latest operations from automation tasks
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-transparent type-caption"
-                onClick={() => navigate("/tasks")}
-              >
-                Tasks
-              </Button>
-            </CardHeader>
-            <CardContent className="px-4">
-              <ActivityList items={deviceActions} />
-            </CardContent>
-          </Card>
-        </section>
       </PageLayoutContent>
     </PageLayout>
   )
