@@ -1,11 +1,48 @@
 import { Cell, Pie, PieChart } from "recharts"
 
-import { ChartContainer } from "@/components/ui/chart"
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { DashboardRateMetric } from "../utils/benchmark-rates.util"
 
 const TRACK_COLOR = "var(--muted)"
+
+type DonutTooltipProps = {
+  active?: boolean
+  metric: DashboardRateMetric
+  hasData: boolean
+  positiveValue: string
+  negativeValue: string
+}
+
+/** Recharts tooltip: show both slices regardless of which arc is hovered. */
+function DonutBreakdownTooltip({
+  active,
+  metric,
+  hasData,
+  positiveValue,
+  negativeValue,
+}: DonutTooltipProps) {
+  if (!active) return null
+
+  return (
+    <div className="min-w-44 rounded-lg border border-border/70 bg-popover px-3 py-2.5 text-xs text-popover-foreground shadow-lg">
+      <p className="mb-2 font-semibold">{metric.label}</p>
+      {([
+        { label: metric.positiveLabel, color: metric.color, value: positiveValue },
+        { label: metric.negativeLabel, color: metric.secondaryColor, value: negativeValue },
+      ] as const).map((item) => (
+        <div key={item.label} className="flex items-center gap-2 py-1">
+          <span
+            className="size-2.5 shrink-0 rounded-[2px]"
+            style={{ backgroundColor: hasData ? item.color : TRACK_COLOR }}
+          />
+          <span className="flex-1 whitespace-nowrap text-muted-foreground">{item.label}</span>
+          <span className="font-semibold tabular-nums">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
   const hasData = metric.value != null
@@ -56,6 +93,17 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
               <Cell fill={hasData ? metric.color : TRACK_COLOR} />
               <Cell fill={hasData ? metric.secondaryColor : TRACK_COLOR} />
             </Pie>
+            <ChartTooltip
+              cursor={false}
+              content={
+                <DonutBreakdownTooltip
+                  metric={metric}
+                  hasData={hasData}
+                  positiveValue={positiveValue}
+                  negativeValue={negativeValue}
+                />
+              }
+            />
           </PieChart>
         </ChartContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
@@ -64,39 +112,9 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
           </span>
         </div>
       </div>
-      <Tooltip>
-        <TooltipTrigger
-          className="mt-3 flex min-h-10 items-center justify-center rounded-sm text-[13px] font-semibold leading-tight text-foreground decoration-dotted underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-        >
-          {metric.label}
-        </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-80 text-left">
-          <div className="space-y-1">
-            <p className="font-semibold">{metric.label}</p>
-            <p>{metric.description}</p>
-            <p className="opacity-75">{metric.scope}</p>
-          </div>
-        </TooltipContent>
-      </Tooltip>
-      <div className="mt-3 flex w-full flex-col gap-2 text-left" aria-hidden="true">
-        {([
-          { label: metric.positiveLabel, color: metric.color, count: positiveValue },
-          { label: metric.negativeLabel, color: metric.secondaryColor, count: negativeValue },
-        ] as const).map((item) => (
-          <div key={item.label} className="flex min-w-0 items-center gap-2">
-            <span
-              className="size-2.5 shrink-0 rounded-[2px]"
-              style={{ backgroundColor: item.color }}
-            />
-            <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
-              {item.label}
-            </span>
-            <span className="shrink-0 text-[11px] font-semibold tabular-nums text-foreground">
-              {item.count}
-            </span>
-          </div>
-        ))}
-      </div>
+      <p className="mt-3 flex min-h-10 items-center justify-center text-[13px] font-semibold leading-tight text-foreground">
+        {metric.label}
+      </p>
     </div>
   )
 }
@@ -110,8 +128,7 @@ export function BenchmarkRateCharts({
   error: string | null
 }) {
   return (
-    <TooltipProvider delay={200}>
-      <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
+    <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
         <CardHeader className="gap-1 px-4">
           <CardTitle className="type-caption text-foreground">
             Benchmark Evaluation KPIs
@@ -128,7 +145,6 @@ export function BenchmarkRateCharts({
             ))}
           </div>
         </CardContent>
-      </Card>
-    </TooltipProvider>
+    </Card>
   )
 }
