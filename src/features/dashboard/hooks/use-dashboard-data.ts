@@ -1,74 +1,23 @@
 import { useCallback, useEffect, useState } from "react"
 import {
-  Activity,
   CheckCircle2,
   CircleAlert,
   Clock3,
   ListTodo,
   Router,
-  Terminal,
 } from "lucide-react"
 import { benchmarksApi, devicesApi, evaluationsApi, tasksApi } from "@/service"
-import type { Operation, Task, TaskStatus } from "@/service"
-import type { ActivityItem, DashboardStatus } from "../types/activity-item.type"
 import type { ChartBar } from "../types/chart-bar.type"
 import type { Metric } from "../types/metric.type"
 import type {
   ExecutionTimePoint,
   TaskOutcomePoint,
 } from "../types/task-analytics.type"
-import type { Tone } from "../types/tone.type"
 import { buildBenchmarkRates, type DashboardRateMetric } from "../utils/benchmark-rates.util"
 
 const DAY_MS = 86_400_000
 
-function toneForStatus(status: TaskStatus | string): Tone {
-  if (status === "SUCCESS") return "success"
-  if (status === "RUNNING" || status === "PLANNING") return "running"
-  if (status === "PENDING" || status === "WAITING_APPROVAL") return "waiting"
-  return "danger"
-}
-
-function dashboardStatus(status: TaskStatus | string): DashboardStatus {
-  if (status === "PLANNING") return "RUNNING"
-  if (["PENDING", "RUNNING", "SUCCESS", "PARTIAL_SUCCESS", "FAILED", "REJECTED", "WAITING_APPROVAL"].includes(status)) {
-    return status as DashboardStatus
-  }
-  return "PENDING"
-}
-
-function shortTime(value: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(value))
-}
-
-function taskActivity(task: Task): ActivityItem {
-  return {
-    title: task.input_message,
-    detail: `${task.id} · ${task.task_type} · ${shortTime(task.created_at)}`,
-    status: dashboardStatus(task.task_status),
-    tone: toneForStatus(task.task_status),
-    icon: task.task_status === "SUCCESS" ? CheckCircle2 : task.task_status === "FAILED" ? CircleAlert : Activity,
-  }
-}
-
-function operationActivity(operation: Operation): ActivityItem {
-  return {
-    title: operation.operation_intent.replaceAll("_", " "),
-    detail: `${operation.task_id} · ${shortTime(operation.created_at)}`,
-    status: dashboardStatus(operation.operation_status),
-    tone: toneForStatus(operation.operation_status),
-    icon: Terminal,
-  }
-}
-
 export function useDashboardData() {
-  const [activities, setActivities] = useState<ActivityItem[]>([])
-  const [deviceActions, setDeviceActions] = useState<ActivityItem[]>([])
   const [taskBars, setTaskBars] = useState<ChartBar[]>([])
   const [taskOutcomes, setTaskOutcomes] = useState<TaskOutcomePoint[]>([])
   const [taskOutcomes30, setTaskOutcomes30] = useState<TaskOutcomePoint[]>([])
@@ -113,12 +62,6 @@ export function useDashboardData() {
       }
       if (dashboardResult.status === "rejected") throw dashboardResult.reason
       const [tasks, devicePage] = dashboardResult.value
-      const sortedTasks = [...tasks].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
-      const details = await Promise.all(sortedTasks.slice(0, 6).map((task) => tasksApi.get(task.id)))
-      const operations = details
-        .flatMap((task) => task.operations)
-        .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
-
       const terminal = tasks.filter((task) => ["SUCCESS", "PARTIAL_SUCCESS", "FAILED", "REJECTED"].includes(task.task_status))
       const rate = terminal.length
         ? Math.round((terminal.filter((task) => task.task_status === "SUCCESS").length / terminal.length) * 1000) / 10
@@ -131,8 +74,6 @@ export function useDashboardData() {
         { label: "Pending Tasks", value: String(tasks.filter((task) => task.task_status === "PENDING").length), change: "Waiting to start", tone: "waiting", icon: Clock3 },
         { label: "Needs Attention", value: String(tasks.filter((task) => ["PARTIAL_SUCCESS", "FAILED", "REJECTED"].includes(task.task_status)).length), change: "Partial, failed or rejected", tone: "danger", icon: CircleAlert },
       ])
-      setActivities(sortedTasks.slice(0, 5).map(taskActivity))
-      setDeviceActions(operations.slice(0, 5).map(operationActivity))
 
       const now = new Date()
       const days = Array.from({ length: 7 }, (_, index) => {
@@ -216,7 +157,7 @@ export function useDashboardData() {
   useEffect(() => { void reload() }, [reload])
 
   return {
-    activities, deviceActions, metrics, taskBars,
+    metrics, taskBars,
     taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
   }
 }
