@@ -1,8 +1,9 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { TableTimestamp } from "@/components/shared/TableTimestamp"
+import { MoreMenu } from "@/components/shared/MoreMenu"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import type { DateRange } from "react-day-picker"
-import { CheckCircle2, ListChecks, Play, ShieldAlert } from "lucide-react"
+import { CheckCircle2, Eye, ListChecks, Play, ShieldAlert } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
@@ -242,6 +243,32 @@ export default function BenchmarkRunsPage() {
                     />
                   ),
                 },
+                {
+                  id: "actions",
+                  header: null,
+                  headerClassName: "w-12 px-2 text-right",
+                  className: "w-12 px-2 text-right",
+                  cell: (run) => (
+                    <div
+                      className="flex justify-end"
+                      onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    >
+                      {run.evaluation_id && run.task_id ? (
+                        <MoreMenu
+                          actions={[{
+                            id: "view-evaluation",
+                            label: t("benchmarkRuns.viewEvaluation"),
+                            icon: <Eye className="size-4" />,
+                            onClick: () => navigate(`/evaluations?task=${encodeURIComponent(run.task_id!)}`),
+                          }]}
+                        />
+                      ) : (
+                        <span className="px-2 text-xs text-muted-foreground">—</span>
+                      )}
+                    </div>
+                  ),
+                },
               ]}
             >
               <DataTablePanel>
@@ -275,11 +302,6 @@ export default function BenchmarkRunsPage() {
               onOpenChat={() => {
                 if (selectedRun) {
                   navigate(benchmarkChatPath(selectedRun.id, selectedRun.initial_message))
-                }
-              }}
-              onViewEvaluation={() => {
-                if (selectedRun?.task_id) {
-                  navigate(`/evaluations?task=${encodeURIComponent(selectedRun.task_id)}`)
                 }
               }}
               onRequestCleanup={() => setConfirmCleanup(true)}
