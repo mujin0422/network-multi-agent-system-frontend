@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next"
 import { FeatureFormSheet, FormField } from "@/components/shared/FeatureFormSheet"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { isValidIPv4 } from "@/lib/ipv4"
 import { devicesApi } from "@/service"
 import type { ComboboxOption } from "@/types/components"
 import type {
@@ -13,6 +14,7 @@ import type {
 } from "@/service"
 import type { BenchmarkScenarioFormProps } from "../types/benchmark.type"
 import { isValidBenchmarkInterface } from "../utils/benchmark-interface.util"
+import { BENCHMARK_ACTION_IPV4_FIELDS } from "../constants/benchmarks.constants"
 import {
   createEmptyAction,
   createEmptyCheck,
@@ -111,6 +113,15 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
 
         if (invalidActionInterface || invalidGroundTruthInterface) {
           throw new Error(t("benchmarks.errors.invalidInterface"))
+        }
+
+        const invalidIPv4 = [...injection, ...cleanup].some((action) =>
+          (BENCHMARK_ACTION_IPV4_FIELDS[action.action] ?? []).some(
+            (field) => !isValidIPv4(action[field]),
+          ),
+        )
+        if (invalidIPv4) {
+          throw new Error(t("benchmarks.errors.invalidIPv4"))
         }
 
         await onSave({
