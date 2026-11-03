@@ -157,6 +157,8 @@ const en = {
     empty: "No evaluations match your filters. A benchmark must receive a final AI response first.",
     loadError: "Unable to load evaluations.",
     scenario: "Scenario / Task",
+    latency: "Latency",
+    interactionTurns: "Interaction turns",
     status: "Status",
     evaluator: "Evaluator",
     evaluatedAt: "Evaluated at",
