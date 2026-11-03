@@ -11,6 +11,22 @@ const METRIC_LABELS: Record<TaskEvaluationMetric["metric_type"], string> = {
   RCA: "Root cause analysis (RCA)",
   REMEDIATION: "Remediation",
   SAFETY: "Safety",
+  LATENCY: "Latency (User request → Final response)",
+  INTERACTION_TURNS: "Interaction turns (Agent → Tool)",
+}
+
+function formatMeasurement(metric: TaskEvaluationMetric): string | null {
+  const value = metric.actual_value
+  if (typeof value !== "object" || value === null) return null
+  const raw = value as Record<string, unknown>
+
+  if (metric.metric_type === "LATENCY" && typeof raw.duration_ms === "number") {
+    return `${(raw.duration_ms / 1000).toFixed(2)} s`
+  }
+  if (metric.metric_type === "INTERACTION_TURNS" && typeof raw.count === "number") {
+    return `${raw.count} tool calls`
+  }
+  return null
 }
 
 function formatDate(date: string | null) {
@@ -56,7 +72,7 @@ export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetai
         <p className="text-muted-foreground">
           {evaluation.evaluator_type} · {evaluation.evaluator_version ?? "unknown version"} · {formatDate(evaluation.evaluated_at)}
         </p>
-        {evaluation.evaluator_version === "db-benchmark-v1" && (
+        {["db-benchmark-v1", "db-benchmark-v2"].includes(evaluation.evaluator_version ?? "") && (
           <p className="rounded-md border p-2 text-muted-foreground">
             Cách chấm hiện tại dựa vào từ khóa có trong câu trả lời của AI, không phải
             kiểm định độc lập cấu hình mạng. REMEDIATION/SAFETY được ghi nhận
@@ -69,10 +85,16 @@ export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetai
           <article key={metric.id} className="space-y-3 rounded-xl border bg-card p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-semibold">{METRIC_LABELS[metric.metric_type] ?? metric.metric_type}</h3>
-              <StatusBadge value={metric.result} />
+              {metric.metric_type === "LATENCY" || metric.metric_type === "INTERACTION_TURNS" ? (
+                <span className="text-sm font-semibold tabular-nums">
+                  {formatMeasurement(metric) ?? "—"}
+                </span>
+              ) : (
+                <StatusBadge value={metric.result} />
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {metric.is_required ? "Required" : "Optional"}
+              {(metric.metric_type === "LATENCY" || metric.metric_type === "INTERACTION_TURNS") ? "Measured · no PASS/FAIL threshold" : (metric.is_required ? "Required" : "Optional")}
               {metric.was_attempted != null ? ` · Attempted: ${metric.was_attempted ? "Yes" : "No"}` : ""}
             </p>
             <Evidence label="Expected value" value={metric.expected_value} />
