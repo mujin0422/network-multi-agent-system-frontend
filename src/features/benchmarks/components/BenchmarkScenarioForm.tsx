@@ -160,16 +160,14 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
           throw new Error(t("benchmarks.errors.invalidIPv4"))
         }
 
+        if (suggestedCleanup.manualSteps.length > 0 && autoCleanup) {
+          throw new Error(t("benchmarks.errors.cleanupManualOverrideRequired"))
+        }
         if (cleanupActions.length === 0) {
           throw new Error(t("benchmarks.errors.cleanupRequired"))
         }
-        if (suggestedCleanup.manualSteps.length > 0) {
-          if (autoCleanup) {
-            throw new Error(t("benchmarks.errors.cleanupManualOverrideRequired"))
-          }
-          if (!manualCleanupReviewed) {
-            throw new Error(t("benchmarks.errors.cleanupReviewRequired"))
-          }
+        if (suggestedCleanup.manualSteps.length > 0 && !manualCleanupReviewed) {
+          throw new Error(t("benchmarks.errors.cleanupReviewRequired"))
         }
 
         await onSave({
@@ -244,6 +242,7 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <label className="flex cursor-pointer items-center gap-2 text-xs font-medium">
             <Switch
+              type="button"
               size="sm"
               checked={autoCleanup}
               onCheckedChange={changeAutoCleanup}
