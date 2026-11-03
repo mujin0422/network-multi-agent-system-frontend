@@ -1,6 +1,6 @@
 /**
- * Common physical interface names supported by benchmark scenarios.
- * Cisco IOS / IOS XE may use two or three numeric segments depending on the platform.
+ * Interface naming formats used in GNS3 benchmark scenarios.
+ * The UI uses a fixed number of numeric segments per interface type.
  */
 export const BENCHMARK_INTERFACE_TYPES = [
   "Ethernet",
@@ -10,21 +10,27 @@ export const BENCHMARK_INTERFACE_TYPES = [
   "TwentyFiveGigE",
   "FortyGigabitEthernet",
   "HundredGigE",
+  "Loopback",
 ] as const
 
 export type BenchmarkInterfaceType = (typeof BENCHMARK_INTERFACE_TYPES)[number]
+
 export type BenchmarkInterfaceSelection = {
   type: BenchmarkInterfaceType
   parts: string[]
 }
 
-export function defaultInterfacePartCount(type: BenchmarkInterfaceType): 2 | 3 {
-  return type === "Ethernet" || type === "FastEthernet" || type === "GigabitEthernet"
-    ? 2
-    : 3
+export function benchmarkInterfacePartCount(type: BenchmarkInterfaceType): 1 | 2 | 3 {
+  if (type === "Loopback") return 1
+  if (type === "Ethernet" || type === "FastEthernet") return 2
+  return 3
 }
 
-/** Parse both complete and in-progress values without losing an empty numeric field. */
+/**
+ * Parse stored interface strings, including earlier two-/three-segment formats.
+ * A legacy value with the wrong segment count remains visible in edit mode,
+ * but must be explicitly corrected before the scenario can be saved.
+ */
 export function parseBenchmarkInterface(
   value: string | null | undefined,
 ): BenchmarkInterfaceSelection | null {
@@ -36,17 +42,19 @@ export function parseBenchmarkInterface(
   if (!type) return null
 
   const suffix = value.slice(type.length)
-  if (!/^\d*(?:\/\d*){1,2}$/.test(suffix)) return null
+  if (!/^\d*(?:\/\d*){0,2}$/.test(suffix)) return null
 
   const parts = suffix.split("/")
-  if (parts.length !== 2 && parts.length !== 3) return null
+  if (parts.length < 1 || parts.length > 3) return null
   return { type, parts }
 }
 
 export function isValidBenchmarkInterface(value: string | null | undefined): boolean {
   const selection = parseBenchmarkInterface(value)
   return Boolean(
-    selection?.parts.every((part) =>
+    selection &&
+    selection.parts.length === benchmarkInterfacePartCount(selection.type) &&
+    selection.parts.every((part) =>
       /^\d+$/.test(part) && Number.isSafeInteger(Number(part)),
     ),
   )
