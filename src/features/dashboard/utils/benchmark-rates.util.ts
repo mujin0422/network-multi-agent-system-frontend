@@ -9,6 +9,9 @@ export type DashboardRateMetric = {
   label: string
   description: string
   color: string
+  secondaryColor: string
+  positiveLabel: string
+  negativeLabel: string
   value: number | null
   sampleSize: number | null
   numerator?: number
@@ -84,7 +87,10 @@ export function buildBenchmarkRates({
       id: "tsr",
       label: "Task Success Rate",
       description: "GOAL pass / scored outcomes",
-      color: "#34d399",
+      color: "#16a34a",
+      secondaryColor: "#14532d",
+      positiveLabel: "Task Success",
+      negativeLabel: "Task Fail",
       value: summary?.success_rate ?? null,
       sampleSize: summary?.eligible_runs ?? null,
       numerator: summary?.passed,
@@ -94,7 +100,10 @@ export function buildBenchmarkRates({
       id: "goal",
       label: "Goal Pass Rate",
       description: "GOAL passes on v4",
-      color: "#22d3ee",
+      color: "#0891b2",
+      secondaryColor: "#164e63",
+      positiveLabel: "GOAL Pass",
+      negativeLabel: "GOAL Fail",
       value: goalScored ? asPercent(goalPassed, goalScored.length) : null,
       sampleSize: goalScored?.length ?? null,
       numerator: goalPassed,
@@ -104,7 +113,10 @@ export function buildBenchmarkRates({
       id: "rca",
       label: "RCA Pass Rate",
       description: "Exact root-cause matches",
-      color: "#a78bfa",
+      color: "#7c3aed",
+      secondaryColor: "#4c1d95",
+      positiveLabel: "RCA Pass",
+      negativeLabel: "RCA Fail",
       value: rcaScored ? asPercent(rcaPassed, rcaScored.length) : null,
       sampleSize: rcaScored?.length ?? null,
       numerator: rcaPassed,
@@ -114,7 +126,10 @@ export function buildBenchmarkRates({
       id: "rca-f1",
       label: "Average RCA F1",
       description: "Mean structured RCA score",
-      color: "#fbbf24",
+      color: "#d97706",
+      secondaryColor: "#78350f",
+      positiveLabel: "F1 Score",
+      negativeLabel: "Remaining",
       value: meanF1,
       sampleSize: f1Values?.length ?? null,
       scope: "v4 only · latest 100 evaluations",
@@ -123,7 +138,10 @@ export function buildBenchmarkRates({
       id: "completion",
       label: "Run Finalization",
       description: "Finalized / started runs",
-      color: "#60a5fa",
+      color: "#2563eb",
+      secondaryColor: "#1e3a8a",
+      positiveLabel: "Finalized",
+      negativeLabel: "In Progress",
       value: summary ? asPercent(finalized, started) : null,
       sampleSize: summary ? started : null,
       numerator: summary ? finalized : undefined,
@@ -133,7 +151,10 @@ export function buildBenchmarkRates({
       id: "cleanup",
       label: "Cleanup Coverage",
       description: "Finished runs cleaned",
-      color: "#fb7185",
+      color: "#e11d48",
+      secondaryColor: "#881337",
+      positiveLabel: "Cleaned",
+      negativeLabel: "Not Cleaned",
       value: finishedRuns ? asPercent(cleaned, finishedRuns.length) : null,
       sampleSize: finishedRuns?.length ?? null,
       numerator: cleaned,
