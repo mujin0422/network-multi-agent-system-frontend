@@ -1,6 +1,7 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { TableTimestamp } from "@/components/shared/TableTimestamp"
 import { useCallback, useEffect, useMemo, useState } from "react"
+import type { DateRange } from "react-day-picker"
 import { CheckCircle2, ListChecks, Play, ShieldAlert } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
@@ -8,6 +9,7 @@ import { useNavigate, useSearchParams } from "react-router-dom"
 import {
   DataTable,
   DataTableContent,
+  DataTableDateRangeFilter,
   DataTableFilters,
   DataTablePanel,
   DataTablePagination,
@@ -40,6 +42,7 @@ export default function BenchmarkRunsPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const [runs, setRuns] = useState<BenchmarkRun[]>([])
+  const [createdRange, setCreatedRange] = useState<DateRange | undefined>()
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,11 +63,30 @@ export default function BenchmarkRunsPage() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch after mount.
   useEffect(() => { void refresh() }, [refresh])
 
-  const rows = useMemo<BenchmarkRunRow[]>(
-    () => runs.map((run) => ({ ...run, runGroup: groupRun(run) })),
-    [runs],
-  )
-  const selectedRun = runs.find((run) => run.id === selectedId) ?? runs[0] ?? null
+  // The run API exposes started_at rather than created_at. The backend sets
+  // started_at when creating the run, so filter by that timestamp in local time.
+  // End is exclusive at the next local midnight: includes the entire last day.
+  const rows = useMemo<BenchmarkRunRow[]>(() => {
+    const from = createdRange?.from
+    const to = createdRange?.to ?? from
+    const start = from
+      ? new Date(from.getFullYear(), from.getMonth(), from.getDate())
+      : null
+    const end = to
+      ? new Date(to.getFullYear(), to.getMonth(), to.getDate() + 1)
+      : null
+
+    return runs
+      .filter((run) => {
+        if (!start || !end) return true
+        const createdAt = new Date(run.started_at)
+        return !Number.isNaN(createdAt.getTime()) && createdAt >= start && createdAt < end
+      })
+      .map((run) => ({ ...run, runGroup: groupRun(run) }))
+  }, [runs, createdRange])
+
+  // Keep the details panel aligned with the date-filtered rows.
+  const selectedRun = rows.find((run) => run.id === selectedId) ?? rows[0] ?? null
 
   const summary = {
     total: runs.length,
@@ -226,6 +248,11 @@ export default function BenchmarkRunsPage() {
                 <DataTableToolbar>
                   <DataTableSearch placeholder={t("benchmarkRuns.search")} />
                   <DataTableToolbarActions>
+                    <DataTableDateRangeFilter
+                      label="Created at"
+                      value={createdRange}
+                      onChange={setCreatedRange}
+                    />
                     <DataTableFilters />
                   </DataTableToolbarActions>
                 </DataTableToolbar>
@@ -233,7 +260,10 @@ export default function BenchmarkRunsPage() {
                 <DataTablePagination itemLabel="runs" />
               </DataTablePanel>
             </DataTable>
-            <p className="text-xs text-muted-foreground">{t("benchmarkRuns.latestLimit")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("benchmarkRuns.latestLimit")} Created at filters the latest 100 runs
+              using the run start timestamp.
+            </p>
           </div>
 
           <div className="min-w-0">
