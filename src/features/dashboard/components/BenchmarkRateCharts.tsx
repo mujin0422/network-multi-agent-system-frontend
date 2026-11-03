@@ -8,13 +8,13 @@ const TRACK_COLOR = "var(--muted)"
 
 function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
   const hasData = metric.value != null
-  const value = hasData ? Math.max(0, Math.min(metric.value!, 100)) : 0
+  const value = hasData ? Math.max(0, Math.min(metric.value ?? 0, 100)) : 0
   const segments = [
     { name: "Measured", amount: value },
     { name: "Remaining", amount: 100 - value },
   ]
 
-  const textValue = hasData ? `${metric.value!.toFixed(1)}%` : "—"
+  const textValue = hasData ? `${value.toFixed(1)}%` : "—"
   const detail = metric.sampleSize == null
     ? "Unavailable"
     : metric.sampleSize === 0
