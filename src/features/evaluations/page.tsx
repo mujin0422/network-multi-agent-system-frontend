@@ -3,7 +3,7 @@ import { TableTimestamp } from "@/components/shared/TableTimestamp"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Bot, CheckCircle2, ClipboardCheck, Eye, History, XCircle } from "lucide-react"
+import { Bot, CheckCircle2, ClipboardCheck, Clock3, Eye, History, Wrench, XCircle } from "lucide-react"
 
 import {
   DataTable,
@@ -82,6 +82,22 @@ export default function EvaluationsPage() {
   const countFail = evaluations.filter((evaluation) => evaluation.results.RCA === "FAIL").length
   const countAutomated = evaluations.filter((evaluation) => evaluation.evaluator_type === "AUTOMATED").length
 
+  // Summaries include a numerical measure only when a benchmark recorded it.
+  const latencySamples = evaluations.flatMap((evaluation) => {
+    const value = evaluation.measurements?.LATENCY
+    return value == null ? [] : [value]
+  })
+  const interactionSamples = evaluations.flatMap((evaluation) => {
+    const value = evaluation.measurements?.INTERACTION_TURNS
+    return value == null ? [] : [value]
+  })
+  const averageLatency = latencySamples.length > 0
+    ? latencySamples.reduce((total, value) => total + value, 0) / latencySamples.length / 1000
+    : null
+  const averageInteractions = interactionSamples.length > 0
+    ? interactionSamples.reduce((total, value) => total + value, 0) / interactionSamples.length
+    : null
+
   function openDetails(taskId: string) {
     setParams({ task: taskId })
   }
@@ -129,6 +145,18 @@ export default function EvaluationsPage() {
           value={countAutomated}
           description={t("evaluationsPage.stats.automatedDescription")}
           icon={<Bot />}
+        />
+        <PageLayoutStat
+          label={t("evaluationsPage.averageLatency")}
+          value={averageLatency == null ? "—" : `${averageLatency.toFixed(2)} s`}
+          description={t("evaluationsPage.measuredSamples", { count: latencySamples.length })}
+          icon={<Clock3 />}
+        />
+        <PageLayoutStat
+          label={t("evaluationsPage.averageTurns")}
+          value={averageInteractions == null ? "—" : averageInteractions.toFixed(1)}
+          description={t("evaluationsPage.measuredSamples", { count: interactionSamples.length })}
+          icon={<Wrench />}
         />
       </PageLayoutOverview>
       <PageLayoutContent>
@@ -183,6 +211,27 @@ export default function EvaluationsPage() {
               id: "rca",
               header: "RCA",
               cell: (evaluation) => <StatusBadge value={evaluation.rcaResult} />,
+            },
+            {
+              id: "latency",
+              header: t("evaluationsPage.latency"),
+              cell: (evaluation) => {
+                const ms = evaluation.measurements?.LATENCY
+                return (
+                  <span className="whitespace-nowrap text-xs tabular-nums">
+                    {ms == null ? "—" : `${(ms / 1000).toFixed(2)} s`}
+                  </span>
+                )
+              },
+            },
+            {
+              id: "interactionTurns",
+              header: t("evaluationsPage.interactionTurns"),
+              cell: (evaluation) => (
+                <span className="text-xs tabular-nums">
+                  {evaluation.measurements?.INTERACTION_TURNS ?? "—"}
+                </span>
+              ),
             },
             {
               id: "remediation",

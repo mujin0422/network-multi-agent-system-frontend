@@ -307,7 +307,7 @@ export type TaskExecution = {
 
 export type EvaluationStatus = "PENDING" | "COMPLETED" | "ERROR"
 export type EvaluationResult = "PASS" | "FAIL" | "UNKNOWN" | "NOT_APPLICABLE"
-export type EvaluationMetricType = "GOAL" | "RCA" | "REMEDIATION" | "SAFETY"
+export type EvaluationMetricType = "GOAL" | "RCA" | "REMEDIATION" | "SAFETY" | "LATENCY" | "INTERACTION_TURNS"
 export type TaskEvaluationMetric = {
   id: string
   evaluation_id: string
@@ -329,6 +329,7 @@ export type TaskEvaluationSummary = {
   created_at: string
   evaluated_at: string | null
   results: Partial<Record<EvaluationMetricType, EvaluationResult>>
+  measurements?: Partial<Record<EvaluationMetricType, number>>
 }
 export type TaskEvaluationDetail = {
   id: string
