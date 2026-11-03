@@ -189,15 +189,15 @@ export default function EvaluationsPage() {
           <h2 className="text-sm font-semibold">{t("evaluationsPage.tsrBreakdown")}</h2>
           <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
             {([
-              ["passed", "tsrPassed"],
-              ["failed", "tsrFailed"],
-              ["in_progress", "tsrInProgress"],
-              ["not_started", "tsrNotStarted"],
-              ["setup_failed", "tsrSetupFailed"],
-              ["unscored", "tsrUnscored"],
+              ["passed", t("evaluationsPage.tsrPassed")],
+              ["failed", t("evaluationsPage.tsrFailed")],
+              ["in_progress", t("evaluationsPage.tsrInProgress")],
+              ["not_started", t("evaluationsPage.tsrNotStarted")],
+              ["setup_failed", t("evaluationsPage.tsrSetupFailed")],
+              ["unscored", t("evaluationsPage.tsrUnscored")],
             ] as const).map(([key, label]) => (
               <div key={key} className="rounded-lg border p-3">
-                <p className="text-muted-foreground">{t(`evaluationsPage.${label}`)}</p>
+                <p className="text-muted-foreground">{label}</p>
                 <p className="mt-1 text-lg font-semibold tabular-nums">{runSummary[key]}</p>
               </div>
             ))}
