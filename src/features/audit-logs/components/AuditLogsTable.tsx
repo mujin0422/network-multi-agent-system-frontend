@@ -107,7 +107,7 @@ export function AuditLogsTable() {
                 header: "Actor",
                 cell: (log) => (
                   <>
-                    <p className="type-body-sm font-medium">
+                    <p className="text-[13px] font-medium">
                       {log.actor_display_name ?? "System"}
                     </p>
                     <p className="mt-1 type-caption text-muted-foreground">
@@ -137,7 +137,7 @@ export function AuditLogsTable() {
                 header: "Resource",
                 cell: (log) => (
                   <>
-                    <p className="type-body-sm">{log.resource_type}</p>
+                    <p className="text-[13px]">{log.resource_type}</p>
                     <TableIdentifier value={log.resource_id} variant="reference" className="mt-1 max-w-[220px] truncate" />
                   </>
                 ),
