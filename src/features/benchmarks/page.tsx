@@ -21,7 +21,7 @@ export default function BenchmarksPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editError, setEditError] = useState<string | null>(null)
   const [formVersion, setFormVersion] = useState(0)
-  const { scenarios, runs, loading, busy, error, createScenario, updateScenario, startScenario, toggleScenario } = useBenchmarksData()
+  const { scenarios, runs, runsLoadFailed, loading, busy, error, reload, createScenario, updateScenario, startScenario, toggleScenario } = useBenchmarksData()
 
   function openCreateForm() {
     setEditingScenario(null)
@@ -98,7 +98,14 @@ export default function BenchmarksPage() {
         </div>
         {existingRunNeedsAttention && <p className="text-xs text-muted-foreground">{t("benchmarkRuns.activeWarning")}</p>}
         {(error || editError) && (
-          <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">{editError || error}</p>
+          <div role="alert" className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">
+            <p className="min-w-0 flex-1 whitespace-pre-line break-words">{editError || error}</p>
+            {error && (
+              <Button type="button" variant="outline" size="xs" onClick={() => void reload()}>
+                {t("benchmarks.retry")}
+              </Button>
+            )}
+          </div>
         )}
         <div className="grid gap-4 xl:grid-cols-2">
           {scenarios.map((scenario) => (
@@ -106,7 +113,7 @@ export default function BenchmarksPage() {
               key={scenario.id}
               scenario={scenario}
               busy={busy}
-              startDisabled={busy || existingRunNeedsAttention}
+              startDisabled={busy || existingRunNeedsAttention || runsLoadFailed}
               editLoading={editingId === scenario.id}
               onEdit={(id) => void openEditForm(id)}
               onStart={(id) => void startAndOpenRun(id)}
