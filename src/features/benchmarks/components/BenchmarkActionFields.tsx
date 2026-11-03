@@ -25,6 +25,8 @@ const ACTION_FIELDS: Record<BenchmarkAction["action"], ActionField[]> = {
   interface_ip_set: ["interface", "ip_address", "subnet_mask"],
   acl_block: ["interface", "acl_number", "direction", "source_network", "source_wildcard"],
   acl_remove: ["interface", "acl_number", "direction"],
+  bgp_neighbor_shutdown: ["local_as", "neighbor_ip"],
+  bgp_neighbor_no_shutdown: ["local_as", "neighbor_ip"],
 }
 
 const FIELD_LABELS: Record<ActionField, string> = {
@@ -40,9 +42,11 @@ const FIELD_LABELS: Record<ActionField, string> = {
   direction: "direction",
   source_network: "sourceNetwork",
   source_wildcard: "sourceWildcard",
+  local_as: "localAs",
+  neighbor_ip: "neighborIp",
 }
 
-const NUMERIC_FIELDS = new Set<ActionField>(["process_id", "area", "acl_number"])
+const NUMERIC_FIELDS = new Set<ActionField>(["process_id", "area", "acl_number", "local_as"])
 const IPV4_FIELDS = new Set<ActionField>(Object.values(BENCHMARK_ACTION_IPV4_FIELDS).flat())
 
 export function BenchmarkActionFields({ section, deviceOptions, title, items, defaultAction, onChange }: BenchmarkActionFieldsProps) {
@@ -101,6 +105,7 @@ export function BenchmarkActionFields({ section, deviceOptions, title, items, de
           required
           min={numeric ? (field === "area" ? 0 : 1) : undefined}
           step={numeric ? 1 : undefined}
+          max={field === "local_as" ? 4294967295 : undefined}
           value={item[field] ?? ""}
           className="font-mono"
           onChange={(event) => {
