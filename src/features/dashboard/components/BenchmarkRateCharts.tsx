@@ -129,22 +129,22 @@ export function BenchmarkRateCharts({
 }) {
   return (
     <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-        <CardHeader className="gap-1 px-4">
-          <CardTitle className="type-caption text-foreground">
-            Benchmark Evaluation KPIs
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Pass rates and diagnostic quality · v4 scores are kept separate from legacy evaluations
-          </p>
-          {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
-        </CardHeader>
-        <CardContent className="mt-4 min-w-0 px-4">
-          <div className="flex w-full gap-3 overflow-x-auto pb-2">
-            {metrics.map((metric) => (
-              <BenchmarkDonut key={metric.id} metric={metric} />
-            ))}
-          </div>
-        </CardContent>
+      <CardHeader className="gap-1 px-4">
+        <CardTitle className="type-caption text-foreground">
+          Benchmark Evaluation KPIs
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          Pass rates and diagnostic quality · v4 scores are kept separate from legacy evaluations
+        </p>
+        {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
+      </CardHeader>
+      <CardContent className="mt-4 min-w-0 px-4">
+        <div className="flex w-full gap-3 overflow-x-auto pb-2">
+          {metrics.map((metric) => (
+            <BenchmarkDonut key={metric.id} metric={metric} />
+          ))}
+        </div>
+      </CardContent>
     </Card>
   )
 }
