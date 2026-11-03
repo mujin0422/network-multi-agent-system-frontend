@@ -260,7 +260,11 @@ export default function BenchmarkRunsPage() {
                             id: "view-evaluation",
                             label: t("benchmarkRuns.viewEvaluation"),
                             icon: <Eye className="size-4" />,
-                            onClick: () => navigate(`/evaluations?task=${encodeURIComponent(run.task_id!)}`),
+                            onClick: () => {
+                              if (run.task_id) {
+                                navigate(`/evaluations?task=${encodeURIComponent(run.task_id)}`)
+                              }
+                            },
                           }]}
                         />
                       ) : (
