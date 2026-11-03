@@ -4,9 +4,12 @@ import {
   createContext,
   isValidElement,
   useContext,
+  useState,
   type ReactNode,
 } from "react"
 import {
+  CalendarDaysIcon,
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   RotateCcwIcon,
@@ -14,8 +17,11 @@ import {
   XIcon,
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { format } from "date-fns"
+import type { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Combobox,
   ComboboxContent,
@@ -27,6 +33,11 @@ import {
   ComboboxValue,
 } from "@/components/ui/combobox"
 import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Pagination,
   PaginationContent,
@@ -362,6 +373,102 @@ function DataTableFilters({ className, ...props }: DataTableFiltersProps) {
   )
 }
 
+
+type DataTableDateRangeFilterProps = {
+  value?: DateRange
+  onChange: (next: DateRange | undefined) => void
+  className?: string
+  disabled?: boolean
+}
+
+/** Shared shadcn Base date-range control for DataTable toolbars. */
+function DataTableDateRangeFilter({
+  value,
+  onChange,
+  className,
+  disabled,
+}: DataTableDateRangeFilterProps) {
+  const [open, setOpen] = useState(false)
+
+  const dateLabel = value?.from
+    ? value.to
+      ? `${format(value.from, "dd/MM/yyyy")} – ${format(value.to, "dd/MM/yyyy")}`
+      : format(value.from, "dd/MM/yyyy")
+    : "Date range"
+
+  function selectDates(range: DateRange | undefined) {
+    if (!range?.from) {
+      onChange(undefined)
+      return
+    }
+
+    // Keep only calendar dates. Audit logs apply the full inclusive end day.
+    const start = new Date(
+      range.from.getFullYear(), range.from.getMonth(), range.from.getDate(),
+    )
+    const end = range.to
+      ? new Date(range.to.getFullYear(), range.to.getMonth(), range.to.getDate())
+      : undefined
+
+    onChange({ from: start, to: end })
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <button
+            type="button"
+            disabled={disabled}
+            aria-label="Filter events by date range"
+            className={cn(
+              "flex h-9 w-[280px] max-w-full items-center justify-between gap-2 rounded-lg border border-input bg-background px-3 text-xs text-muted-foreground outline-none",
+              "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "disabled:cursor-not-allowed disabled:opacity-50",
+              className,
+            )}
+          />
+        }
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <CalendarDaysIcon aria-hidden="true" className="size-4 shrink-0" />
+          <span className="truncate">{dateLabel}</span>
+        </span>
+        <ChevronDownIcon
+          aria-hidden="true"
+          className="size-4 shrink-0"
+        />
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-auto max-w-[calc(100vw-1rem)] p-0"
+      >
+        <Calendar
+          mode="range"
+          numberOfMonths={1}
+          selected={value}
+          onSelect={selectDates}
+          className="mx-auto"
+        />
+        <div className="flex justify-between gap-2 border-t border-border p-2">
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            disabled={!value?.from}
+            onClick={() => onChange(undefined)}
+          >
+            Clear dates
+          </Button>
+          <Button type="button" size="sm" onClick={() => setOpen(false)}>
+            Done
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 /** Header, hàng dữ liệu và empty state của bảng. */
 function DataTableContent({
   emptyMessage = "common.noResults",
@@ -574,6 +681,7 @@ function DataTablePagination({
 export {
   DataTable,
   DataTableContent,
+  DataTableDateRangeFilter,
   DataTableFilter,
   DataTableFilters,
   DataTablePanel,

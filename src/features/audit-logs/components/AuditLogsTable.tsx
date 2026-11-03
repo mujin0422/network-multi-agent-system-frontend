@@ -1,15 +1,16 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
-import { Download } from "lucide-react"
+import { Download, LoaderCircle } from "lucide-react"
+import type { DateRange } from "react-day-picker"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
 import {
   DataTable,
   DataTableContent,
+  DataTableDateRangeFilter,
   DataTableFilters,
   DataTablePanel,
   DataTablePagination,
-  DataTableSearch,
   DataTableToolbar,
   DataTableToolbarActions,
 } from "@/components/shared/DataTable"
@@ -34,7 +35,8 @@ import { AuditLogStats } from "./AuditLogStats"
 
 /** Màn hình tra cứu, lọc và xem chi tiết lịch sử hoạt động của toàn hệ thống. */
 export function AuditLogsTable() {
-  const { rows, summary, loading, error, exportCsv } = useAuditLogsData()
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
+  const { rows, summary, loading, initialLoading, error, exportCsv } = useAuditLogsData(dateRange)
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -46,7 +48,7 @@ export function AuditLogsTable() {
       Export CSV
     </Button>
   )
-  if (loading) {
+  if (initialLoading) {
     return (
       <PageLoadingSkeleton
         title="Audit Logs"
@@ -91,18 +93,6 @@ export function AuditLogsTable() {
                 options: AUDIT_ACTOR_TYPE_OPTIONS,
               },
             ]}
-            searchValue={(log) =>
-              [
-                log.action,
-                log.actor_display_name,
-                log.actor_user_id,
-                log.actor_type,
-                log.resource_type,
-                log.resource_id,
-                log.summary,
-                log.request_id,
-              ].filter(Boolean).join(" ")
-            }
             columns={[
               {
                 id: "timestamp",
@@ -117,7 +107,7 @@ export function AuditLogsTable() {
                 header: "Actor",
                 cell: (log) => (
                   <>
-                    <p className="type-body-sm font-medium">
+                    <p className="text-[13px] font-medium">
                       {log.actor_display_name ?? "System"}
                     </p>
                     <p className="mt-1 type-caption text-muted-foreground">
@@ -147,7 +137,7 @@ export function AuditLogsTable() {
                 header: "Resource",
                 cell: (log) => (
                   <>
-                    <p className="type-body-sm">{log.resource_type}</p>
+                    <p className="text-[13px]">{log.resource_type}</p>
                     <TableIdentifier value={log.resource_id} variant="reference" className="mt-1 max-w-[220px] truncate" />
                   </>
                 ),
@@ -175,10 +165,19 @@ export function AuditLogsTable() {
             ]}
           >
             <DataTablePanel>
-              <DataTableToolbar>
-                <DataTableSearch placeholder="Search actor, action, resource, request ID..." />
+              <DataTableToolbar className="lg:justify-end">
                 <DataTableToolbarActions>
+                  <DataTableDateRangeFilter
+                    value={dateRange}
+                    onChange={setDateRange}
+                  />
                   <DataTableFilters />
+                  {loading && (
+                    <LoaderCircle
+                      aria-label="Loading audit events"
+                      className="size-4 animate-spin text-muted-foreground"
+                    />
+                  )}
                 </DataTableToolbarActions>
               </DataTableToolbar>
               <DataTableContent />
