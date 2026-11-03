@@ -172,6 +172,7 @@ const en = {
     title: "Benchmark Scenarios",
     description: "Manage database-backed scenarios, diagnose through Chat, and automatically store Task Evaluations.",
     addScenario: "Add scenario",
+    retry: "Retry",
     chatBanner: "Benchmark",
     warningTitle: "Benchmarks change GNS3 device configurations.",
     warningDescription: "Run them only in a lab. Use Cleanup after testing to restore affected interfaces.",
@@ -213,6 +214,7 @@ const en = {
     },
     errors: {
       load: "Unable to load benchmark scenarios.",
+      connectionHint: "The browser received no API response. Check backend logs, the deployed API version after seeding BGP, and CORS configuration.",
       create: "Unable to create the scenario.",
       start: "Unable to start the benchmark.",
       cleanup: "Unable to restore the environment.",
