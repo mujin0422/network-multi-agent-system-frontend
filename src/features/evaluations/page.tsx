@@ -97,7 +97,7 @@ export default function EvaluationsPage() {
   // Only v3 stores AI-active time; v2 LATENCY is legacy end-to-end.
   // Never mix the two definitions in a mean.
   const latencySamples = evaluations.flatMap((evaluation) => {
-    if (evaluation.evaluator_version !== "db-benchmark-v3") return []
+    if (!["db-benchmark-v3", "db-benchmark-v4"].includes(evaluation.evaluator_version ?? "")) return []
     const value = evaluation.measurements?.LATENCY
     return value == null ? [] : [value]
   })
@@ -205,6 +205,7 @@ export default function EvaluationsPage() {
           <p className="text-muted-foreground">
             {t("evaluationsPage.tsrScope", { total: runSummary.total_runs })}
           </p>
+          <p className="text-muted-foreground">{t("evaluationsPage.tsrVersionNote")}</p>
         </section>
       )}
       <PageLayoutContent>
@@ -264,6 +265,18 @@ export default function EvaluationsPage() {
               id: "rca",
               header: "RCA",
               cell: (evaluation) => <StatusBadge value={evaluation.rcaResult} />,
+            },
+            {
+              id: "rcaF1",
+              header: t("evaluationsPage.rcaF1"),
+              cell: (evaluation) => {
+                const f1 = evaluation.scores?.rca_f1
+                return (
+                  <span className="text-xs tabular-nums">
+                    {f1 == null ? "—" : `${(f1 * 100).toFixed(1)}%`}
+                  </span>
+                )
+              },
             },
             {
               id: "latency",
