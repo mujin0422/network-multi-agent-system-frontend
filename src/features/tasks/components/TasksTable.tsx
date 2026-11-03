@@ -1,4 +1,5 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
+import { MoreMenu } from "@/components/shared/MoreMenu"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
@@ -32,7 +33,7 @@ import { TaskRecordsSheet } from "./TaskRecordsSheet"
 /** Màn hình theo dõi task, trạng thái thực thi và các bước cần phê duyệt. */
 export function TasksTable() {
   const { rows, usersById, activeId, selected, operations, summary, setActiveId, loading } = useTasksData()
-  const [recordsOpen, setRecordsOpen] = useState(false)
+  const [recordsTaskId, setRecordsTaskId] = useState<string | null>(null)
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -144,6 +145,27 @@ export function TasksTable() {
                     </p>
                   </div>
               },
+              {
+                id: "actions",
+                header: null,
+                headerClassName: "w-12 px-2 text-right",
+                className: "w-12 px-2 text-right",
+                cell: (task) => (
+                  <div
+                    className="flex justify-end"
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                  >
+                    <MoreMenu
+                      onCopy={() => void navigator.clipboard?.writeText(task.id)}
+                      onView={() => {
+                        setActiveId(task.id)
+                        setRecordsTaskId(task.id)
+                      }}
+                    />
+                  </div>
+                ),
+              },
             ]}
           >
             <DataTablePanel>
@@ -160,15 +182,16 @@ export function TasksTable() {
           <TaskExecutionPanel
             task={selected}
             operations={operations}
-            onView={() => selected && setRecordsOpen(true)}
             onEdit={() => selected && openForm("edit", selected)}
           />
         </PageLayoutContent>
       </PageLayout>
       <TaskRecordsSheet
-        open={recordsOpen}
-        taskId={selected?.id ?? null}
-        onOpenChange={setRecordsOpen}
+        open={recordsTaskId !== null}
+        taskId={recordsTaskId}
+        onOpenChange={(open) => {
+          if (!open) setRecordsTaskId(null)
+        }}
       />
       <TaskForm
         open={form.open}
