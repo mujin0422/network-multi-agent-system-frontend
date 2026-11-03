@@ -14,6 +14,7 @@ import type {
   TaskOutcomePoint,
 } from "../types/task-analytics.type"
 import { buildBenchmarkRates, type DashboardRateMetric } from "../utils/benchmark-rates.util"
+import { buildBenchmarkAnalytics, type BenchmarkAnalytics } from "../utils/benchmark-analytics.util"
 
 const DAY_MS = 86_400_000
 
@@ -28,6 +29,10 @@ export function useDashboardData() {
     buildBenchmarkRates({ summary: null, evaluations: null, runs: null }),
   )
   const [rateError, setRateError] = useState<string | null>(null)
+  const [benchmarkAnalytics, setBenchmarkAnalytics] = useState<BenchmarkAnalytics>(() =>
+    buildBenchmarkAnalytics(null),
+  )
+  const [benchmarkAnalyticsError, setBenchmarkAnalyticsError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -35,6 +40,7 @@ export function useDashboardData() {
     setLoading(true)
     setError(null)
     setRateError(null)
+    setBenchmarkAnalyticsError(null)
     try {
       // Benchmark metrics have independent permissions and failure states.
       // One unavailable endpoint must not break the regular Dashboard.
@@ -52,6 +58,15 @@ export function useDashboardData() {
         evaluations: evaluationResult.status === "fulfilled" ? evaluationResult.value : null,
         runs: runsResult.status === "fulfilled" ? runsResult.value : null,
       }))
+      // Reuse the same capped evaluation response; no extra endpoint request.
+      const recentEvaluations = evaluationResult.status === "fulfilled"
+        ? evaluationResult.value
+        : null
+      setBenchmarkAnalytics(buildBenchmarkAnalytics(recentEvaluations))
+      if (evaluationResult.status === "rejected") {
+        setBenchmarkAnalyticsError("Failed to load evaluation history.")
+      }
+
       const unavailable = [
         summaryResult.status === "rejected" ? "run summary" : null,
         evaluationResult.status === "rejected" ? "evaluations" : null,
@@ -158,6 +173,7 @@ export function useDashboardData() {
 
   return {
     metrics, taskBars,
-    taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
+    taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError,
+    benchmarkAnalytics, benchmarkAnalyticsError, loading, error, reload,
   }
 }
