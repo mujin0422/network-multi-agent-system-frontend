@@ -25,3 +25,24 @@ export const BENCHMARK_ACTION_OPTIONS: Array<{
   { value: "acl_block", labelKey: "benchmarks.form.actions.aclBlock" },
   { value: "acl_remove", labelKey: "benchmarks.form.actions.aclRemove" },
 ]
+
+/** IPv4 fields expected by each benchmark action (without subnet/wildcard policy checks). */
+export type BenchmarkIPv4ActionField =
+  | "network"
+  | "wildcard"
+  | "next_hop"
+  | "ip_address"
+  | "subnet_mask"
+  | "source_network"
+  | "source_wildcard"
+
+export const BENCHMARK_ACTION_IPV4_FIELDS: Partial<
+  Record<BenchmarkAction["action"], readonly BenchmarkIPv4ActionField[]>
+> = {
+  ospf_network_add: ["network", "wildcard"],
+  ospf_network_remove: ["network", "wildcard"],
+  default_route_add: ["next_hop"],
+  default_route_remove: ["next_hop"],
+  interface_ip_set: ["ip_address", "subnet_mask"],
+  acl_block: ["source_network", "source_wildcard"],
+}

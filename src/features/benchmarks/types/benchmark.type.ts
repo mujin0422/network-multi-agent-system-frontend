@@ -44,6 +44,7 @@ export type BenchmarkScenarioSectionProps = {
   title: string
   description: string
   children: ReactNode
+  plain?: boolean
 }
 
 export type BenchmarkScenarioCardProps = {

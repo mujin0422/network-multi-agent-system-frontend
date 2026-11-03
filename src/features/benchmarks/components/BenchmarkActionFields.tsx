@@ -1,10 +1,12 @@
 import { FormCombobox, FormField } from "@/components/shared/FeatureFormSheet"
+import { IPv4Input } from "@/components/shared/IPv4Input"
 import { BenchmarkDeviceCombobox } from "./BenchmarkDeviceCombobox"
+import { BenchmarkInterfacePicker } from "./BenchmarkInterfacePicker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkAction } from "@/service"
 import { useTranslation } from "react-i18next"
-import { BENCHMARK_ACTION_OPTIONS } from "../constants/benchmarks.constants"
+import { BENCHMARK_ACTION_OPTIONS, BENCHMARK_ACTION_IPV4_FIELDS } from "../constants/benchmarks.constants"
 import type { BenchmarkActionFieldsProps } from "../types/benchmark.type"
 import { createEmptyAction } from "../utils/benchmark-scenario-form.util"
 
@@ -41,6 +43,7 @@ const FIELD_LABELS: Record<ActionField, string> = {
 }
 
 const NUMERIC_FIELDS = new Set<ActionField>(["process_id", "area", "acl_number"])
+const IPV4_FIELDS = new Set<ActionField>(Object.values(BENCHMARK_ACTION_IPV4_FIELDS).flat())
 
 export function BenchmarkActionFields({ section, deviceOptions, title, items, defaultAction, onChange }: BenchmarkActionFieldsProps) {
   const { t } = useTranslation()
@@ -51,6 +54,28 @@ export function BenchmarkActionFields({ section, deviceOptions, title, items, de
 
   function renderActionField(item: BenchmarkAction, index: number, field: ActionField) {
     const label = t(`benchmarks.form.fields.${FIELD_LABELS[field]}`)
+    if (field === "interface") {
+      return (
+        <FormField key={field} label={label} required>
+          <BenchmarkInterfacePicker
+            name={`benchmark-${section}-interface-${index}`}
+            value={item.interface}
+            onChange={(value) => update(index, { ...item, interface: value })}
+          />
+        </FormField>
+      )
+    }
+    if (IPV4_FIELDS.has(field)) {
+      return (
+        <FormField key={field} label={label} required>
+          <IPv4Input
+            label={label}
+            value={item[field] as string | null | undefined}
+            onChange={(value) => update(index, { ...item, [field]: value })}
+          />
+        </FormField>
+      )
+    }
     if (field === "direction") {
       return (
         <FormField key={field} label={label} required>
