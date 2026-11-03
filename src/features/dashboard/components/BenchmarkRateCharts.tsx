@@ -1,13 +1,13 @@
 import { Cell, Pie, PieChart } from "recharts"
 
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart"
+import { ChartContainer } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { DashboardRateMetric } from "../utils/benchmark-rates.util"
 
 const TRACK_COLOR = "var(--muted)"
 
 type DonutTooltipProps = {
-  active?: boolean
   metric: DashboardRateMetric
   hasData: boolean
   positiveValue: string
@@ -16,14 +16,11 @@ type DonutTooltipProps = {
 
 /** Recharts tooltip: show both slices regardless of which arc is hovered. */
 function DonutBreakdownTooltip({
-  active,
   metric,
   hasData,
   positiveValue,
   negativeValue,
 }: DonutTooltipProps) {
-  if (!active) return null
-
   return (
     <div className="min-w-44 rounded-lg border border-border/70 bg-popover px-3 py-2.5 text-xs text-popover-foreground shadow-lg">
       <p className="mb-2 font-semibold">{metric.label}</p>
@@ -67,11 +64,12 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
     <div
       className="flex min-w-[166px] flex-1 flex-col items-center rounded-xl border border-border/60 bg-muted/15 px-3 py-4 text-center"
     >
-      <div
-        className="relative size-28 shrink-0"
-        role="img"
-        aria-label={`${metric.label}: ${hasData ? textValue : "not available"}. ${metric.positiveLabel}: ${positiveValue}; ${metric.negativeLabel}: ${negativeValue}. ${sample}. ${metric.scope}.`}
-      >
+      <Tooltip>
+        <TooltipTrigger
+          type="button"
+          className="relative size-28 shrink-0 cursor-help rounded-full p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          aria-label={`${metric.label}: ${hasData ? textValue : "not available"}. ${metric.positiveLabel}: ${positiveValue}; ${metric.negativeLabel}: ${negativeValue}. ${sample}. ${metric.scope}.`}
+        >
         <ChartContainer
           config={{ measured: { label: metric.label, color: metric.color } }}
           className="aspect-square size-28"
@@ -83,7 +81,7 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={39}
+              innerRadius={42}
               outerRadius={52}
               startAngle={90}
               endAngle={-270}
@@ -93,30 +91,28 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
               <Cell fill={hasData ? metric.color : TRACK_COLOR} />
               <Cell fill={hasData ? metric.secondaryColor : TRACK_COLOR} />
             </Pie>
-            <ChartTooltip
-              cursor={false}
-              // Render outside the horizontally scrollable KPI strip: a higher
-              // z-index alone cannot prevent CSS overflow from clipping it.
-              portal={typeof document !== "undefined" ? document.body : undefined}
-              allowEscapeViewBox={{ x: false, y: false }}
-              wrapperStyle={{ zIndex: 9999, pointerEvents: "none" }}
-              content={
-                <DonutBreakdownTooltip
-                  metric={metric}
-                  hasData={hasData}
-                  positiveValue={positiveValue}
-                  negativeValue={negativeValue}
-                />
-              }
-            />
           </PieChart>
         </ChartContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[11px] font-bold tracking-tight tabular-nums text-foreground">
+          <span className="text-[10px] font-bold tracking-tight tabular-nums text-foreground">
             {textValue}
           </span>
         </div>
-      </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="top"
+          align="center"
+          sideOffset={8}
+          className="border border-border/70 bg-popover p-0 text-popover-foreground shadow-lg"
+        >
+          <DonutBreakdownTooltip
+            metric={metric}
+            hasData={hasData}
+            positiveValue={positiveValue}
+            negativeValue={negativeValue}
+          />
+        </TooltipContent>
+      </Tooltip>
       <p className="mt-3 flex min-h-10 items-center justify-center text-[13px] font-semibold leading-tight text-foreground">
         {metric.label}
       </p>
@@ -133,7 +129,8 @@ export function BenchmarkRateCharts({
   error: string | null
 }) {
   return (
-    <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
+    <TooltipProvider delay={100}>
+      <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
       <CardHeader className="gap-1 px-4">
         <CardTitle className="type-caption text-foreground">
           Benchmark Evaluation KPIs
@@ -150,6 +147,7 @@ export function BenchmarkRateCharts({
           ))}
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </TooltipProvider>
   )
 }
