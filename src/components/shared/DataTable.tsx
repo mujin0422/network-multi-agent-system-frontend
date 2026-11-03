@@ -399,10 +399,13 @@ function DataTableDateRangeFilter({
   const fromTime = value?.from ? format(value.from, "HH:mm") : "00:00"
   const toTime = value?.to ? format(value.to, "HH:mm") : "23:59"
 
+  const hasCustomTime = fromTime !== "00:00" || (Boolean(value?.to) && toTime !== "23:59")
   const dateLabel = value?.from
-    ? value.to
-      ? `${format(value.from, "dd/MM/yyyy")} – ${format(value.to, "dd/MM/yyyy")}`
-      : format(value.from, "dd/MM/yyyy")
+    ? hasCustomTime
+      ? `${format(value.from, "dd/MM/yyyy HH:mm")} – ${format(value.to ?? localDateAtTime(value.from, "23:59", true), "dd/MM/yyyy HH:mm")}`
+      : value.to
+        ? `${format(value.from, "dd/MM/yyyy")} – ${format(value.to, "dd/MM/yyyy")}`
+        : format(value.from, "dd/MM/yyyy")
     : "Date range"
 
   function selectDates(range: DateRange | undefined) {
