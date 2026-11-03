@@ -89,8 +89,8 @@ export function TasksTable() {
               {
                 id: "request",
                 header: "Task request",
-                headerClassName: "pl-4",
-                className: "max-w-[240px] pl-4",
+                headerClassName: "min-w-64 pl-4",
+                className: "min-w-64 max-w-[360px] pl-4",
                 cell: (task) => (
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium">{task.input_message}</p>
@@ -128,7 +128,8 @@ export function TasksTable() {
               {
                 id: "timestamp",
                 header: "Timestamp",
-                className: "min-w-72 text-muted-foreground",
+                headerClassName: "w-52 min-w-52 max-w-52",
+                className: "w-52 min-w-52 max-w-52 text-muted-foreground",
                 cell: (task) =>
                   <div className="type-micro space-y-1 whitespace-nowrap">
                     <p>
