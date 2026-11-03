@@ -4,7 +4,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge"
 import { TaskEvaluationDetails } from "@/components/shared/TaskEvaluationDetails"
 import { Button } from "@/components/ui/button"
 import {
-  Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle,
+  Sheet, SheetContent, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError, deviceActionLogsApi, devicesApi, evaluationsApi, tasksApi } from "@/service"
@@ -168,9 +168,6 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
       <SheetContent className="w-full gap-0 data-[side=right]:sm:max-w-4xl!">
         <SheetHeader className="shrink-0 border-b pr-12">
           <SheetTitle>Execution records</SheetTitle>
-          <SheetDescription className="font-mono text-xs">
-            {taskId ?? "—"} · AI Execution Management (Group 3)
-          </SheetDescription>
         </SheetHeader>
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b p-3">
@@ -207,11 +204,20 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
             )}
             {!loading && data && (
               <>
-                <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/10 px-4 py-3 text-xs">
-                  <span className="font-medium">Task status</span>
-                  <StatusBadge value={data.task.task_status} />
-                  <span className="text-muted-foreground">Type: {data.task.task_type}</span>
-                  <span className="ml-auto text-muted-foreground">Created {timestamp(data.task.created_at)}</span>
+                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border bg-muted/10 px-4 py-3 text-xs">
+                  <span className="min-w-0">
+                    <span className="font-medium">Task ID: </span>
+                    <span className="break-all font-mono text-muted-foreground">{data.task.id}</span>
+                  </span>
+                  <span>
+                    <span className="font-medium">Type: </span>
+                    <span className="text-muted-foreground">
+                      {data.task.task_type
+                        .toLowerCase()
+                        .replaceAll("_", " ")
+                        .replace(/^./, (letter) => letter.toUpperCase())}
+                    </span>
+                  </span>
                 </div>
 
                 {activeTab === "plan" && (
