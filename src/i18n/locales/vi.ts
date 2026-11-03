@@ -223,8 +223,22 @@ const vi = {
       deviceRequired: "Hãy chọn thiết bị cho mọi điều kiện, thao tác và nguyên nhân lỗi.",
       invalidInterface: "Hãy chọn loại interface và nhập đủ các vị trí số cổng bắt buộc trước khi lưu.",
       invalidIPv4: "Hãy nhập đủ 4 phần IPv4 hợp lệ (0–255) cho các trường mạng, mask, wildcard hoặc next-hop bắt buộc.",
+      cleanupRequired: "Hãy thêm ít nhất một thao tác Cleanup trước khi lưu.",
+      cleanupManualOverrideRequired: "Một số thao tác tiêm lỗi cần khôi phục thủ công. Hãy tắt tự động tạo Cleanup và hoàn thiện danh sách khôi phục.",
+      cleanupReviewRequired: "Hãy xác nhận đã kiểm tra các thao tác Cleanup thủ công trước khi lưu.",
     },
     form: {
+      cleanup: {
+        autoLabel: "Tự động tạo Cleanup",
+        regenerate: "Tạo lại Cleanup",
+        autoDescription: "Đề xuất {{count}} thao tác Cleanup theo thứ tự ngược với Injection. Chỉnh sửa một thao tác sẽ chuyển sang chế độ thủ công.",
+        manualDescription: "Đang chỉnh sửa thủ công: Cleanup không tự cập nhật khi thay đổi Injection. Tạo lại sẽ ghi đè các chỉnh sửa thủ công.",
+        stateWarning: "Cleanup đề xuất giả định trạng thái ban đầu của lab. Hệ thống không lưu ảnh chụp cấu hình, vì vậy cần kiểm tra các thao tác có thực sự khôi phục đúng cấu hình trước khi chạy.",
+        manualWarning: "Một số thao tác Injection cần khôi phục thủ công",
+        manualStep: "Injection #{{index}}: {{action}} trên {{device}}",
+        manualWarningHelp: "Thay đổi IP và ACL không thể khôi phục chính xác nếu thiếu cấu hình cũ. Hãy chuyển sang thủ công và thêm thao tác khôi phục phù hợp.",
+        manualAcknowledgement: "Tôi đã kiểm tra cấu hình ban đầu và hoàn thiện các thao tác Cleanup cần thực hiện thủ công.",
+      },
       interfacePicker: {
         selectType: "Chọn loại interface",
         numberLabel: "Vị trí interface {{index}}",
