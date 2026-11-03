@@ -4,9 +4,11 @@ import {
   createContext,
   isValidElement,
   useContext,
+  useState,
   type ReactNode,
 } from "react"
 import {
+  CalendarDaysIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   RotateCcwIcon,
@@ -14,8 +16,11 @@ import {
   XIcon,
 } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { format } from "date-fns"
+import type { DateRange } from "react-day-picker"
 
 import { Button } from "@/components/ui/button"
+import { Calendar } from "@/components/ui/calendar"
 import {
   Combobox,
   ComboboxContent,
@@ -27,6 +32,11 @@ import {
   ComboboxValue,
 } from "@/components/ui/combobox"
 import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import {
   Pagination,
   PaginationContent,
@@ -362,6 +372,137 @@ function DataTableFilters({ className, ...props }: DataTableFiltersProps) {
   )
 }
 
+
+type DataTableDateRangeFilterProps = {
+  value?: DateRange
+  onChange: (next: DateRange | undefined) => void
+  className?: string
+  disabled?: boolean
+}
+
+function localDateAtTime(day: Date, time: string, end = false): Date {
+  const [hour, minute] = time.split(":").map(Number)
+  return new Date(
+    day.getFullYear(), day.getMonth(), day.getDate(),
+    hour, minute, end ? 59 : 0, end ? 999 : 0,
+  )
+}
+
+/** Shared shadcn Base Date/Time range control for DataTable toolbars. */
+function DataTableDateRangeFilter({
+  value,
+  onChange,
+  className,
+  disabled,
+}: DataTableDateRangeFilterProps) {
+  const [open, setOpen] = useState(false)
+  const fromTime = value?.from ? format(value.from, "HH:mm") : "00:00"
+  const toTime = value?.to ? format(value.to, "HH:mm") : "23:59"
+
+  const dateLabel = value?.from
+    ? value.to
+      ? `${format(value.from, "dd/MM/yyyy")} – ${format(value.to, "dd/MM/yyyy")}`
+      : format(value.from, "dd/MM/yyyy")
+    : "Date range"
+
+  function selectDates(range: DateRange | undefined) {
+    if (!range?.from) {
+      onChange(undefined)
+      return
+    }
+    const from = localDateAtTime(range.from, fromTime)
+    const to = range.to ? localDateAtTime(range.to, toTime, true) : undefined
+    onChange({ from, to })
+  }
+
+  function selectStartTime(time: string) {
+    if (!value?.from) return
+    const from = localDateAtTime(value.from, time)
+    const to = value.to && value.to < from
+      ? localDateAtTime(value.to, time, true)
+      : value.to
+    onChange({ from, to })
+  }
+
+  function selectEndTime(time: string) {
+    if (!value?.from) return
+    const to = localDateAtTime(value.to ?? value.from, time, true)
+    const from = value.from > to
+      ? localDateAtTime(value.from, time)
+      : value.from
+    onChange({ from, to })
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={disabled}
+            className={cn(
+              "h-9 min-w-40 justify-start gap-2 bg-background text-xs font-normal",
+              !value?.from && "text-muted-foreground",
+              className,
+            )}
+            aria-label="Filter audit events by date and time range"
+          />
+        }
+      >
+        <CalendarDaysIcon aria-hidden="true" className="size-4" />
+        <span>{dateLabel}</span>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-auto max-w-[calc(100vw-1rem)] p-0">
+        <Calendar
+          mode="range"
+          numberOfMonths={1}
+          selected={value}
+          onSelect={selectDates}
+          className="mx-auto"
+        />
+        <div className="grid grid-cols-2 gap-2 border-t border-border px-3 py-3">
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+            From time
+            <Input
+              type="time"
+              value={fromTime}
+              disabled={!value?.from}
+              onChange={(event) => selectStartTime(event.target.value)}
+              className="h-8 text-xs"
+              aria-label="From time"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
+            To time
+            <Input
+              type="time"
+              value={toTime}
+              disabled={!value?.from}
+              onChange={(event) => selectEndTime(event.target.value)}
+              className="h-8 text-xs"
+              aria-label="To time"
+            />
+          </label>
+        </div>
+        <div className="flex justify-between gap-2 border-t border-border p-2">
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!value?.from}
+            onClick={() => onChange(undefined)}
+          >
+            Clear dates
+          </Button>
+          <Button size="sm" onClick={() => setOpen(false)}>
+            Done
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
 /** Header, hàng dữ liệu và empty state của bảng. */
 function DataTableContent({
   emptyMessage = "common.noResults",
@@ -574,6 +715,7 @@ function DataTablePagination({
 export {
   DataTable,
   DataTableContent,
+  DataTableDateRangeFilter,
   DataTableFilter,
   DataTableFilters,
   DataTablePanel,
