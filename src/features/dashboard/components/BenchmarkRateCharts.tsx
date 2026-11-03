@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Cell, Pie, PieChart } from "recharts"
 
 import { ChartContainer } from "@/components/ui/chart"
@@ -6,6 +7,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import type { DashboardRateMetric } from "../utils/benchmark-rates.util"
 
 const TRACK_COLOR = "var(--muted)"
+const ANIMATION_DURATION_MS = 850
+const TRACK_DATA = [{ name: "Remaining", amount: 100 }]
 
 type DonutTooltipProps = {
   metric: DashboardRateMetric
@@ -44,10 +47,12 @@ function DonutBreakdownTooltip({
 function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
   const hasData = metric.value != null
   const value = hasData ? Math.max(0, Math.min(metric.value ?? 0, 100)) : 0
-  const segments = [
-    { name: "Measured", amount: value },
-    { name: "Remaining", amount: 100 - value },
-  ]
+  // Keep progress data stable when Refresh returns the same percentage.
+  // This prevents Recharts from replaying the entry animation unnecessarily.
+  const progressData = useMemo(() => [{ name: "Measured", amount: value }], [value])
+  const reduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
   const textValue = hasData ? `${value.toFixed(1)}%` : "—"
   const counts = hasData && metric.numerator != null && metric.sampleSize != null
@@ -75,8 +80,9 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
             className="aspect-square size-28"
           >
             <PieChart>
+              {/* The remaining arc is stationary; only the foreground fills to the actual value. */}
               <Pie
-                data={segments}
+                data={TRACK_DATA}
                 dataKey="amount"
                 nameKey="name"
                 cx="50%"
@@ -88,8 +94,25 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
                 stroke="none"
                 isAnimationActive={false}
               >
-                <Cell fill={hasData ? metric.color : TRACK_COLOR} />
                 <Cell fill={hasData ? metric.secondaryColor : TRACK_COLOR} />
+              </Pie>
+              <Pie
+                data={progressData}
+                dataKey="amount"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={42}
+                outerRadius={52}
+                startAngle={90}
+                endAngle={90 - (value / 100) * 360}
+                stroke="none"
+                isAnimationActive={hasData && !reduceMotion}
+                animationBegin={0}
+                animationDuration={ANIMATION_DURATION_MS}
+                animationEasing="ease-out"
+              >
+                <Cell fill={hasData ? metric.color : TRACK_COLOR} />
               </Pie>
             </PieChart>
           </ChartContainer>
