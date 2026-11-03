@@ -86,7 +86,7 @@ export function buildBenchmarkRates({
     {
       id: "tsr",
       label: "Task Success Rate",
-      description: "GOAL pass / scored outcomes",
+      description: "Percentage of eligible Benchmark Runs that passed GOAL: passed / (passed + failed). In-progress, setup-failed and unscored runs are excluded. The all-time history includes older evaluator versions.",
       color: "#16a34a",
       secondaryColor: "#14532d",
       positiveLabel: "Task Success",
@@ -99,7 +99,7 @@ export function buildBenchmarkRates({
     {
       id: "goal",
       label: "Goal Pass Rate",
-      description: "GOAL passes on v4",
+      description: "Percentage of completed v4 evaluations with GOAL PASS among those scored PASS or FAIL. GOAL v4 requires anomaly detection and an exact match against all expected root causes.",
       color: "#0891b2",
       secondaryColor: "#164e63",
       positiveLabel: "GOAL Pass",
@@ -112,7 +112,7 @@ export function buildBenchmarkRates({
     {
       id: "rca",
       label: "RCA Pass Rate",
-      description: "Exact root-cause matches",
+      description: "Percentage of completed v4 RCA evaluations that pass. A pass requires every predicted (resource, fault type) pair to match Ground Truth, with no missing or extra causes.",
       color: "#7c3aed",
       secondaryColor: "#4c1d95",
       positiveLabel: "RCA Pass",
@@ -125,7 +125,7 @@ export function buildBenchmarkRates({
     {
       id: "rca-f1",
       label: "Average RCA F1",
-      description: "Mean structured RCA score",
+      description: "Average v4 RCA F1: the harmonic mean of precision and recall for predicted (resource, fault type) pairs. The remainder to 100% is a score gap, not a number of failed tasks.",
       color: "#d97706",
       secondaryColor: "#78350f",
       positiveLabel: "F1 Score",
@@ -137,7 +137,7 @@ export function buildBenchmarkRates({
     {
       id: "completion",
       label: "Run Finalization",
-      description: "Finalized / started runs",
+      description: "Percentage of started Benchmark Runs with a terminal outcome (passed, failed or unscored), excluding runs still in progress. Runs that never reached Agent execution are excluded.",
       color: "#2563eb",
       secondaryColor: "#1e3a8a",
       positiveLabel: "Finalized",
@@ -150,7 +150,7 @@ export function buildBenchmarkRates({
     {
       id: "cleanup",
       label: "Cleanup Coverage",
-      description: "Finished runs cleaned",
+      description: "Share of recent finished Benchmark Runs that reached CLEANED rather than remaining COMPLETED. This tracks benchmark environment cleanup, not successful Agent remediation.",
       color: "#e11d48",
       secondaryColor: "#881337",
       positiveLabel: "Cleaned",
