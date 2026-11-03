@@ -12,6 +12,7 @@ import type {
   BenchmarkRootCause,
 } from "@/service"
 import type { BenchmarkScenarioFormProps } from "../types/benchmark.type"
+import { isValidBenchmarkInterface } from "../utils/benchmark-interface.util"
 import {
   createEmptyAction,
   createEmptyCheck,
@@ -90,6 +91,28 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
           throw new Error(t("benchmarks.errors.deviceRequired"))
         }
 
+        const requiresInterface = new Set<BenchmarkAction["action"]>([
+          "interface_shutdown",
+          "interface_no_shutdown",
+          "mpls_enable",
+          "mpls_disable",
+          "interface_ip_set",
+          "acl_block",
+          "acl_remove",
+        ])
+        const invalidActionInterface = [...injection, ...cleanup].some(
+          (action) => requiresInterface.has(action.action) &&
+            !isValidBenchmarkInterface(action.interface),
+        )
+        const invalidGroundTruthInterface = groundTruth.some(
+          (cause) => Boolean(cause.interface) &&
+            !isValidBenchmarkInterface(cause.interface),
+        )
+
+        if (invalidActionInterface || invalidGroundTruthInterface) {
+          throw new Error(t("benchmarks.errors.invalidInterface"))
+        }
+
         await onSave({
           scenario_key: String(data.get("scenario_key") ?? "").trim(),
           version: String(data.get("version") ?? "").trim(),
@@ -109,7 +132,7 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
     >
       {loadingDevices && <p className="text-xs text-muted-foreground">{t("benchmarks.form.loadingDevices")}</p>}
       {deviceError && <p role="alert" className="text-xs text-destructive">{deviceError}</p>}
-      <BenchmarkScenarioSection title={t("benchmarks.form.sections.information")} description={t("benchmarks.form.sections.informationDescription")}>
+      <BenchmarkScenarioSection plain title={t("benchmarks.form.sections.information")} description={t("benchmarks.form.sections.informationDescription")}>
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label={t("benchmarks.form.fields.name")} required>
             <Input name="name" required defaultValue={scenario?.name} placeholder="P3 interface link-down diagnosis" />
