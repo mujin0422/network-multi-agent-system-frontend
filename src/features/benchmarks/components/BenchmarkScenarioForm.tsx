@@ -160,6 +160,19 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
           throw new Error(t("benchmarks.errors.invalidIPv4"))
         }
 
+        const invalidBgpAs = [...injection, ...cleanupActions].some(
+          (action) =>
+            (action.action === "bgp_neighbor_shutdown" ||
+              action.action === "bgp_neighbor_no_shutdown") &&
+            (!Number.isInteger(action.local_as) ||
+              action.local_as == null ||
+              action.local_as < 1 ||
+              action.local_as > 4294967295),
+        )
+        if (invalidBgpAs) {
+          throw new Error(t("benchmarks.errors.invalidBgpAs"))
+        }
+
         if (suggestedCleanup.manualSteps.length > 0 && autoCleanup) {
           throw new Error(t("benchmarks.errors.cleanupManualOverrideRequired"))
         }
