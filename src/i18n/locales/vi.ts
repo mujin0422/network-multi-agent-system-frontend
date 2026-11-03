@@ -158,6 +158,8 @@ const vi = {
     loadError: "Không thể tải danh sách Evaluation.",
     scenario: "Kịch bản / Task",
     latency: "Thời gian workflow AI",
+    latencyDetail: "Thời gian chạy của workflow AI (không tính chờ phê duyệt)",
+    legacyLatencyDetail: "Độ trễ end-to-end (cũ, bao gồm chờ phê duyệt)",
     legacyE2E: "(E2E cũ)",
     tsrTitle: "Task Success Rate (TSR)",
     tsrSample: "{{passed}} / {{eligible}} lượt được chấm",
