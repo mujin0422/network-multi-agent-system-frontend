@@ -1,5 +1,5 @@
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
-import { ChevronDown, RefreshCw } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +17,7 @@ import {
 } from "../constants/dashboard.constants"
 import { useDashboardData } from "../hooks/use-dashboard-data"
 import { ActivityList } from "./ActivityList"
+import { BenchmarkRateCharts } from "./BenchmarkRateCharts"
 import { BarChart } from "./BarChart"
 import { StatusBadge } from "./StatusBadge"
 import { TaskAnalyticsCharts } from "./TaskAnalyticsCharts"
@@ -25,8 +26,8 @@ import { TaskAnalyticsCharts } from "./TaskAnalyticsCharts"
 export function DashboardOverview() {
   const navigate = useNavigate()
   const {
-    activities, deviceActions, deviceBars, metrics, taskBars,
-    taskOutcomes, executionTimes, successRate, loading, error, reload,
+    activities, deviceActions, metrics, taskBars,
+    taskOutcomes, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
   } = useDashboardData()
   if (loading) {
     return (
@@ -83,7 +84,8 @@ export function DashboardOverview() {
             {error}
           </div>
         )}
-        <section className="grid gap-4 xl:grid-cols-2">
+        <BenchmarkRateCharts metrics={rateMetrics} error={rateError} />
+        <section>
           <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
             <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
@@ -91,7 +93,7 @@ export function DashboardOverview() {
                   Task Status Overview
                 </CardTitle>
                 <p className="type-caption text-muted-foreground">
-                  Tasks completed during the last 7 days
+                  Task creation trend over the last 7 days
                 </p>
               </div>
               <StatusBadge tone="success">
@@ -105,29 +107,6 @@ export function DashboardOverview() {
                 orientation="horizontal"
                 valueLabel="tasks"
               />
-            </CardContent>
-          </Card>
-          <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
-              <div>
-                <CardTitle className="type-caption text-foreground">
-                  Device Inventory by Brand
-                </CardTitle>
-                <p className="type-caption text-muted-foreground">
-                  Managed devices grouped by vendor
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-transparent type-caption text-muted-foreground"
-              >
-                Current
-                <ChevronDown className="size-3" />
-              </Button>
-            </CardHeader>
-            <CardContent className="mt-4 px-4">
-              <BarChart bars={deviceBars} color="blue" valueLabel="devices" />
             </CardContent>
           </Card>
         </section>
