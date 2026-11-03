@@ -222,6 +222,7 @@ const vi = {
       noDevices: "Chưa có thiết bị mạng. Hãy thêm thiết bị trước khi tạo benchmark.",
       deviceRequired: "Hãy chọn thiết bị cho mọi điều kiện, thao tác và nguyên nhân lỗi.",
       invalidInterface: "Hãy chọn loại interface và nhập đủ các vị trí số cổng bắt buộc trước khi lưu.",
+      invalidIPv4: "Hãy nhập đủ 4 phần IPv4 hợp lệ (0–255) cho các trường mạng, mask, wildcard hoặc next-hop bắt buộc.",
     },
     form: {
       interfacePicker: {
