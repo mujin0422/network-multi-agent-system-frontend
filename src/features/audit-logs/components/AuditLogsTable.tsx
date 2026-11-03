@@ -11,7 +11,6 @@ import {
   DataTableFilters,
   DataTablePanel,
   DataTablePagination,
-  DataTableSearch,
   DataTableToolbar,
   DataTableToolbarActions,
 } from "@/components/shared/DataTable"
@@ -94,18 +93,6 @@ export function AuditLogsTable() {
                 options: AUDIT_ACTOR_TYPE_OPTIONS,
               },
             ]}
-            searchValue={(log) =>
-              [
-                log.action,
-                log.actor_display_name,
-                log.actor_user_id,
-                log.actor_type,
-                log.resource_type,
-                log.resource_id,
-                log.summary,
-                log.request_id,
-              ].filter(Boolean).join(" ")
-            }
             columns={[
               {
                 id: "timestamp",
@@ -178,8 +165,7 @@ export function AuditLogsTable() {
             ]}
           >
             <DataTablePanel>
-              <DataTableToolbar>
-                <DataTableSearch placeholder="Search actor, action, resource, request ID..." />
+              <DataTableToolbar className="lg:justify-end">
                 <DataTableToolbarActions>
                   <DataTableDateRangeFilter
                     value={dateRange}
