@@ -94,7 +94,7 @@ export function TaskAnalyticsCharts({
                 dataKey="success"
                 stroke="var(--color-success)"
                 strokeWidth={2}
-                dot={period === 30 ? false : { fill: "var(--color-success)", r: 3 }}
+                dot={false}
                 activeDot={{ r: 5 }}
                 connectNulls={false}
               />
@@ -103,7 +103,7 @@ export function TaskAnalyticsCharts({
                 dataKey="partial"
                 stroke="var(--color-partial)"
                 strokeWidth={2}
-                dot={period === 30 ? false : { fill: "var(--color-partial)", r: 3 }}
+                dot={false}
                 activeDot={{ r: 5 }}
                 connectNulls={false}
               />
@@ -112,7 +112,7 @@ export function TaskAnalyticsCharts({
                 dataKey="failed"
                 stroke="var(--color-failed)"
                 strokeWidth={2}
-                dot={period === 30 ? false : { fill: "var(--color-failed)", r: 3 }}
+                dot={false}
                 activeDot={{ r: 5 }}
                 connectNulls={false}
               />
@@ -121,7 +121,7 @@ export function TaskAnalyticsCharts({
                 dataKey="rejected"
                 stroke="var(--color-rejected)"
                 strokeWidth={2}
-                dot={period === 30 ? false : { fill: "var(--color-rejected)", r: 3 }}
+                dot={false}
                 activeDot={{ r: 5 }}
                 connectNulls={false}
               />
