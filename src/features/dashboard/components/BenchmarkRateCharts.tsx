@@ -14,7 +14,7 @@ type DonutTooltipProps = {
   negativeValue: string
 }
 
-/** Recharts tooltip: show both slices regardless of which arc is hovered. */
+/** Donut hover tooltip with both outcome slices, anchored via Base UI portal. */
 function DonutBreakdownTooltip({
   metric,
   hasData,
@@ -70,34 +70,34 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
           className="relative size-28 shrink-0 cursor-help rounded-full p-0 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
           aria-label={`${metric.label}: ${hasData ? textValue : "not available"}. ${metric.positiveLabel}: ${positiveValue}; ${metric.negativeLabel}: ${negativeValue}. ${sample}. ${metric.scope}.`}
         >
-        <ChartContainer
-          config={{ measured: { label: metric.label, color: metric.color } }}
-          className="aspect-square size-28"
-        >
-          <PieChart>
-            <Pie
-              data={segments}
-              dataKey="amount"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              innerRadius={42}
-              outerRadius={52}
-              startAngle={90}
-              endAngle={-270}
-              stroke="none"
-              isAnimationActive={false}
-            >
-              <Cell fill={hasData ? metric.color : TRACK_COLOR} />
-              <Cell fill={hasData ? metric.secondaryColor : TRACK_COLOR} />
-            </Pie>
-          </PieChart>
-        </ChartContainer>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[10px] font-bold tracking-tight tabular-nums text-foreground">
-            {textValue}
-          </span>
-        </div>
+          <ChartContainer
+            config={{ measured: { label: metric.label, color: metric.color } }}
+            className="aspect-square size-28"
+          >
+            <PieChart>
+              <Pie
+                data={segments}
+                dataKey="amount"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={42}
+                outerRadius={52}
+                startAngle={90}
+                endAngle={-270}
+                stroke="none"
+                isAnimationActive={false}
+              >
+                <Cell fill={hasData ? metric.color : TRACK_COLOR} />
+                <Cell fill={hasData ? metric.secondaryColor : TRACK_COLOR} />
+              </Pie>
+            </PieChart>
+          </ChartContainer>
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-[10px] font-bold tracking-tight tabular-nums text-foreground">
+              {textValue}
+            </span>
+          </div>
         </TooltipTrigger>
         <TooltipContent
           side="top"
@@ -131,22 +131,22 @@ export function BenchmarkRateCharts({
   return (
     <TooltipProvider delay={100}>
       <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-      <CardHeader className="gap-1 px-4">
-        <CardTitle className="type-caption text-foreground">
-          Benchmark Evaluation KPIs
-        </CardTitle>
-        <p className="text-xs text-muted-foreground">
-          Pass rates and diagnostic quality · v4 scores are kept separate from legacy evaluations
-        </p>
-        {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
-      </CardHeader>
-      <CardContent className="mt-4 min-w-0 px-4">
-        <div className="flex w-full gap-3 overflow-x-auto pb-2 xl:overflow-visible">
-          {metrics.map((metric) => (
-            <BenchmarkDonut key={metric.id} metric={metric} />
-          ))}
-        </div>
-      </CardContent>
+        <CardHeader className="gap-1 px-4">
+          <CardTitle className="type-caption text-foreground">
+            Benchmark Evaluation KPIs
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Pass rates and diagnostic quality · v4 scores are kept separate from legacy evaluations
+          </p>
+          {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
+        </CardHeader>
+        <CardContent className="mt-4 min-w-0 px-4">
+          <div className="flex w-full gap-3 overflow-x-auto pb-2 xl:overflow-visible">
+            {metrics.map((metric) => (
+              <BenchmarkDonut key={metric.id} metric={metric} />
+            ))}
+          </div>
+        </CardContent>
       </Card>
     </TooltipProvider>
   )
