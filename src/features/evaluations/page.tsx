@@ -277,24 +277,24 @@ export default function EvaluationsPage() {
                 return (
                   <div className="flex w-full justify-end">
                     <MoreMenu
-                    actions={[
-                      ...(runId
-                        ? [{
-                            id: "view-run",
-                            label: t("evaluationsPage.viewRun"),
-                            icon: <History className="size-4" />,
-                            onClick: () => navigate(
-                              `/benchmark-runs?run=${encodeURIComponent(runId)}`,
-                            ),
-                          }]
-                        : []),
-                      {
-                        id: "view-details",
-                        label: t("evaluationsPage.viewDetails"),
-                        icon: <Eye className="size-4" />,
-                        onClick: () => openDetails(evaluation.task_id),
-                      },
-                    ]}
+                      actions={[
+                        ...(runId
+                          ? [{
+                              id: "view-run",
+                              label: t("evaluationsPage.viewRun"),
+                              icon: <History className="size-4" />,
+                              onClick: () => navigate(
+                                `/benchmark-runs?run=${encodeURIComponent(runId)}`,
+                              ),
+                            }]
+                          : []),
+                        {
+                          id: "view-details",
+                          label: t("evaluationsPage.viewDetails"),
+                          icon: <Eye className="size-4" />,
+                          onClick: () => openDetails(evaluation.task_id),
+                        },
+                      ]}
                     />
                   </div>
                 )
