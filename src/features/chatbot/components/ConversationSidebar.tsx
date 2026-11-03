@@ -74,11 +74,9 @@ export function ConversationSidebar({
 
         <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {loading ? (
-            <div role="status" aria-label="Loading conversations" className="space-y-2 px-1">
+            <div role="status" aria-label="Loading conversations" className="px-1">
               <span className="sr-only">Loading conversations...</span>
-              {Array.from({ length: 6 }, (_, index) => (
-                <Skeleton key={index} className="h-11 w-full rounded-lg" />
-              ))}
+              <Skeleton aria-hidden="true" className="h-72 w-full rounded-xl border border-border bg-card/80" />
             </div>
           ) : (
           <TooltipProvider delay={300}>
