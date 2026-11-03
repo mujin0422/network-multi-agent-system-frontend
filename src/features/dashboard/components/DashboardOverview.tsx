@@ -1,6 +1,5 @@
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
-import { ChevronDown, RefreshCw } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -16,19 +15,21 @@ import {
   DASHBOARD_STATUS_LABELS,
 } from "../constants/dashboard.constants"
 import { useDashboardData } from "../hooks/use-dashboard-data"
-import { ActivityList } from "./ActivityList"
+import { BenchmarkRateCharts } from "./BenchmarkRateCharts"
 import { BarChart } from "./BarChart"
 import { StatusBadge } from "./StatusBadge"
 import { TaskAnalyticsCharts } from "./TaskAnalyticsCharts"
 
-/** Màn hình tổng quan hệ thống với KPI, biểu đồ và hoạt động gần đây. */
+/** Màn hình tổng quan hệ thống với KPI và biểu đồ thống kê. */
 export function DashboardOverview() {
-  const navigate = useNavigate()
   const {
-    activities, deviceActions, deviceBars, metrics, taskBars,
-    taskOutcomes, executionTimes, successRate, loading, error, reload,
+    metrics, taskBars,
+    taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError,
+    loading, error, reload,
   } = useDashboardData()
-  if (loading) {
+  // Keep the existing KPI charts mounted during Refresh so identical data
+  // never replays their initial animation. Only first-load uses the skeleton.
+  if (loading && metrics.length === 0) {
     return (
       <PageLoadingSkeleton
         title={DASHBOARD_COPY.title}
@@ -83,7 +84,8 @@ export function DashboardOverview() {
             {error}
           </div>
         )}
-        <section className="grid gap-4 xl:grid-cols-2">
+        <BenchmarkRateCharts metrics={rateMetrics} error={rateError} />
+        <section>
           <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
             <CardHeader className="grid grid-cols-[1fr_auto] px-4">
               <div>
@@ -91,7 +93,7 @@ export function DashboardOverview() {
                   Task Status Overview
                 </CardTitle>
                 <p className="type-caption text-muted-foreground">
-                  Tasks completed during the last 7 days
+                  Task creation trend over the last 7 days
                 </p>
               </div>
               <StatusBadge tone="success">
@@ -107,82 +109,12 @@ export function DashboardOverview() {
               />
             </CardContent>
           </Card>
-          <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
-              <div>
-                <CardTitle className="type-caption text-foreground">
-                  Device Inventory by Brand
-                </CardTitle>
-                <p className="type-caption text-muted-foreground">
-                  Managed devices grouped by vendor
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-transparent type-caption text-muted-foreground"
-              >
-                Current
-                <ChevronDown className="size-3" />
-              </Button>
-            </CardHeader>
-            <CardContent className="mt-4 px-4">
-              <BarChart bars={deviceBars} color="blue" valueLabel="devices" />
-            </CardContent>
-          </Card>
         </section>
         <TaskAnalyticsCharts
           outcomes={taskOutcomes}
+          outcomes30={taskOutcomes30}
           executionTimes={executionTimes}
         />
-        <section className="grid gap-4 xl:grid-cols-2">
-          <Card className="min-h-78 gap-1 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
-              <div>
-                <CardTitle className="type-caption text-foreground">
-                  Recent Activities
-                </CardTitle>
-                <p className="type-caption text-muted-foreground">
-                  Latest automation events
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-transparent type-caption"
-                onClick={() => navigate("/tasks")}
-              >
-                View all
-              </Button>
-            </CardHeader>
-            <CardContent className="px-4">
-              <ActivityList items={activities} />
-            </CardContent>
-          </Card>
-          <Card className="min-h-78 gap-1 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-            <CardHeader className="grid grid-cols-[1fr_auto] px-4">
-              <div>
-                <CardTitle className="type-caption text-foreground">
-                  Recent Operations
-                </CardTitle>
-                <p className="type-caption text-muted-foreground">
-                  Latest operations from automation tasks
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="bg-transparent type-caption"
-                onClick={() => navigate("/tasks")}
-              >
-                Tasks
-              </Button>
-            </CardHeader>
-            <CardContent className="px-4">
-              <ActivityList items={deviceActions} />
-            </CardContent>
-          </Card>
-        </section>
       </PageLayoutContent>
     </PageLayout>
   )
