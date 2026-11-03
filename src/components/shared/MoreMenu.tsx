@@ -32,25 +32,25 @@ export function MoreMenu({ onView, onEdit, onCopy, actions = [] }: MoreMenuProps
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-36">
         {actions.map((action) => (
-          <DropdownMenuItem key={action.id} onClick={action.onClick}>
+          <DropdownMenuItem className="text-[13px]" key={action.id} onClick={action.onClick}>
             {action.icon}
             {action.label}
           </DropdownMenuItem>
         ))}
         {onView && (
-          <DropdownMenuItem onClick={onView}>
+          <DropdownMenuItem className="text-[13px]" onClick={onView}>
             <Eye />
             {t("common.details")}
           </DropdownMenuItem>
         )}
         {onEdit && (
-          <DropdownMenuItem onClick={onEdit}>
+          <DropdownMenuItem className="text-[13px]" onClick={onEdit}>
             <Pencil />
             {t("common.edit")}
           </DropdownMenuItem>
         )}
         {onCopy && (
-          <DropdownMenuItem onClick={onCopy}>
+          <DropdownMenuItem className="text-[13px]" onClick={onCopy}>
             <Copy />
             {t("common.copyId")}
           </DropdownMenuItem>
