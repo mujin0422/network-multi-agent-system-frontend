@@ -71,6 +71,7 @@ export function useDashboardData() {
   const [deviceActions, setDeviceActions] = useState<ActivityItem[]>([])
   const [taskBars, setTaskBars] = useState<ChartBar[]>([])
   const [taskOutcomes, setTaskOutcomes] = useState<TaskOutcomePoint[]>([])
+  const [taskOutcomes30, setTaskOutcomes30] = useState<TaskOutcomePoint[]>([])
   const [executionTimes, setExecutionTimes] = useState<ExecutionTimePoint[]>([])
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [successRate, setSuccessRate] = useState(0)
@@ -157,20 +158,37 @@ export function useDashboardData() {
         value: item.count,
       })))
 
-      setTaskOutcomes(days.map(({ label, day, next }) => {
-        const completed = tasks.filter((task) => {
-          if (!task.completed_at) return false
-          const completedAt = new Date(task.completed_at)
-          return completedAt >= day && completedAt < next
+      // Compute genuine day-by-day results for each selectable period.
+      // Each time bucket follows local calendar boundaries (including DST),
+      // and the 30-day labels show dates rather than repeated weekdays.
+      const outcomesForPeriod = (period: 7 | 30): TaskOutcomePoint[] =>
+        Array.from({ length: period }, (_, index) => {
+          const day = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() - (period - 1 - index),
+          )
+          const next = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)
+          const label = period === 7
+            ? new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(day)
+            : new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short" }).format(day)
+
+          const completed = tasks.filter((task) => {
+            if (!task.completed_at) return false
+            const completedAt = new Date(task.completed_at)
+            return completedAt >= day && completedAt < next
+          })
+          return {
+            label,
+            success: completed.filter((task) => task.task_status === "SUCCESS").length,
+            partial: completed.filter((task) => task.task_status === "PARTIAL_SUCCESS").length,
+            failed: completed.filter((task) => task.task_status === "FAILED").length,
+            rejected: completed.filter((task) => task.task_status === "REJECTED").length,
+          }
         })
-        return {
-          label,
-          success: completed.filter((task) => task.task_status === "SUCCESS").length,
-          partial: completed.filter((task) => task.task_status === "PARTIAL_SUCCESS").length,
-          failed: completed.filter((task) => task.task_status === "FAILED").length,
-          rejected: completed.filter((task) => task.task_status === "REJECTED").length,
-        }
-      }))
+
+      setTaskOutcomes(outcomesForPeriod(7))
+      setTaskOutcomes30(outcomesForPeriod(30))
 
       setExecutionTimes(days.map(({ label, day, next }) => {
         const durations = tasks.flatMap((task) => {
@@ -199,6 +217,6 @@ export function useDashboardData() {
 
   return {
     activities, deviceActions, metrics, taskBars,
-    taskOutcomes, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
+    taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
   }
 }
