@@ -57,7 +57,7 @@ export function TaskAnalyticsCharts({
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="success"
                 stroke="var(--color-success)"
                 strokeWidth={2}
@@ -66,7 +66,7 @@ export function TaskAnalyticsCharts({
                 connectNulls={false}
               />
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="partial"
                 stroke="var(--color-partial)"
                 strokeWidth={2}
@@ -75,7 +75,7 @@ export function TaskAnalyticsCharts({
                 connectNulls={false}
               />
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="failed"
                 stroke="var(--color-failed)"
                 strokeWidth={2}
@@ -84,7 +84,7 @@ export function TaskAnalyticsCharts({
                 connectNulls={false}
               />
               <Line
-                type="monotone"
+                type="linear"
                 dataKey="rejected"
                 stroke="var(--color-rejected)"
                 strokeWidth={2}
