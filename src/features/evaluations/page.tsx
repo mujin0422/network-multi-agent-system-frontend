@@ -23,13 +23,16 @@ import { MoreMenu } from "@/components/shared/MoreMenu"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { BenchmarkEvaluationSheet } from "@/features/benchmarks/components/BenchmarkEvaluationSheet"
-import { benchmarksApi, evaluationsApi } from "@/service"
-import type { BenchmarkRun, EvaluationResult, TaskEvaluationSummary } from "@/service"
+import { benchmarksApi, evaluationsApi, tasksApi, usersApi } from "@/service"
+import type { BenchmarkRun, EvaluationResult, Task, TaskEvaluationSummary, User } from "@/service"
 
 type EvaluationTableRow = TaskEvaluationSummary & {
   scenarioName: string
   run: BenchmarkRun | null
   rcaResult: EvaluationResult
+  ownerId: string | null
+  ownerName: string | null
+  ownerEmail: string | null
 }
 
 export default function EvaluationsPage() {
@@ -38,15 +41,19 @@ export default function EvaluationsPage() {
   const [params, setParams] = useSearchParams()
   const [evaluations, setEvaluations] = useState<TaskEvaluationSummary[]>([])
   const [runs, setRuns] = useState<BenchmarkRun[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [usersById, setUsersById] = useState<Map<string, User>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const detailTaskId = params.get("task")
 
   const refresh = useCallback(async () => {
     setError(null)
-    const [evaluationResult, runResult] = await Promise.allSettled([
+    const [evaluationResult, runResult, taskResult, userResult] = await Promise.allSettled([
       evaluationsApi.list(100),
       benchmarksApi.listRuns(100),
+      tasksApi.list(),
+      usersApi.list(),
     ])
     if (evaluationResult.status === "fulfilled") {
       setEvaluations(evaluationResult.value)
@@ -55,8 +62,15 @@ export default function EvaluationsPage() {
         ? evaluationResult.reason.message
         : t("evaluationsPage.loadError"))
     }
-    // Optional enrichment: associate evaluations with recent benchmark runs.
-    if (runResult.status === "fulfilled") setRuns(runResult.value)
+    // Optional enrichment: associate evaluations with recent benchmark runs
+    // and resolve their actual Task owner, without confusing it with run.started_by.
+    setRuns(runResult.status === "fulfilled" ? runResult.value : [])
+    setTasks(taskResult.status === "fulfilled" ? taskResult.value : [])
+    setUsersById(
+      userResult.status === "fulfilled"
+        ? new Map(userResult.value.map((user) => [user.id, user]))
+        : new Map(),
+    )
     setLoading(false)
   }, [t])
 
@@ -64,19 +78,25 @@ export default function EvaluationsPage() {
   useEffect(() => { void refresh() }, [refresh])
 
   const rows = useMemo<EvaluationTableRow[]>(() => {
-    const byTask = new Map(
+    const runsByTask = new Map(
       runs.flatMap((run) => run.task_id ? [[run.task_id, run] as const] : []),
     )
+    const tasksById = new Map(tasks.map((task) => [task.id, task]))
     return evaluations.map((evaluation) => {
-      const run = byTask.get(evaluation.task_id) ?? null
+      const run = runsByTask.get(evaluation.task_id) ?? null
+      const ownerId = tasksById.get(evaluation.task_id)?.user_id ?? null
+      const owner = ownerId ? usersById.get(ownerId) : undefined
       return {
         ...evaluation,
         run,
         scenarioName: run?.scenario_name ?? t("evaluationsPage.taskEvaluation"),
         rcaResult: evaluation.results.RCA ?? "UNKNOWN",
+        ownerId,
+        ownerName: owner?.full_name ?? null,
+        ownerEmail: owner?.email ?? null,
       }
     })
-  }, [evaluations, runs, t])
+  }, [evaluations, runs, tasks, usersById, t])
 
   const countAutomated = evaluations.filter((evaluation) => evaluation.evaluator_type === "AUTOMATED").length
 
@@ -151,7 +171,7 @@ export default function EvaluationsPage() {
           data={rows}
           getRowId={(evaluation) => evaluation.id}
           searchValue={(evaluation) =>
-            `${evaluation.task_id} ${evaluation.id} ${evaluation.scenarioName} ${evaluation.evaluator_type} ${evaluation.evaluator_version ?? ""}`
+            `${evaluation.task_id} ${evaluation.id} ${evaluation.scenarioName} ${evaluation.evaluator_type} ${evaluation.evaluator_version ?? ""} ${evaluation.ownerId ?? ""} ${evaluation.ownerName ?? ""} ${evaluation.ownerEmail ?? ""}`
           }
           filters={[
             {
@@ -185,6 +205,34 @@ export default function EvaluationsPage() {
                     Task: <TableIdentifier value={evaluation.task_id} variant="reference" inline />
                   </p>
                 </div>
+              ),
+            },
+            {
+              id: "owner",
+              header: "Owner",
+              className: "min-w-36 max-w-48",
+              cell: (evaluation) => (
+                <div className="min-w-0">
+                  <p
+                    className="max-w-44 truncate text-xs font-medium"
+                    title={evaluation.ownerName ?? evaluation.ownerId ?? undefined}
+                  >
+                    {evaluation.ownerName ?? evaluation.ownerId ?? "—"}
+                  </p>
+                  {evaluation.ownerEmail && (
+                    <p className="mt-1 max-w-44 truncate text-[11px] text-muted-foreground" title={evaluation.ownerEmail}>
+                      {evaluation.ownerEmail}
+                    </p>
+                  )}
+                </div>
+              ),
+            },
+            {
+              id: "evaluatorType",
+              header: "Evaluator Type",
+              className: "whitespace-nowrap",
+              cell: (evaluation) => (
+                <span className="text-xs font-medium">{evaluation.evaluator_type}</span>
               ),
             },
             {
@@ -222,11 +270,13 @@ export default function EvaluationsPage() {
             {
               id: "actions",
               header: null,
-              className: "whitespace-nowrap",
+              headerClassName: "w-12 px-2 text-right",
+              className: "w-12 px-2 text-right",
               cell: (evaluation) => {
                 const runId = evaluation.run?.id
                 return (
-                  <MoreMenu
+                  <div className="flex w-full justify-end">
+                    <MoreMenu
                     actions={[
                       ...(runId
                         ? [{
@@ -245,7 +295,8 @@ export default function EvaluationsPage() {
                         onClick: () => openDetails(evaluation.task_id),
                       },
                     ]}
-                  />
+                    />
+                  </div>
                 )
               },
             },
