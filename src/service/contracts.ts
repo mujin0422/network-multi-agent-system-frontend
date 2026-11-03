@@ -215,6 +215,18 @@ export type BenchmarkScenario = {
 }
 export type BenchmarkScenarioDetail = BenchmarkScenario & BenchmarkScenarioCreate
 
+export type BenchmarkRunSummary = {
+  total_runs: number
+  passed: number
+  failed: number
+  in_progress: number
+  not_started: number
+  setup_failed: number
+  unscored: number
+  eligible_runs: number
+  success_rate: number | null
+}
+
 export type BenchmarkRun = {
   id: string
   scenario_id: string

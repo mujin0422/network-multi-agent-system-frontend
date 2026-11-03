@@ -1,4 +1,5 @@
 import { StatusBadge } from "@/components/shared/StatusBadge"
+import { useTranslation } from "react-i18next"
 import type { TaskEvaluationDetail, TaskEvaluationMetric } from "@/service"
 
 type TaskEvaluationDetailsProps = {
@@ -11,17 +12,20 @@ const METRIC_LABELS: Record<TaskEvaluationMetric["metric_type"], string> = {
   RCA: "Root cause analysis (RCA)",
   REMEDIATION: "Remediation",
   SAFETY: "Safety",
-  LATENCY: "Latency (User request → Final response)",
+  LATENCY: "AI workflow active time",
   INTERACTION_TURNS: "Interaction turns (Agent → Tool)",
 }
 
-function formatMeasurement(metric: TaskEvaluationMetric): string | null {
+function formatMeasurement(metric: TaskEvaluationMetric, version: string | null): string | null {
   const value = metric.actual_value
   if (typeof value !== "object" || value === null) return null
   const raw = value as Record<string, unknown>
 
-  if (metric.metric_type === "LATENCY" && typeof raw.duration_ms === "number") {
-    return `${(raw.duration_ms / 1000).toFixed(2)} s`
+  if (metric.metric_type === "LATENCY") {
+    const duration = version === "db-benchmark-v3"
+      ? raw.active_duration_ms
+      : raw.duration_ms
+    return typeof duration === "number" ? `${(duration / 1000).toFixed(2)} s` : null
   }
   if (metric.metric_type === "INTERACTION_TURNS" && typeof raw.count === "number") {
     return `${raw.count} tool calls`
@@ -49,6 +53,7 @@ function Evidence({ label, value }: { label: string; value: unknown }) {
 
 /** Display persisted evaluation metrics. Never infer an unrecorded PASS/FAIL. */
 export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetailsProps) {
+  const { t } = useTranslation()
   if (error) {
     return <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-xs text-destructive">{error}</p>
   }
@@ -72,7 +77,7 @@ export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetai
         <p className="text-muted-foreground">
           {evaluation.evaluator_type} · {evaluation.evaluator_version ?? "unknown version"} · {formatDate(evaluation.evaluated_at)}
         </p>
-        {["db-benchmark-v1", "db-benchmark-v2"].includes(evaluation.evaluator_version ?? "") && (
+        {["db-benchmark-v1", "db-benchmark-v2", "db-benchmark-v3"].includes(evaluation.evaluator_version ?? "") && (
           <p className="rounded-md border p-2 text-muted-foreground">
             Cách chấm hiện tại dựa vào từ khóa có trong câu trả lời của AI, không phải
             kiểm định độc lập cấu hình mạng. REMEDIATION/SAFETY được ghi nhận
@@ -84,10 +89,14 @@ export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetai
         {evaluation.metrics.map((metric) => (
           <article key={metric.id} className="space-y-3 rounded-xl border bg-card p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold">{METRIC_LABELS[metric.metric_type] ?? metric.metric_type}</h3>
+              <h3 className="text-sm font-semibold">{metric.metric_type === "LATENCY"
+                ? evaluation.evaluator_version === "db-benchmark-v3"
+                  ? t("evaluationsPage.latencyDetail")
+                  : t("evaluationsPage.legacyLatencyDetail")
+                : METRIC_LABELS[metric.metric_type] ?? metric.metric_type}</h3>
               {metric.metric_type === "LATENCY" || metric.metric_type === "INTERACTION_TURNS" ? (
                 <span className="text-sm font-semibold tabular-nums">
-                  {formatMeasurement(metric) ?? "—"}
+                  {formatMeasurement(metric, evaluation.evaluator_version) ?? "—"}
                 </span>
               ) : (
                 <StatusBadge value={metric.result} />
