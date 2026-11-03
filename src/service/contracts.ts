@@ -342,6 +342,7 @@ export type TaskEvaluationSummary = {
   evaluated_at: string | null
   results: Partial<Record<EvaluationMetricType, EvaluationResult>>
   measurements?: Partial<Record<EvaluationMetricType, number>>
+  scores?: Partial<Record<"rca_f1" | "localization_f1" | "fault_type_f1" | "rca_precision" | "rca_recall", number>>
 }
 export type TaskEvaluationDetail = {
   id: string
