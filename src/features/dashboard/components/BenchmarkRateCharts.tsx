@@ -26,7 +26,6 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
   const negativeValue = !hasData ? "—" : counts?.negative ?? `${(100 - value).toFixed(1)}%`
   const sample = metric.sampleSize == null ? "unavailable" : `n = ${metric.sampleSize.toLocaleString()}`
 
-
   return (
     <div
       className="flex min-w-[166px] flex-1 flex-col items-center rounded-xl border border-border/60 bg-muted/15 px-3 py-4 text-center"
@@ -47,7 +46,7 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={45}
+              innerRadius={43}
               outerRadius={52}
               startAngle={90}
               endAngle={-270}
@@ -71,7 +70,7 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
         >
           {metric.label}
         </TooltipTrigger>
-        <TooltipContent side="top" className="max-w-64">
+        <TooltipContent side="top" className="max-w-80 text-left">
           <div className="space-y-1">
             <p className="font-semibold">{metric.label}</p>
             <p>{metric.description}</p>
@@ -116,27 +115,22 @@ export function BenchmarkRateCharts({
   return (
     <TooltipProvider delay={200}>
       <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-      <CardHeader className="gap-1 px-4">
-        <CardTitle className="type-caption text-foreground">
-          Benchmark Evaluation KPIs
-        </CardTitle>
-        <p className="text-xs text-muted-foreground">
-          Pass rates and diagnostic quality · v4 scores are kept separate from legacy evaluations
-        </p>
-        {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
-      </CardHeader>
-      <CardContent className="mt-4 min-w-0 px-4">
-        <div className="flex w-full gap-3 overflow-x-auto pb-2">
-          {metrics.map((metric) => (
-            <BenchmarkDonut key={metric.id} metric={metric} />
-          ))}
-        </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">
-          Each color indicates the measured outcome and its complement. TSR and finalization:
-          all runs. GOAL, RCA and F1: latest 100 evaluations (v4 only). Cleanup:
-          latest 100 runs. Hover or focus a KPI title for an explanation.
-        </p>
-      </CardContent>
+        <CardHeader className="gap-1 px-4">
+          <CardTitle className="type-caption text-foreground">
+            Benchmark Evaluation KPIs
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Pass rates and diagnostic quality · v4 scores are kept separate from legacy evaluations
+          </p>
+          {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
+        </CardHeader>
+        <CardContent className="mt-4 min-w-0 px-4">
+          <div className="flex w-full gap-3 overflow-x-auto pb-2">
+            {metrics.map((metric) => (
+              <BenchmarkDonut key={metric.id} metric={metric} />
+            ))}
+          </div>
+        </CardContent>
       </Card>
     </TooltipProvider>
   )
