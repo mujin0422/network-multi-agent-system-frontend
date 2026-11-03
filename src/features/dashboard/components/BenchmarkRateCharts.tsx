@@ -95,6 +95,8 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
             </Pie>
             <ChartTooltip
               cursor={false}
+              allowEscapeViewBox={{ x: true, y: true }}
+              wrapperStyle={{ zIndex: 50 }}
               content={
                 <DonutBreakdownTooltip
                   metric={metric}
@@ -139,7 +141,7 @@ export function BenchmarkRateCharts({
         {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
       </CardHeader>
       <CardContent className="mt-4 min-w-0 px-4">
-        <div className="flex w-full gap-3 overflow-x-auto pb-2">
+        <div className="flex w-full gap-3 overflow-x-auto pb-2 xl:overflow-visible">
           {metrics.map((metric) => (
             <BenchmarkDonut key={metric.id} metric={metric} />
           ))}
