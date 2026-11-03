@@ -27,7 +27,7 @@ export function DashboardOverview() {
   const navigate = useNavigate()
   const {
     activities, deviceActions, metrics, taskBars,
-    taskOutcomes, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
+    taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
   } = useDashboardData()
   // Keep the existing KPI charts mounted during Refresh so identical data
   // never replays their initial animation. Only first-load uses the skeleton.
@@ -114,6 +114,7 @@ export function DashboardOverview() {
         </section>
         <TaskAnalyticsCharts
           outcomes={taskOutcomes}
+          outcomes30={taskOutcomes30}
           executionTimes={executionTimes}
         />
         <section className="grid gap-4 xl:grid-cols-2">
