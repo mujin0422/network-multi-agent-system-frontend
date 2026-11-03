@@ -173,20 +173,19 @@ export default function EvaluationsPage() {
               className: "min-w-56 pl-4",
               cell: (evaluation) => (
                 <div className="min-w-0">
-                  <p className="max-w-64 truncate text-xs font-medium" title={evaluation.scenarioName}>
-                    {evaluation.scenarioName}
-                  </p>
-                  <TableIdentifier value={evaluation.id} className="mt-1 break-all" />
+                  <div className="flex min-w-0 items-center gap-2">
+                    <p className="max-w-64 truncate text-xs font-medium" title={evaluation.scenarioName}>
+                      {evaluation.scenarioName}
+                    </p>
+                    {evaluation.evaluation_status !== "COMPLETED" && (
+                      <StatusBadge value={evaluation.evaluation_status} />
+                    )}
+                  </div>
                   <p className="mt-1 type-caption text-muted-foreground">
                     Task: <TableIdentifier value={evaluation.task_id} variant="reference" inline />
                   </p>
                 </div>
               ),
-            },
-            {
-              id: "status",
-              header: t("evaluationsPage.status"),
-              cell: (evaluation) => <StatusBadge value={evaluation.evaluation_status} />,
             },
             {
               id: "goal",
@@ -211,63 +210,12 @@ export default function EvaluationsPage() {
               },
             },
             {
-              id: "latency",
-              header: t("evaluationsPage.latency"),
-              cell: (evaluation) => {
-                const ms = evaluation.measurements?.LATENCY
-                const legacy = evaluation.evaluator_version !== "db-benchmark-v3"
-                return (
-                  <span className="whitespace-nowrap text-xs tabular-nums">
-                    {ms == null ? "—" : (
-                      <>
-                        {(ms / 1000).toFixed(2)} s
-                        {legacy && <span className="ml-1 text-muted-foreground">{t("evaluationsPage.legacyE2E")}</span>}
-                      </>
-                    )}
-                  </span>
-                )
-              },
-            },
-            {
-              id: "interactionTurns",
-              header: t("evaluationsPage.interactionTurns"),
-              cell: (evaluation) => (
-                <span className="text-xs tabular-nums">
-                  {evaluation.measurements?.INTERACTION_TURNS ?? "—"}
-                </span>
-              ),
-            },
-            {
-              id: "remediation",
-              header: "REMEDIATION",
-              cell: (evaluation) => <StatusBadge value={evaluation.results.REMEDIATION ?? "UNKNOWN"} />,
-            },
-            {
-              id: "safety",
-              header: "SAFETY",
-              cell: (evaluation) => <StatusBadge value={evaluation.results.SAFETY ?? "UNKNOWN"} />,
-            },
-            {
-              id: "evaluator",
-              header: t("evaluationsPage.evaluator"),
-              className: "min-w-36 text-xs",
-              cell: (evaluation) => (
-                <div>
-                  <p className="font-medium">{evaluation.evaluator_type}</p>
-                  <p className="mt-1 text-muted-foreground">{evaluation.evaluator_version ?? "—"}</p>
-                </div>
-              ),
-            },
-            {
               id: "timestamp",
-              header: t("evaluationsPage.timestamp"),
-              className: "min-w-64 text-muted-foreground",
+              header: t("evaluationsPage.evaluatedAt"),
+              className: "whitespace-nowrap text-muted-foreground",
               cell: (evaluation) => (
                 <TableTimestamp
-                  items={[
-                    { label: t("evaluationsPage.createdAt"), value: evaluation.created_at },
-                    { label: t("evaluationsPage.evaluatedAt"), value: evaluation.evaluated_at },
-                  ]}
+                  items={[{ label: t("evaluationsPage.evaluatedAt"), value: evaluation.evaluated_at }]}
                 />
               ),
             },
