@@ -162,6 +162,8 @@ export type BenchmarkAction = {
     | "interface_ip_set"
     | "acl_block"
     | "acl_remove"
+    | "bgp_neighbor_shutdown"
+    | "bgp_neighbor_no_shutdown"
   interface?: string | null
   process_id?: number | null
   network?: string | null
@@ -174,6 +176,8 @@ export type BenchmarkAction = {
   direction?: "in" | "out" | null
   source_network?: string | null
   source_wildcard?: string | null
+  local_as?: number | null
+  neighbor_ip?: string | null
 }
 export type BenchmarkRootCause = {
   fault_type: string
