@@ -15,13 +15,19 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
   ]
 
   const textValue = hasData ? `${value.toFixed(1)}%` : "—"
-  const detail = metric.sampleSize == null
-    ? "Unavailable"
-    : metric.sampleSize === 0
-      ? "No data yet"
-      : metric.numerator == null
-        ? `n = ${metric.sampleSize.toLocaleString()}`
-        : `${metric.numerator.toLocaleString()} / ${metric.sampleSize.toLocaleString()}`
+  const showCounts = hasData && metric.numerator != null && metric.sampleSize != null
+  const positiveValue = !hasData
+    ? "—"
+    : showCounts
+      ? metric.numerator!.toLocaleString()
+      : `${value.toFixed(1)}%`
+  const negativeValue = !hasData
+    ? "—"
+    : showCounts
+      ? Math.max(0, metric.sampleSize! - metric.numerator!).toLocaleString()
+      : `${(100 - value).toFixed(1)}%`
+  const sample = metric.sampleSize == null ? "unavailable" : `n = ${metric.sampleSize.toLocaleString()}`
+
 
   return (
     <div
@@ -31,7 +37,7 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
       <div
         className="relative size-28 shrink-0"
         role="img"
-        aria-label={`${metric.label}: ${hasData ? textValue : "not available"}. ${detail}. ${metric.scope}.`}
+        aria-label={`${metric.label}: ${hasData ? textValue : "not available"}. ${metric.positiveLabel}: ${positiveValue}; ${metric.negativeLabel}: ${negativeValue}. ${sample}. ${metric.scope}.`}
       >
         <ChartContainer
           config={{ measured: { label: metric.label, color: metric.color } }}
@@ -52,16 +58,13 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
               isAnimationActive={false}
             >
               <Cell fill={hasData ? metric.color : TRACK_COLOR} />
-              <Cell fill={TRACK_COLOR} />
+              <Cell fill={hasData ? metric.secondaryColor : TRACK_COLOR} />
             </Pie>
           </PieChart>
         </ChartContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-lg font-bold tracking-tight tabular-nums text-foreground">
+          <span className="text-sm font-bold tracking-tight tabular-nums text-foreground">
             {textValue}
-          </span>
-          <span className="text-[10px] font-medium text-muted-foreground">
-            {hasData ? "Rate" : "N/A"}
           </span>
         </div>
       </div>
@@ -71,12 +74,28 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
       <p className="mt-1 min-h-8 text-[11px] leading-tight text-muted-foreground">
         {metric.description}
       </p>
-      <p
-        className="mt-3 rounded-full px-2 py-1 text-[11px] font-semibold tabular-nums"
-        style={{ color: metric.color, backgroundColor: `${metric.color}18` }}
-      >
-        {detail}
-      </p>
+      <div className="mt-3 flex w-full flex-col gap-2 text-left" aria-hidden="true">
+        {([
+          { label: metric.positiveLabel, color: metric.color, count: positiveValue },
+          { label: metric.negativeLabel, color: metric.secondaryColor, count: negativeValue },
+        ] as const).map((item) => (
+          <div key={item.label} className="flex min-w-0 items-center gap-2">
+            <span
+              className="size-2.5 shrink-0 rounded-[2px]"
+              style={{ backgroundColor: item.color }}
+            />
+            <span className="min-w-0 flex-1 truncate text-[11px] text-muted-foreground">
+              {item.label}
+            </span>
+            <span className="shrink-0 text-[11px] font-semibold tabular-nums text-foreground">
+              {item.count}
+            </span>
+          </div>
+        ))}
+      </div>
+      {hasData && !showCounts && metric.sampleSize != null && (
+        <p className="mt-2 text-[10px] tabular-nums text-muted-foreground">{sample}</p>
+      )}
     </div>
   )
 }
@@ -107,8 +126,9 @@ export function BenchmarkRateCharts({
           ))}
         </div>
         <p className="mt-2 text-[11px] text-muted-foreground">
-          TSR and finalization: all runs. Goal, RCA and F1: latest 100 evaluations (v4 only).
-          Cleanup: latest 100 runs. Hover a card for its source and scope.
+          Each color indicates the measured outcome and its complement. TSR and finalization:
+          all runs. GOAL, RCA and F1: latest 100 evaluations (v4 only). Cleanup:
+          latest 100 runs. Hover a card for its source and scope.
         </p>
       </CardContent>
     </Card>
