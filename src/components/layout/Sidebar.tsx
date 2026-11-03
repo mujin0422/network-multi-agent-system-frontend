@@ -111,20 +111,21 @@ export default function AppSidebar() {
                 </div>
                 <ChevronsUpDown className="ml-auto size-4 text-sidebar-foreground/60" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent side="right" align="end" className="w-48">
+              <DropdownMenuContent side="right" align="end" className="w-44">
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel>{t("sidebar.myAccount")}</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[11px]">{t("sidebar.myAccount")}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem render={<NavLink to="/profile" onClick={() => setOpenMobile(false)} />}>
+                  <DropdownMenuItem className="text-[13px] [&_svg]:size-3.5" render={<NavLink to="/profile" onClick={() => setOpenMobile(false)} />}>
                     <CircleUserRound />
                     {t("sidebar.profile")}
                   </DropdownMenuItem>
-                  <DropdownMenuItem render={<NavLink to="/settings/system" onClick={() => setOpenMobile(false)} />}>
+                  <DropdownMenuItem className="text-[13px] [&_svg]:size-3.5" render={<NavLink to="/settings/system" onClick={() => setOpenMobile(false)} />}>
                     <Settings />
                     {t("sidebar.settings")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
+                    className="text-[13px] [&_svg]:size-3.5"
                     variant="destructive"
                     render={
                       <NavLink
