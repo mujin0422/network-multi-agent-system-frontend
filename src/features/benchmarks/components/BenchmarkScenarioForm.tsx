@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { AlertTriangle, RefreshCw } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
 import { FeatureFormSheet, FormField } from "@/components/shared/FeatureFormSheet"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { isValidIPv4 } from "@/lib/ipv4"
 import { devicesApi } from "@/service"
@@ -14,7 +17,8 @@ import type {
 } from "@/service"
 import type { BenchmarkScenarioFormProps } from "../types/benchmark.type"
 import { isValidBenchmarkInterface } from "../utils/benchmark-interface.util"
-import { BENCHMARK_ACTION_IPV4_FIELDS } from "../constants/benchmarks.constants"
+import { BENCHMARK_ACTION_IPV4_FIELDS, BENCHMARK_ACTION_OPTIONS } from "../constants/benchmarks.constants"
+import { generateBenchmarkCleanup } from "../utils/benchmark-cleanup.util"
 import {
   createEmptyAction,
   createEmptyCheck,
@@ -32,7 +36,39 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
   const [injection, setInjection] = useState<BenchmarkAction[]>(scenario?.injection ?? [createEmptyAction("interface_shutdown")])
   const [verification, setVerification] = useState<BenchmarkCheck[]>(scenario?.fault_verification ?? [createEmptyCheck()])
   const [groundTruth, setGroundTruth] = useState<BenchmarkRootCause[]>(scenario?.ground_truth ?? [createEmptyRootCause()])
-  const [cleanup, setCleanup] = useState<BenchmarkAction[]>(scenario?.cleanup ?? [createEmptyAction("interface_no_shutdown")])
+  // Existing scenarios retain their saved cleanup until the user explicitly regenerates.
+  const [cleanup, setCleanup] = useState<BenchmarkAction[]>(scenario?.cleanup ?? [])
+  const [autoCleanup, setAutoCleanup] = useState(!scenario)
+  const [manualCleanupReviewed, setManualCleanupReviewed] = useState(false)
+  const suggestedCleanup = useMemo(() => generateBenchmarkCleanup(injection), [injection])
+  const cleanupActions = autoCleanup ? suggestedCleanup.actions : cleanup
+
+  function changeInjection(actions: BenchmarkAction[]) {
+    setInjection(actions)
+    setManualCleanupReviewed(false)
+  }
+
+  function changeCleanup(actions: BenchmarkAction[]) {
+    setCleanup(actions)
+    // Editing a generated action intentionally switches to manual override.
+    setAutoCleanup(false)
+    setManualCleanupReviewed(false)
+  }
+
+  function changeAutoCleanup(enabled: boolean) {
+    if (!enabled) {
+      // Keep the currently displayed proposal as an editable manual draft.
+      setCleanup(suggestedCleanup.actions.map((action) => ({ ...action })))
+    }
+    setAutoCleanup(enabled)
+    setManualCleanupReviewed(false)
+  }
+
+  function regenerateCleanup() {
+    // Explicitly replace any manual edits with the current proposed actions.
+    setAutoCleanup(true)
+    setManualCleanupReviewed(false)
+  }
   const [deviceOptions, setDeviceOptions] = useState<ComboboxOption[]>([])
   const [loadingDevices, setLoadingDevices] = useState(false)
   const [deviceError, setDeviceError] = useState<string | null>(null)
@@ -87,7 +123,7 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
           throw new Error(t("benchmarks.errors.requiredTerms"))
         }
 
-        if ([...preconditions, ...injection, ...verification, ...groundTruth, ...cleanup].some(
+        if ([...preconditions, ...injection, ...verification, ...groundTruth, ...cleanupActions].some(
           (item) => !item.device.trim(),
         )) {
           throw new Error(t("benchmarks.errors.deviceRequired"))
@@ -102,7 +138,7 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
           "acl_block",
           "acl_remove",
         ])
-        const invalidActionInterface = [...injection, ...cleanup].some(
+        const invalidActionInterface = [...injection, ...cleanupActions].some(
           (action) => requiresInterface.has(action.action) &&
             !isValidBenchmarkInterface(action.interface),
         )
@@ -115,13 +151,25 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
           throw new Error(t("benchmarks.errors.invalidInterface"))
         }
 
-        const invalidIPv4 = [...injection, ...cleanup].some((action) =>
+        const invalidIPv4 = [...injection, ...cleanupActions].some((action) =>
           (BENCHMARK_ACTION_IPV4_FIELDS[action.action] ?? []).some(
             (field) => !isValidIPv4(action[field]),
           ),
         )
         if (invalidIPv4) {
           throw new Error(t("benchmarks.errors.invalidIPv4"))
+        }
+
+        if (cleanupActions.length === 0) {
+          throw new Error(t("benchmarks.errors.cleanupRequired"))
+        }
+        if (suggestedCleanup.manualSteps.length > 0) {
+          if (autoCleanup) {
+            throw new Error(t("benchmarks.errors.cleanupManualOverrideRequired"))
+          }
+          if (!manualCleanupReviewed) {
+            throw new Error(t("benchmarks.errors.cleanupReviewRequired"))
+          }
         }
 
         await onSave({
@@ -136,7 +184,7 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
           fault_verification: verification,
           ground_truth: groundTruth,
           evaluation_required_terms: requiredTerms,
-          cleanup,
+          cleanup: cleanupActions,
         })
         onOpenChange(false)
       }}
@@ -171,7 +219,7 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
       </BenchmarkScenarioSection>
 
       <BenchmarkScenarioSection title={t("benchmarks.form.sections.injection")} description={t("benchmarks.form.sections.injectionDescription")}>
-        <BenchmarkActionFields section="injection" deviceOptions={deviceOptions} title={t("benchmarks.form.labels.injection")} items={injection} defaultAction="interface_shutdown" onChange={setInjection} />
+        <BenchmarkActionFields section="injection" deviceOptions={deviceOptions} title={t("benchmarks.form.labels.injection")} items={injection} defaultAction="interface_shutdown" onChange={changeInjection} />
       </BenchmarkScenarioSection>
 
       <BenchmarkScenarioSection title={t("benchmarks.form.sections.verification")} description={t("benchmarks.form.sections.verificationDescription")}>
@@ -193,7 +241,77 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
       </BenchmarkScenarioSection>
 
       <BenchmarkScenarioSection title={t("benchmarks.form.sections.cleanup")} description={t("benchmarks.form.sections.cleanupDescription")}>
-        <BenchmarkActionFields section="cleanup" deviceOptions={deviceOptions} title={t("benchmarks.form.labels.cleanup")} items={cleanup} defaultAction="interface_no_shutdown" onChange={setCleanup} />
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <label className="flex cursor-pointer items-center gap-2 text-xs font-medium">
+            <Switch
+              size="sm"
+              checked={autoCleanup}
+              onCheckedChange={changeAutoCleanup}
+              aria-label={t("benchmarks.form.cleanup.autoLabel")}
+            />
+            {t("benchmarks.form.cleanup.autoLabel")}
+          </label>
+          <Button type="button" size="sm" variant="outline" onClick={regenerateCleanup}>
+            <RefreshCw aria-hidden="true" className="size-3.5" />
+            {t("benchmarks.form.cleanup.regenerate")}
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {autoCleanup
+            ? t("benchmarks.form.cleanup.autoDescription", {
+                count: suggestedCleanup.actions.length,
+              })
+            : t("benchmarks.form.cleanup.manualDescription")}
+        </p>
+        <div className="rounded-lg border border-border bg-background/70 p-3 text-xs text-muted-foreground">
+          {t("benchmarks.form.cleanup.stateWarning")}
+        </div>
+        {suggestedCleanup.manualSteps.length > 0 && (
+          <div role="alert" className="space-y-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-xs">
+            <div className="flex items-center gap-2 font-medium text-amber-500">
+              <AlertTriangle aria-hidden="true" className="size-4 shrink-0" />
+              {t("benchmarks.form.cleanup.manualWarning")}
+            </div>
+            <ul className="list-inside list-disc space-y-1 text-muted-foreground">
+              {suggestedCleanup.manualSteps.map((step) => {
+                const actionOption = BENCHMARK_ACTION_OPTIONS.find(
+                  (option) => option.value === step.action,
+                )
+                return (
+                  <li key={step.injectionIndex}>
+                    {t("benchmarks.form.cleanup.manualStep", {
+                      index: step.injectionIndex,
+                      action: actionOption ? t(actionOption.labelKey) : step.action,
+                      device: step.device || "—",
+                    })}
+                  </li>
+                )
+              })}
+            </ul>
+            <p className="text-muted-foreground">
+              {t("benchmarks.form.cleanup.manualWarningHelp")}
+            </p>
+            {!autoCleanup && (
+              <label className="flex cursor-pointer items-start gap-2 pt-1 text-foreground">
+                <input
+                  type="checkbox"
+                  checked={manualCleanupReviewed}
+                  onChange={(event) => setManualCleanupReviewed(event.target.checked)}
+                  className="mt-0.5 size-4 shrink-0 accent-primary"
+                />
+                <span>{t("benchmarks.form.cleanup.manualAcknowledgement")}</span>
+              </label>
+            )}
+          </div>
+        )}
+        <BenchmarkActionFields
+          section="cleanup"
+          deviceOptions={deviceOptions}
+          title={t("benchmarks.form.labels.cleanup")}
+          items={cleanupActions}
+          defaultAction="interface_no_shutdown"
+          onChange={changeCleanup}
+        />
       </BenchmarkScenarioSection>
     </FeatureFormSheet>
   )
