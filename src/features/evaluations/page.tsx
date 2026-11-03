@@ -185,6 +185,27 @@ export default function EvaluationsPage() {
               cell: (evaluation) => <StatusBadge value={evaluation.rcaResult} />,
             },
             {
+              id: "latency",
+              header: t("evaluationsPage.latency"),
+              cell: (evaluation) => {
+                const ms = evaluation.measurements?.LATENCY
+                return (
+                  <span className="whitespace-nowrap text-xs tabular-nums">
+                    {ms == null ? "—" : `${(ms / 1000).toFixed(2)} s`}
+                  </span>
+                )
+              },
+            },
+            {
+              id: "interactionTurns",
+              header: t("evaluationsPage.interactionTurns"),
+              cell: (evaluation) => (
+                <span className="text-xs tabular-nums">
+                  {evaluation.measurements?.INTERACTION_TURNS ?? "—"}
+                </span>
+              ),
+            },
+            {
               id: "remediation",
               header: "REMEDIATION",
               cell: (evaluation) => <StatusBadge value={evaluation.results.REMEDIATION ?? "UNKNOWN"} />,
