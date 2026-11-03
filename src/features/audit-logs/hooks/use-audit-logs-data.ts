@@ -28,10 +28,11 @@ function isAuditLog(value: unknown): value is AuditLog {
 
 function rangeEnd(range: DateRange | undefined): Date | undefined {
   if (!range?.from) return undefined
-  if (range.to) return range.to
-  // A single selected day includes all events until 23:59:59.999 local time.
+
+  // Inclusive full-day boundary for one-day and multi-day selections.
+  const lastDay = range.to ?? range.from
   return new Date(
-    range.from.getFullYear(), range.from.getMonth(), range.from.getDate(),
+    lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate(),
     23, 59, 59, 999,
   )
 }
