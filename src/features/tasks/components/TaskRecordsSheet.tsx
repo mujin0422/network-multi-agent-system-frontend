@@ -4,7 +4,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge"
 import { TaskEvaluationDetails } from "@/components/shared/TaskEvaluationDetails"
 import { Button } from "@/components/ui/button"
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle,
+  Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import { ApiError, deviceActionLogsApi, devicesApi, evaluationsApi, tasksApi } from "@/service"
@@ -168,6 +168,7 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
       <SheetContent className="w-full gap-0 data-[side=right]:sm:max-w-4xl!">
         <SheetHeader className="shrink-0 border-b pr-12">
           <SheetTitle>Execution records</SheetTitle>
+          <SheetDescription className="sr-only">Task execution records and evaluation details</SheetDescription>
         </SheetHeader>
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b p-3">
