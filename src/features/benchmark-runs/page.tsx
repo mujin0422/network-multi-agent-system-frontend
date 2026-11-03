@@ -245,13 +245,14 @@ export default function BenchmarkRunsPage() {
               ]}
             >
               <DataTablePanel>
-                <DataTableToolbar>
+                <DataTableToolbar className="gap-2 sm:flex-row sm:flex-nowrap sm:items-center [&_[data-slot=data-table-search]]:min-w-0 [&_[data-slot=data-table-search]]:flex-1">
                   <DataTableSearch placeholder={t("benchmarkRuns.search")} />
-                  <DataTableToolbarActions>
+                  <DataTableToolbarActions className="shrink-0 sm:flex-nowrap">
                     <DataTableDateRangeFilter
                       label="Created at"
                       value={createdRange}
                       onChange={setCreatedRange}
+                      className="w-44"
                     />
                     <DataTableFilters />
                   </DataTableToolbarActions>
