@@ -15,6 +15,8 @@ export const CLEANUP_INVERSES: Partial<
   ospf_network_remove: "ospf_network_add",
   default_route_add: "default_route_remove",
   default_route_remove: "default_route_add",
+  bgp_neighbor_shutdown: "bgp_neighbor_no_shutdown",
+  bgp_neighbor_no_shutdown: "bgp_neighbor_shutdown",
 }
 
 export type CleanupManualStep = {
