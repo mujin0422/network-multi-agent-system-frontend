@@ -9,6 +9,7 @@ import {
 } from "react"
 import {
   CalendarDaysIcon,
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   RotateCcwIcon,
@@ -380,15 +381,7 @@ type DataTableDateRangeFilterProps = {
   disabled?: boolean
 }
 
-function localDateAtTime(day: Date, time: string, end = false): Date {
-  const [hour, minute] = time.split(":").map(Number)
-  return new Date(
-    day.getFullYear(), day.getMonth(), day.getDate(),
-    hour, minute, end ? 59 : 0, end ? 999 : 0,
-  )
-}
-
-/** Shared shadcn Base Date/Time range control for DataTable toolbars. */
+/** Shared shadcn Base date-range control for DataTable toolbars. */
 function DataTableDateRangeFilter({
   value,
   onChange,
@@ -396,16 +389,11 @@ function DataTableDateRangeFilter({
   disabled,
 }: DataTableDateRangeFilterProps) {
   const [open, setOpen] = useState(false)
-  const fromTime = value?.from ? format(value.from, "HH:mm") : "00:00"
-  const toTime = value?.to ? format(value.to, "HH:mm") : "23:59"
 
-  const hasCustomTime = fromTime !== "00:00" || (Boolean(value?.to) && toTime !== "23:59")
   const dateLabel = value?.from
-    ? hasCustomTime
-      ? `${format(value.from, "dd/MM/yyyy HH:mm")} – ${format(value.to ?? localDateAtTime(value.from, "23:59", true), "dd/MM/yyyy HH:mm")}`
-      : value.to
-        ? `${format(value.from, "dd/MM/yyyy")} – ${format(value.to, "dd/MM/yyyy")}`
-        : format(value.from, "dd/MM/yyyy")
+    ? value.to
+      ? `${format(value.from, "dd/MM/yyyy")} – ${format(value.to, "dd/MM/yyyy")}`
+      : format(value.from, "dd/MM/yyyy")
     : "Date range"
 
   function selectDates(range: DateRange | undefined) {
@@ -413,50 +401,48 @@ function DataTableDateRangeFilter({
       onChange(undefined)
       return
     }
-    const from = localDateAtTime(range.from, fromTime)
-    const to = range.to ? localDateAtTime(range.to, toTime, true) : undefined
-    onChange({ from, to })
-  }
 
-  function selectStartTime(time: string) {
-    if (!value?.from || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return
-    const from = localDateAtTime(value.from, time)
-    const to = value.to && value.to < from
-      ? localDateAtTime(value.to, time, true)
-      : value.to
-    onChange({ from, to })
-  }
+    // Keep only calendar dates. Audit logs apply the full inclusive end day.
+    const start = new Date(
+      range.from.getFullYear(), range.from.getMonth(), range.from.getDate(),
+    )
+    const end = range.to
+      ? new Date(range.to.getFullYear(), range.to.getMonth(), range.to.getDate())
+      : undefined
 
-  function selectEndTime(time: string) {
-    if (!value?.from || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return
-    const to = localDateAtTime(value.to ?? value.from, time, true)
-    const from = value.from > to
-      ? localDateAtTime(value.from, time)
-      : value.from
-    onChange({ from, to })
+    onChange({ from: start, to: end })
   }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
         render={
-          <Button
-            variant="outline"
-            size="sm"
+          <button
+            type="button"
             disabled={disabled}
+            aria-label="Filter events by date range"
             className={cn(
-              "h-9 min-w-40 justify-start gap-2 bg-background text-xs font-normal",
-              !value?.from && "text-muted-foreground",
+              "flex h-9 w-[280px] max-w-full items-center justify-between gap-2 rounded-lg border border-input bg-background px-3 text-xs text-muted-foreground outline-none",
+              "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",
+              "disabled:cursor-not-allowed disabled:opacity-50",
               className,
             )}
-            aria-label="Filter audit events by date and time range"
           />
         }
       >
-        <CalendarDaysIcon aria-hidden="true" className="size-4" />
-        <span>{dateLabel}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          <CalendarDaysIcon aria-hidden="true" className="size-4 shrink-0" />
+          <span className="truncate">{dateLabel}</span>
+        </span>
+        <ChevronDownIcon
+          aria-hidden="true"
+          className="size-4 shrink-0"
+        />
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-auto max-w-[calc(100vw-1rem)] p-0">
+      <PopoverContent
+        align="start"
+        className="w-auto max-w-[calc(100vw-1rem)] p-0"
+      >
         <Calendar
           mode="range"
           numberOfMonths={1}
@@ -464,32 +450,9 @@ function DataTableDateRangeFilter({
           onSelect={selectDates}
           className="mx-auto"
         />
-        <div className="grid grid-cols-2 gap-2 border-t border-border px-3 py-3">
-          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-            From time
-            <Input
-              type="time"
-              value={fromTime}
-              disabled={!value?.from}
-              onChange={(event) => selectStartTime(event.target.value)}
-              className="h-8 text-xs"
-              aria-label="From time"
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-xs text-muted-foreground">
-            To time
-            <Input
-              type="time"
-              value={toTime}
-              disabled={!value?.from}
-              onChange={(event) => selectEndTime(event.target.value)}
-              className="h-8 text-xs"
-              aria-label="To time"
-            />
-          </label>
-        </div>
         <div className="flex justify-between gap-2 border-t border-border p-2">
           <Button
+            type="button"
             size="sm"
             variant="ghost"
             disabled={!value?.from}
@@ -497,7 +460,7 @@ function DataTableDateRangeFilter({
           >
             Clear dates
           </Button>
-          <Button size="sm" onClick={() => setOpen(false)}>
+          <Button type="button" size="sm" onClick={() => setOpen(false)}>
             Done
           </Button>
         </div>
