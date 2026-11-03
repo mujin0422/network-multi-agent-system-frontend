@@ -207,14 +207,6 @@ export default function BenchmarkRunsPage() {
                     : <span className="text-xs text-muted-foreground">—</span>,
                 },
                 {
-                  id: "task",
-                  header: "Task ID",
-                  className: "min-w-36 max-w-44",
-                  cell: (run) => (
-                    <TableIdentifier value={run.task_id} variant="reference" className="max-w-40 truncate text-[11px]" />
-                  ),
-                },
-                {
                   id: "timestamp",
                   header: t("benchmarkRuns.table.timestamp"),
                   className: "min-w-64 text-muted-foreground",
