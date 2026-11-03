@@ -157,6 +157,8 @@ const vi = {
     empty: "Không có Evaluation phù hợp. Kết quả xuất hiện khi benchmark có phản hồi AI cuối cùng.",
     loadError: "Không thể tải danh sách Evaluation.",
     scenario: "Kịch bản / Task",
+    latency: "Độ trễ",
+    interactionTurns: "Lượt tương tác",
     status: "Trạng thái",
     evaluator: "Người đánh giá",
     evaluatedAt: "Thời gian đánh giá",
