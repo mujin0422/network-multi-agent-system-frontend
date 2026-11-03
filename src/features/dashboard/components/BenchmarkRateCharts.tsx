@@ -2,6 +2,7 @@ import { Cell, Pie, PieChart } from "recharts"
 
 import { ChartContainer } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { DashboardRateMetric } from "../utils/benchmark-rates.util"
 
 const TRACK_COLOR = "var(--muted)"
@@ -29,7 +30,6 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
   return (
     <div
       className="flex min-w-[166px] flex-1 flex-col items-center rounded-xl border border-border/60 bg-muted/15 px-3 py-4 text-center"
-      title={metric.scope}
     >
       <div
         className="relative size-28 shrink-0"
@@ -47,7 +47,7 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={39}
+              innerRadius={45}
               outerRadius={52}
               startAngle={90}
               endAngle={-270}
@@ -60,17 +60,25 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
           </PieChart>
         </ChartContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-sm font-bold tracking-tight tabular-nums text-foreground">
+          <span className="text-[13px] font-bold tracking-tight tabular-nums text-foreground">
             {textValue}
           </span>
         </div>
       </div>
-      <p className="mt-3 min-h-10 text-[13px] font-semibold leading-tight text-foreground">
-        {metric.label}
-      </p>
-      <p className="mt-1 min-h-8 text-[11px] leading-tight text-muted-foreground">
-        {metric.description}
-      </p>
+      <Tooltip>
+        <TooltipTrigger
+          className="mt-3 flex min-h-10 items-center justify-center rounded-sm text-[13px] font-semibold leading-tight text-foreground decoration-dotted underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          {metric.label}
+        </TooltipTrigger>
+        <TooltipContent side="top" className="max-w-64">
+          <div className="space-y-1">
+            <p className="font-semibold">{metric.label}</p>
+            <p>{metric.description}</p>
+            <p className="opacity-75">{metric.scope}</p>
+          </div>
+        </TooltipContent>
+      </Tooltip>
       <div className="mt-3 flex w-full flex-col gap-2 text-left" aria-hidden="true">
         {([
           { label: metric.positiveLabel, color: metric.color, count: positiveValue },
@@ -106,7 +114,8 @@ export function BenchmarkRateCharts({
   error: string | null
 }) {
   return (
-    <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
+    <TooltipProvider delay={200}>
+      <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
       <CardHeader className="gap-1 px-4">
         <CardTitle className="type-caption text-foreground">
           Benchmark Evaluation KPIs
@@ -125,9 +134,10 @@ export function BenchmarkRateCharts({
         <p className="mt-2 text-[11px] text-muted-foreground">
           Each color indicates the measured outcome and its complement. TSR and finalization:
           all runs. GOAL, RCA and F1: latest 100 evaluations (v4 only). Cleanup:
-          latest 100 runs. Hover a card for its source and scope.
+          latest 100 runs. Hover or focus a KPI title for an explanation.
         </p>
       </CardContent>
-    </Card>
+      </Card>
+    </TooltipProvider>
   )
 }
