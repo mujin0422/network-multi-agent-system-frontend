@@ -1,4 +1,5 @@
 import { StatusBadge } from "@/components/shared/StatusBadge"
+import { useTranslation } from "react-i18next"
 import type { TaskEvaluationDetail, TaskEvaluationMetric } from "@/service"
 
 type TaskEvaluationDetailsProps = {
@@ -52,6 +53,7 @@ function Evidence({ label, value }: { label: string; value: unknown }) {
 
 /** Display persisted evaluation metrics. Never infer an unrecorded PASS/FAIL. */
 export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetailsProps) {
+  const { t } = useTranslation()
   if (error) {
     return <p role="alert" className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-xs text-destructive">{error}</p>
   }
@@ -87,8 +89,10 @@ export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetai
         {evaluation.metrics.map((metric) => (
           <article key={metric.id} className="space-y-3 rounded-xl border bg-card p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold">{metric.metric_type === "LATENCY" && evaluation.evaluator_version !== "db-benchmark-v3"
-                ? "Legacy end-to-end latency (includes approval waiting)"
+              <h3 className="text-sm font-semibold">{metric.metric_type === "LATENCY"
+                ? evaluation.evaluator_version === "db-benchmark-v3"
+                  ? t("evaluationsPage.latencyDetail")
+                  : t("evaluationsPage.legacyLatencyDetail")
                 : METRIC_LABELS[metric.metric_type] ?? metric.metric_type}</h3>
               {metric.metric_type === "LATENCY" || metric.metric_type === "INTERACTION_TURNS" ? (
                 <span className="text-sm font-semibold tabular-nums">
