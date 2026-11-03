@@ -416,7 +416,7 @@ function DataTableDateRangeFilter({
   }
 
   function selectStartTime(time: string) {
-    if (!value?.from) return
+    if (!value?.from || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return
     const from = localDateAtTime(value.from, time)
     const to = value.to && value.to < from
       ? localDateAtTime(value.to, time, true)
@@ -425,7 +425,7 @@ function DataTableDateRangeFilter({
   }
 
   function selectEndTime(time: string) {
-    if (!value?.from) return
+    if (!value?.from || !/^([01]\\d|2[0-3]):[0-5]\\d$/.test(time)) return
     const to = localDateAtTime(value.to ?? value.from, time, true)
     const from = value.from > to
       ? localDateAtTime(value.from, time)
