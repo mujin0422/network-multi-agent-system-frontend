@@ -89,18 +89,20 @@ export function TasksTable() {
               {
                 id: "request",
                 header: "Task request",
-                headerClassName: "min-w-64 pl-4",
-                className: "min-w-64 max-w-[360px] pl-4",
+                headerClassName: "w-[23%] pl-4",
+                className: "w-[23%] pl-4"
                 cell: (task) => (
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-medium">{task.input_message}</p>
-                    <TableIdentifier value={task.id} className="mt-1" />
+                  <div className="min-w-0 max-w-full">
+                    <p className="max-w-full truncate text-xs font-medium" title={task.input_message}>{task.input_message}</p>
+                    <TableIdentifier value={task.id} className="mt-1 max-w-full truncate" />
                   </div>
                 ),
               },
               {
                 id: "status",
                 header: "Status",
+                headerClassName: "w-[19%]",
+                className: "w-[19%]",
                 cell: (task) => (
                   <StatusBadge
                     value={task.task_status}
@@ -111,6 +113,8 @@ export function TasksTable() {
               {
                 id: "owner",
                 header: "Owner",
+                headerClassName: "hidden w-[28%] md:table-cell",
+                className: "hidden w-[28%] md:table-cell",
                 cell: (task) => {
                   const owner = usersById.get(task.user_id)
                   return (
@@ -128,8 +132,8 @@ export function TasksTable() {
               {
                 id: "timestamp",
                 header: "Timestamp",
-                headerClassName: "w-52 min-w-52 max-w-52",
-                className: "w-52 min-w-52 max-w-52 text-muted-foreground",
+                headerClassName: "hidden w-[24%] md:table-cell",
+                className: "hidden w-[24%] text-muted-foreground md:table-cell",
                 cell: (task) =>
                   <div className="type-micro space-y-1 whitespace-nowrap">
                     <p>
@@ -149,8 +153,8 @@ export function TasksTable() {
               {
                 id: "actions",
                 header: null,
-                headerClassName: "w-12 px-2 text-right",
-                className: "w-12 px-2 text-right",
+                headerClassName: "w-[6%] px-2 text-right",
+                className: "w-[6%] px-2 text-right",
                 cell: (task) => (
                   <div
                     className="flex justify-end"
@@ -176,7 +180,7 @@ export function TasksTable() {
                   <DataTableFilters />
                 </DataTableToolbarActions>
               </DataTableToolbar>
-              <DataTableContent />
+              <DataTableContent className="table-fixed" />
               <DataTablePagination itemLabel="tasks" />
             </DataTablePanel>
           </DataTable>
