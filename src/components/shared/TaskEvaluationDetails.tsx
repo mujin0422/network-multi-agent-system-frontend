@@ -22,7 +22,7 @@ function formatMeasurement(metric: TaskEvaluationMetric, version: string | null)
   const raw = value as Record<string, unknown>
 
   if (metric.metric_type === "LATENCY") {
-    const duration = version === "db-benchmark-v3"
+    const duration = ["db-benchmark-v3", "db-benchmark-v4"].includes(version ?? "")
       ? raw.active_duration_ms
       : raw.duration_ms
     return typeof duration === "number" ? `${(duration / 1000).toFixed(2)} s` : null
@@ -31,6 +31,37 @@ function formatMeasurement(metric: TaskEvaluationMetric, version: string | null)
     return `${raw.count} tool calls`
   }
   return null
+}
+
+function StructuredRcaScores({ metric }: { metric: TaskEvaluationMetric }) {
+  const { t } = useTranslation()
+  const raw = metric.actual_value
+  if (!raw || typeof raw !== "object") return null
+  const values = raw as Record<string, unknown>
+  const scores = [
+    ["rca_f1", t("evaluationsPage.rcaF1")],
+    ["rca_precision", t("evaluationsPage.rcaPrecision")],
+    ["rca_recall", t("evaluationsPage.rcaRecall")],
+    ["localization_f1", t("evaluationsPage.localizationF1")],
+    ["fault_type_f1", t("evaluationsPage.faultTypeF1")],
+    ["detection_score", t("evaluationsPage.detectionScore")],
+  ] as const
+
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+      {scores.map(([key, label]) => {
+        const score = values[key]
+        return (
+          <div key={key} className="rounded-lg border p-2">
+            <p className="text-[11px] text-muted-foreground">{label}</p>
+            <p className="mt-1 text-sm font-semibold tabular-nums">
+              {typeof score === "number" ? `${(score * 100).toFixed(1)}%` : "—"}
+            </p>
+          </div>
+        )
+      })}
+    </div>
+  )
 }
 
 function formatDate(date: string | null) {
@@ -84,13 +115,18 @@ export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetai
             NOT_APPLICABLE, không có nghĩa là đã kiểm chứng an toàn.
           </p>
         )}
+        {evaluation.evaluator_version === "db-benchmark-v4" && (
+          <p className="rounded-md border p-2 text-muted-foreground">
+            {t("evaluationsPage.nikaScoringDescription")}
+          </p>
+        )}
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
         {evaluation.metrics.map((metric) => (
           <article key={metric.id} className="space-y-3 rounded-xl border bg-card p-4">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="text-sm font-semibold">{metric.metric_type === "LATENCY"
-                ? evaluation.evaluator_version === "db-benchmark-v3"
+                ? ["db-benchmark-v3", "db-benchmark-v4"].includes(evaluation.evaluator_version ?? "")
                   ? t("evaluationsPage.latencyDetail")
                   : t("evaluationsPage.legacyLatencyDetail")
                 : METRIC_LABELS[metric.metric_type] ?? metric.metric_type}</h3>
@@ -106,6 +142,9 @@ export function TaskEvaluationDetails({ evaluation, error }: TaskEvaluationDetai
               {(metric.metric_type === "LATENCY" || metric.metric_type === "INTERACTION_TURNS") ? "Measured · no PASS/FAIL threshold" : (metric.is_required ? "Required" : "Optional")}
               {metric.was_attempted != null ? ` · Attempted: ${metric.was_attempted ? "Yes" : "No"}` : ""}
             </p>
+            {metric.metric_type === "RCA" && evaluation.evaluator_version === "db-benchmark-v4" && (
+              <StructuredRcaScores metric={metric} />
+            )}
             <Evidence label="Expected value" value={metric.expected_value} />
             <Evidence label="Actual value" value={metric.actual_value} />
             <Evidence label="Evidence" value={metric.evidence} />
