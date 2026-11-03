@@ -83,7 +83,7 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
               nameKey="name"
               cx="50%"
               cy="50%"
-              innerRadius={43}
+              innerRadius={39}
               outerRadius={52}
               startAngle={90}
               endAngle={-270}
@@ -95,8 +95,11 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
             </Pie>
             <ChartTooltip
               cursor={false}
-              allowEscapeViewBox={{ x: true, y: true }}
-              wrapperStyle={{ zIndex: 50 }}
+              // Render outside the horizontally scrollable KPI strip: a higher
+              // z-index alone cannot prevent CSS overflow from clipping it.
+              portal={typeof document !== "undefined" ? document.body : undefined}
+              allowEscapeViewBox={{ x: false, y: false }}
+              wrapperStyle={{ zIndex: 9999, pointerEvents: "none" }}
               content={
                 <DonutBreakdownTooltip
                   metric={metric}
@@ -109,7 +112,7 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
           </PieChart>
         </ChartContainer>
         <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-[13px] font-bold tracking-tight tabular-nums text-foreground">
+          <span className="text-[11px] font-bold tracking-tight tabular-nums text-foreground">
             {textValue}
           </span>
         </div>
