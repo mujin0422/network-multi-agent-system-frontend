@@ -16,7 +16,6 @@ import {
 } from "../constants/dashboard.constants"
 import { useDashboardData } from "../hooks/use-dashboard-data"
 import { BenchmarkRateCharts } from "./BenchmarkRateCharts"
-import { BenchmarkAnalyticsCharts } from "./BenchmarkAnalyticsCharts"
 import { BarChart } from "./BarChart"
 import { StatusBadge } from "./StatusBadge"
 import { TaskAnalyticsCharts } from "./TaskAnalyticsCharts"
@@ -26,7 +25,7 @@ export function DashboardOverview() {
   const {
     metrics, taskBars,
     taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError,
-    benchmarkAnalytics, benchmarkAnalyticsError, loading, error, reload,
+    loading, error, reload,
   } = useDashboardData()
   // Keep the existing KPI charts mounted during Refresh so identical data
   // never replays their initial animation. Only first-load uses the skeleton.
@@ -115,10 +114,6 @@ export function DashboardOverview() {
           outcomes={taskOutcomes}
           outcomes30={taskOutcomes30}
           executionTimes={executionTimes}
-        />
-        <BenchmarkAnalyticsCharts
-          analytics={benchmarkAnalytics}
-          error={benchmarkAnalyticsError}
         />
       </PageLayoutContent>
     </PageLayout>
