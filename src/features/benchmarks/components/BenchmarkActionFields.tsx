@@ -1,5 +1,6 @@
 import { FormCombobox, FormField } from "@/components/shared/FeatureFormSheet"
 import { BenchmarkDeviceCombobox } from "./BenchmarkDeviceCombobox"
+import { BenchmarkInterfacePicker } from "./BenchmarkInterfacePicker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkAction } from "@/service"
@@ -51,6 +52,17 @@ export function BenchmarkActionFields({ section, deviceOptions, title, items, de
 
   function renderActionField(item: BenchmarkAction, index: number, field: ActionField) {
     const label = t(`benchmarks.form.fields.${FIELD_LABELS[field]}`)
+    if (field === "interface") {
+      return (
+        <FormField key={field} label={label} required>
+          <BenchmarkInterfacePicker
+            name={`benchmark-${section}-interface-${index}`}
+            value={item.interface}
+            onChange={(value) => update(index, { ...item, interface: value })}
+          />
+        </FormField>
+      )
+    }
     if (field === "direction") {
       return (
         <FormField key={field} label={label} required>
