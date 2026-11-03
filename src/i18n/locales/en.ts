@@ -221,15 +221,15 @@ const en = {
       loadDevices: "Unable to load device inventory. Existing scenario device names are retained.",
       noDevices: "No network devices found. Add a device before creating a benchmark.",
       deviceRequired: "Select a device for every check, action, and root cause.",
-      invalidInterface: "Select an interface type and enter two or three non-negative integer segments for every required interface.",
+      invalidInterface: "Select an interface type and complete its required numeric slots before saving.",
     },
     form: {
       interfacePicker: {
         selectType: "Select interface",
         numberLabel: "Interface position {{index}}",
-        numberingHint: "Choose the 0/0 or 0/0/0 layout to match your device.",
+        numberingHint: "Port numbering is set automatically: Loopback (0), Ethernet/FastEthernet (0/0), other types (0/0/0).",
         unsupported: "Saved interface ({{value}}) is unsupported. Select a listed type and port numbers.",
-        completeNumbers: "Enter non-negative whole numbers in all interface positions.",
+        completeNumbers: "Enter the required number of non-negative whole-number port positions for this interface type.",
       },
       loadingDevices: "Loading network devices...",
       selectDevice: "Select device",
