@@ -97,9 +97,6 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
           </div>
         ))}
       </div>
-      {hasData && counts == null && metric.sampleSize != null && (
-        <p className="mt-2 text-[10px] tabular-nums text-muted-foreground">{sample}</p>
-      )}
     </div>
   )
 }
