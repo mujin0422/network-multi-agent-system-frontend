@@ -42,10 +42,18 @@ export type StatusBadgeProps = {
   label?: string
 }
 
+export type MoreMenuAction = {
+  id: string
+  label: string
+  onClick: () => void
+  icon?: ReactNode
+}
+
 export type MoreMenuProps = {
   onView?: () => void
   onEdit?: () => void
   onCopy?: () => void
+  actions?: readonly MoreMenuAction[]
 }
 
 export type LanguageSwitcherProps = {

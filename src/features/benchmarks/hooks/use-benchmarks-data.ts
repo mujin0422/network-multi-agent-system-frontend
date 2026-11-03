@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
 import { benchmarksApi } from "@/service"
-import type { BenchmarkRun, BenchmarkScenario, BenchmarkScenarioCreate } from "@/service"
+import type { BenchmarkRun, BenchmarkScenario, BenchmarkScenarioCreate, BenchmarkScenarioUpdate } from "@/service"
 import { benchmarkErrorMessage } from "../utils/benchmark.util"
 
 /** Quản lý dữ liệu và các thao tác API của trang GNS3 Benchmarks. */
@@ -47,6 +47,18 @@ export function useBenchmarksData() {
     }
   }, [t])
 
+  const updateScenario = useCallback(async (scenarioId: string, payload: BenchmarkScenarioUpdate) => {
+    setError(null)
+    try {
+      const updated = await benchmarksApi.updateScenario(scenarioId, payload)
+      setScenarios((current) => current.map((item) => item.id === updated.id ? updated : item))
+    } catch (reason) {
+      const message = benchmarkErrorMessage(reason, t("benchmarks.errors.update"))
+      setError(message)
+      throw new Error(message, { cause: reason })
+    }
+  }, [t])
+
   const startScenario = useCallback(async (scenarioId: string) => {
     setBusy(true)
     setError(null)
@@ -54,6 +66,7 @@ export function useBenchmarksData() {
       const nextRun = await benchmarksApi.start(scenarioId)
       setSelectedRun(nextRun)
       setRuns((current) => [nextRun, ...current])
+      return nextRun
     } catch (reason) {
       setError(benchmarkErrorMessage(reason, t("benchmarks.errors.start")))
     } finally {
@@ -108,6 +121,7 @@ export function useBenchmarksData() {
     setSelectedRun,
     reload,
     createScenario,
+    updateScenario,
     startScenario,
     cleanupRun,
     toggleScenario,

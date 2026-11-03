@@ -1,3 +1,4 @@
+import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
@@ -115,9 +116,7 @@ export function DevicesTable() {
                 cell: (device) => (
                   <div>
                     <p className="text-xs font-medium">{device.hostname}</p>
-                    <p className="font-mono type-caption text-success">
-                      {device.id}
-                    </p>
+                    <TableIdentifier value={device.id} />
                   </div>
                 ),
               },
@@ -129,9 +128,12 @@ export function DevicesTable() {
                     <p className="font-mono text-xs">
                       {device.host}:{device.port}
                     </p>
-                    <p className="mt-1 type-caption text-muted-foreground">
-                      {device.credential_id ?? "No credential"}
-                    </p>
+                    <TableIdentifier
+                      value={device.credential_id}
+                      variant="reference"
+                      fallback="No credential"
+                      className="mt-1"
+                    />
                   </>
                 ),
               },

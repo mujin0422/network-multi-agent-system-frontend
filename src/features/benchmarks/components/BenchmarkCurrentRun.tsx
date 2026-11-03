@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BENCHMARK_STATUS_KEYS } from "../constants/benchmarks.constants"
 import type { BenchmarkCurrentRunProps } from "../types/benchmark.type"
 
-export function BenchmarkCurrentRun({ run, busy, onOpenChat, onCleanup }: BenchmarkCurrentRunProps) {
+export function BenchmarkCurrentRun({ run, busy, onOpenChat, onCleanup, onViewEvaluation }: BenchmarkCurrentRunProps) {
   const { t } = useTranslation()
 
   return (
@@ -24,6 +24,9 @@ export function BenchmarkCurrentRun({ run, busy, onOpenChat, onCleanup }: Benchm
       </CardHeader>
       <CardContent className="flex flex-wrap gap-3">
         {run.status === "READY" && <Button size="sm" onClick={onOpenChat}><ExternalLink /> {t("benchmarks.openInChat")}</Button>}
+        {run.evaluation_id && run.task_id && (
+          <Button size="sm" variant="outline" onClick={onViewEvaluation}>View evaluation</Button>
+        )}
         {run.cleanup_required && <Button size="sm" variant="outline" onClick={onCleanup} disabled={busy}><RotateCcw /> {t("benchmarks.cleanupEnvironment")}</Button>}
         {run.error_message && <p className="w-full text-xs text-destructive">{run.error_message}</p>}
       </CardContent>

@@ -146,12 +146,34 @@ export type BenchmarkRunStatus = "PREPARING" | "READY" | "RUNNING" | "COMPLETED"
 export type BenchmarkCheck = {
   device: string
   command: string
-  assertion: { contains: string }
+  assertion: { contains?: string | null; not_contains?: string | null }
 }
 export type BenchmarkAction = {
   device: string
-  action: "interface_shutdown" | "interface_no_shutdown"
-  interface: string
+  action:
+    | "interface_shutdown"
+    | "interface_no_shutdown"
+    | "ospf_network_add"
+    | "ospf_network_remove"
+    | "mpls_enable"
+    | "mpls_disable"
+    | "default_route_add"
+    | "default_route_remove"
+    | "interface_ip_set"
+    | "acl_block"
+    | "acl_remove"
+  interface?: string | null
+  process_id?: number | null
+  network?: string | null
+  wildcard?: string | null
+  area?: number | null
+  next_hop?: string | null
+  ip_address?: string | null
+  subnet_mask?: string | null
+  acl_number?: number | null
+  direction?: "in" | "out" | null
+  source_network?: string | null
+  source_wildcard?: string | null
 }
 export type BenchmarkRootCause = {
   fault_type: string
@@ -172,6 +194,9 @@ export type BenchmarkScenarioCreate = {
   evaluation_required_terms: string[]
   cleanup: BenchmarkAction[]
 }
+export type BenchmarkScenarioUpdate = Partial<Omit<BenchmarkScenarioCreate, "scenario_key">> & {
+  is_active?: boolean
+}
 export type BenchmarkScenario = {
   id: string
   scenario_key: string
@@ -184,6 +209,8 @@ export type BenchmarkScenario = {
   created_at: string | null
   last_updated_at: string | null
 }
+export type BenchmarkScenarioDetail = BenchmarkScenario & BenchmarkScenarioCreate
+
 export type BenchmarkRun = {
   id: string
   scenario_id: string
@@ -227,14 +254,97 @@ export type Task = {
   source_message_id: string
   user_id: string
   input_message: string
-  task_status: TaskStatus
   task_type: TaskType
+  task_status: TaskStatus
   started_at: string | null
   completed_at: string | null
   created_at: string
 }
 export type TaskCreate = Pick<Task, "conversation_id" | "source_message_id" | "user_id" | "input_message">
 export type TaskDetail = Task & { operations: Operation[] }
+
+export type TaskOperationDevice = {
+  id: string
+  operation_id: string
+  device_id: string
+  operation_device_status: OperationStatus
+  device_role: "SOURCE" | "TARGET" | "CONTEXT"
+  access_mode: "READ" | "WRITE"
+  error_message: string | null
+  started_at: string | null
+  completed_at: string | null
+}
+
+export type OperationDependency = {
+  id: string
+  operation_id: string
+  depends_on_operation_id: string
+  dependency_type: "ON_SUCCESS" | "ON_COMPLETION"
+  created_at: string
+}
+
+export type TaskExecution = {
+  id: string
+  task_id: string
+  operation_id: string | null
+  operation_device_id: string | null
+  agent_name: string
+  tool_name: string | null
+  step_order: number
+  input: unknown
+  output: unknown
+  execution_status: "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"
+  error_message: string | null
+  started_at: string | null
+  completed_at: string | null
+  duration_ms: number | null
+  created_at: string
+}
+
+export type EvaluationStatus = "PENDING" | "COMPLETED" | "ERROR"
+export type EvaluationResult = "PASS" | "FAIL" | "UNKNOWN" | "NOT_APPLICABLE"
+export type EvaluationMetricType = "GOAL" | "RCA" | "REMEDIATION" | "SAFETY"
+export type TaskEvaluationMetric = {
+  id: string
+  evaluation_id: string
+  metric_type: EvaluationMetricType
+  result: EvaluationResult
+  is_required: boolean
+  was_attempted: boolean | null
+  expected_value: unknown
+  actual_value: unknown
+  evidence: unknown
+  created_at: string
+}
+export type TaskEvaluationSummary = {
+  id: string
+  task_id: string
+  evaluation_status: EvaluationStatus
+  evaluator_type: "AUTOMATED" | "HUMAN"
+  evaluator_version: string | null
+  created_at: string
+  evaluated_at: string | null
+  results: Partial<Record<EvaluationMetricType, EvaluationResult>>
+}
+export type TaskEvaluationDetail = {
+  id: string
+  task_id: string
+  evaluation_status: EvaluationStatus
+  evaluator_type: "AUTOMATED" | "HUMAN"
+  evaluator_version: string | null
+  created_at: string
+  evaluated_at: string | null
+  metrics: TaskEvaluationMetric[]
+}
+
+export type TaskRecords = {
+  task: TaskDetail
+  operation_devices: TaskOperationDevice[]
+  dependencies: OperationDependency[]
+  executions: TaskExecution[]
+  activity_events: TaskActivityEvent[]
+  approvals: OperationDeviceApproval[]
+}
 
 export type ActivityActorType = "ORCHESTRATOR" | "PLANNER" | "NETWORK" | "ANALYST" | "TOOL"
 export type ActivityEventStatus = "PENDING" | "RUNNING" | "WAITING_APPROVAL" | "SUCCESS" | "FAILED" | "SKIPPED"

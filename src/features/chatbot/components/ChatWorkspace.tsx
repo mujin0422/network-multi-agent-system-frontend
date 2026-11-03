@@ -41,6 +41,7 @@ export function ChatWorkspace() {
     loadingMessages,
     error,
     decideApproval,
+    retryConversation,
   } = useChatMessages({ benchmarkRunId, initialPrompt })
   const visibleMessages = messages.filter(
     (item) => item.conversation_id === activeConversationId,
@@ -143,10 +144,16 @@ export function ChatWorkspace() {
             messages={visibleMessages}
             taskPreviews={taskPreviews}
             onApprovalDecision={decideApproval}
+            onRetryConversation={() => void retryConversation()}
           />
           )}
           {error && (
-            <p className="mx-auto w-full max-w-3xl px-6 text-xs text-destructive">{error}</p>
+            <div role="alert" className="mx-auto flex w-full max-w-3xl flex-wrap items-center justify-between gap-2 px-6 text-xs text-destructive">
+              <p>{error}</p>
+              <Button size="sm" variant="outline" onClick={() => void retryConversation()}>
+                Tải lại hội thoại
+              </Button>
+            </div>
           )}
           <ChatComposer
             input={input}

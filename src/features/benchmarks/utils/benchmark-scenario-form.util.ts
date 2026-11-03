@@ -5,7 +5,7 @@ export function createEmptyCheck(): BenchmarkCheck {
 }
 
 export function createEmptyAction(action: BenchmarkAction["action"]): BenchmarkAction {
-  return { device: "", action, interface: "" }
+  return { device: "", action }
 }
 
 export function createEmptyRootCause(): BenchmarkRootCause {

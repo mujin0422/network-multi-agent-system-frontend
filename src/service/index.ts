@@ -4,7 +4,7 @@ export { auditLogsApi } from "./audit.api"
 export { benchmarksApi } from "./benchmark.api"
 export * from "./contracts"
 export { conversationsApi } from "./conversation.api"
-export { approvalsApi, tasksApi } from "./execution.api"
+export { approvalsApi, deviceActionLogsApi, tasksApi } from "./execution.api"
 export { accessControlApi, rolesApi, usersApi } from "./identity.api"
 export { brandsApi, categoriesApi, credentialsApi, devicesApi } from "./inventory.api"
 export {
@@ -15,3 +15,4 @@ export {
   storeTokens,
   subscribeToTokenChanges,
 } from "./token-storage"
+export { evaluationsApi } from "./evaluation.api"

@@ -1,4 +1,5 @@
-import { FormField } from "@/components/shared/FeatureFormSheet"
+import { FormCombobox, FormField } from "@/components/shared/FeatureFormSheet"
+import { BenchmarkDeviceCombobox } from "./BenchmarkDeviceCombobox"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkCheck } from "@/service"
@@ -6,7 +7,7 @@ import { useTranslation } from "react-i18next"
 import type { BenchmarkCheckFieldsProps } from "../types/benchmark.type"
 import { createEmptyCheck } from "../utils/benchmark-scenario-form.util"
 
-export function BenchmarkCheckFields({ title, items, onChange }: BenchmarkCheckFieldsProps) {
+export function BenchmarkCheckFields({ section, deviceOptions, title, items, onChange }: BenchmarkCheckFieldsProps) {
   const { t } = useTranslation()
 
   function update(index: number, next: BenchmarkCheck) {
@@ -27,10 +28,46 @@ export function BenchmarkCheckFields({ title, items, onChange }: BenchmarkCheckF
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField label={t("benchmarks.form.fields.device")} required>
-              <Input value={item.device} required placeholder="P3" onChange={(event) => update(index, { ...item, device: event.target.value })} />
+              <BenchmarkDeviceCombobox
+                name={`benchmark-${section}-device-${index}`}
+                value={item.device}
+                options={deviceOptions}
+                onChange={(value) => update(index, { ...item, device: value })}
+              />
             </FormField>
             <FormField label={t("benchmarks.form.fields.expectedOutput")} required>
-              <Input value={item.assertion.contains} required placeholder="administratively down" onChange={(event) => update(index, { ...item, assertion: { contains: event.target.value } })} />
+              <div className="flex gap-2">
+                <div className="w-40 shrink-0">
+                  <FormCombobox
+                    name={`benchmark-${section}-assertion-${index}`}
+                    value={item.assertion.not_contains != null ? "not_contains" : "contains"}
+                    options={[
+                      { value: "contains", label: t("benchmarks.form.assertions.contains") },
+                      { value: "not_contains", label: t("benchmarks.form.assertions.notContains") },
+                    ]}
+                    onValueChange={(value) => {
+                      if (!value) return
+                      update(index, {
+                        ...item,
+                        assertion: value === "not_contains"
+                          ? { not_contains: "" }
+                          : { contains: "" },
+                      })
+                    }}
+                  />
+                </div>
+                <Input
+                  value={item.assertion.not_contains ?? item.assertion.contains ?? ""}
+                  required
+                  placeholder="administratively down"
+                  onChange={(event) => update(index, {
+                    ...item,
+                    assertion: item.assertion.not_contains != null
+                      ? { not_contains: event.target.value }
+                      : { contains: event.target.value },
+                  })}
+                />
+              </div>
             </FormField>
           </div>
           <FormField label={t("benchmarks.form.fields.command")} required>

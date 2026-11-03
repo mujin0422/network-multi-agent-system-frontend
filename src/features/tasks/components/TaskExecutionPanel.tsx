@@ -1,4 +1,4 @@
-import { Bot, Clock3, Eye, Pencil } from "lucide-react"
+import { Bot, Clock3, Pencil } from "lucide-react"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,8 +31,8 @@ export function TaskExecutionPanel({
             </p>
           </div>
           <div className="flex gap-1">
-            <Button size="icon-xs" variant="ghost" onClick={onView}>
-              <Eye />
+            <Button size="xs" variant="outline" onClick={onView}>
+              View
             </Button>
             {["PENDING", "PLANNING"].includes(task.task_status) && (
               <Button size="icon-xs" variant="ghost" onClick={onEdit}>

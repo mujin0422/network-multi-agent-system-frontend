@@ -1,3 +1,4 @@
+import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
@@ -26,10 +27,12 @@ import type { Task } from "../types/task.type"
 import { TaskForm } from "./TaskForm"
 import { TaskStats } from "./TaskStats"
 import { TaskExecutionPanel } from "./TaskExecutionPanel"
+import { TaskRecordsSheet } from "./TaskRecordsSheet"
 
 /** Màn hình theo dõi task, trạng thái thực thi và các bước cần phê duyệt. */
 export function TasksTable() {
   const { rows, usersById, activeId, selected, operations, summary, setActiveId, loading } = useTasksData()
+  const [recordsOpen, setRecordsOpen] = useState(false)
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -90,7 +93,7 @@ export function TasksTable() {
                 cell: (task) => (
                   <div className="min-w-0">
                     <p className="truncate text-xs font-medium">{task.input_message}</p>
-                    <p className="mt-1 font-mono type-caption text-success">{task.id}</p>
+                    <TableIdentifier value={task.id} className="mt-1" />
                   </div>
                 ),
               },
@@ -157,11 +160,16 @@ export function TasksTable() {
           <TaskExecutionPanel
             task={selected}
             operations={operations}
-            onView={() => selected && openForm("view", selected)}
+            onView={() => selected && setRecordsOpen(true)}
             onEdit={() => selected && openForm("edit", selected)}
           />
         </PageLayoutContent>
       </PageLayout>
+      <TaskRecordsSheet
+        open={recordsOpen}
+        taskId={selected?.id ?? null}
+        onOpenChange={setRecordsOpen}
+      />
       <TaskForm
         open={form.open}
         mode={form.mode}

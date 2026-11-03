@@ -34,6 +34,7 @@ export type ApprovalRequest = {
   devices: string[]
   commands: string[]
   status: "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED"
+  expires_at: string | null
 }
 
 /** View model của toàn bộ workflow sinh ra từ một USER message. */
@@ -50,4 +51,6 @@ export type ChatTaskPreview = {
   active_duration_ms: number
   activities: AgentActivity[]
   approval?: ApprovalRequest
+  /** Lỗi tải approval không được làm mất timeline của task. */
+  approvalLoadError?: string
 }

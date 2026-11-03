@@ -6,8 +6,9 @@ import type { ChatTaskPreview } from "../types/chat-task-preview.type"
 import type { Conversation } from "../types/conversation.type"
 
 const DRAFT_ID = "new-conversation"
-const POLL_INTERVAL_MS = 750
-const MAX_POLL_ATTEMPTS = 800
+const POLL_INTERVAL_MS = 1500
+const MAX_POLL_ATTEMPTS = 400
+const MAX_CONSECUTIVE_POLL_FAILURES = 6
 const wait = (duration: number) => new Promise((resolve) => window.setTimeout(resolve, duration))
 const draftConversation = (): Conversation => ({
   id: DRAFT_ID, user_id: "", title: "New conversation",
@@ -64,9 +65,33 @@ export function useChatMessages(options: ChatOptions = {}) {
     const relevantTasks = allTasks.filter((task) => messageIds.has(task.source_message_id))
     const previews = await Promise.all(relevantTasks.map(async (task): Promise<ChatTaskPreview> => {
       const [detail, events] = await Promise.all([tasksApi.get(task.id), tasksApi.listActivityEvents(task.id)])
-      const approvalEntries = (await Promise.all(detail.operations.map(async (operation) =>
-        (await approvalsApi.listByOperation(operation.id)).map((approval) => ({ approval, operationId: operation.id })),
-      ))).flat()
+      // Chỉ tải approvals của các operation đã yêu cầu phê duyệt; không tạo
+      // request cho tất cả operations trong mỗi vòng polling.
+      const approvalOperationIds = new Set(
+        events
+          .filter((event) => event.event_type === "APPROVAL_REQUESTED" && event.operation_id)
+          .map((event) => event.operation_id),
+      )
+      const approvalOperations = detail.operations.filter(
+        (operation) =>
+          operation.operation_status === "WAITING_APPROVAL" ||
+          approvalOperationIds.has(operation.id),
+      )
+      // Một endpoint lỗi không được làm mất timeline hoặc approval khác.
+      const approvalResponses = await Promise.allSettled(
+        approvalOperations.map(async (operation) =>
+          (await approvalsApi.listByOperation(operation.id)).map((approval) => ({
+            approval,
+            operationId: operation.id,
+          })),
+        ),
+      )
+      const approvalEntries = approvalResponses.flatMap((response) =>
+        response.status === "fulfilled" ? response.value : [],
+      )
+      const approvalFetchFailed = approvalResponses.some(
+        (response) => response.status === "rejected",
+      )
       const responses = conversationMessages.filter(
         (message) =>
           message.sender_by === "AGENT" &&
@@ -111,7 +136,9 @@ export function useChatMessages(options: ChatOptions = {}) {
               ? event.event_data.detail
               : typeof event.event_data.error === "string"
                 ? event.event_data.error
-                : undefined,
+                : event.event_data.reason === "APPROVAL_TIMEOUT"
+                  ? "Hết thời gian chờ phê duyệt; tác vụ đã tự kết thúc."
+                  : undefined,
           status: event.event_status,
           started_at: event.started_at ?? undefined,
           completed_at: event.completed_at ?? undefined,
@@ -127,22 +154,42 @@ export function useChatMessages(options: ChatOptions = {}) {
             : [approval.operation_device_id],
           commands: approval.commands_snapshot,
           status: approval.approval_status,
+          expires_at: approval.expires_at,
         } : undefined,
+        approvalLoadError:
+          task.task_status === "RUNNING" &&
+          (approvalResponse || approvalOperationIds.size > 0) &&
+          !approval
+            ? approvalFetchFailed
+              ? "Không thể tải phiếu phê duyệt. Hãy thử tải lại hội thoại, không gửi yêu cầu cấu hình lần nữa."
+              : "Phiếu phê duyệt chưa sẵn sàng. Bạn có thể tải lại hội thoại."
+            : undefined,
       }
     }))
     setTaskPreviews(previews)
     return previews
   }, [])
 
-  const loadConversation = useCallback(async (conversationId: string, showSkeleton = false) => {
+  const loadConversation = useCallback(async (
+    conversationId: string,
+    showSkeleton = false,
+    silentFailure = false,
+  ) => {
     if (showSkeleton) setLoadingMessages(true)
     try {
       const rows = await conversationsApi.listMessages(conversationId)
       setMessages(rows)
       const previews = await loadTaskPreviews(rows)
       return { rows, previews }
-    } catch (reason) { setError(reason instanceof Error ? reason.message : "Không thể tải hội thoại") }
-    finally { if (showSkeleton) setLoadingMessages(false) }
+    } catch (reason) {
+      // Polling xử lý retry riêng; giữ lại timeline đang hiển thị khi mất mạng.
+      if (!silentFailure) {
+        setError(reason instanceof Error ? reason.message : "Không thể tải hội thoại")
+      }
+      return undefined
+    } finally {
+      if (showSkeleton) setLoadingMessages(false)
+    }
   }, [loadTaskPreviews])
 
   const reloadConversations = useCallback(async () => {
@@ -166,6 +213,22 @@ export function useChatMessages(options: ChatOptions = {}) {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ message khi đổi conversation.
     if (activeConversationId !== DRAFT_ID) void loadConversation(activeConversationId, true)
   }, [activeConversationId, loadConversation])
+
+  // Once the workflow pauses, the initial polling loop stops. Keep refreshing
+  // while the user is viewing a pending approval so server-side expiry appears
+  // without a manual reload. Backend expiry is independent of this UI polling.
+  const hasPendingApproval = taskPreviews.some(
+    (preview) =>
+      preview.task_status === "RUNNING" &&
+      preview.approval?.status === "PENDING",
+  )
+  useEffect(() => {
+    if (activeConversationId === DRAFT_ID || !hasPendingApproval) return
+    const timer = window.setInterval(() => {
+      void loadConversation(activeConversationId, false, true)
+    }, 10_000)
+    return () => window.clearInterval(timer)
+  }, [activeConversationId, hasPendingApproval, loadConversation])
 
   function createNewConversation() {
     pollingGeneration.current += 1
@@ -198,10 +261,23 @@ export function useChatMessages(options: ChatOptions = {}) {
     sourceMessageId: string,
     generation: number,
   ) => {
+    let consecutiveFailures = 0
     for (let attempt = 0; attempt < MAX_POLL_ATTEMPTS; attempt += 1) {
       if (pollingGeneration.current !== generation) return
-      const snapshot = await loadConversation(conversationId)
-      if (!snapshot) return
+      const snapshot = await loadConversation(conversationId, false, true)
+      if (pollingGeneration.current !== generation) return
+
+      if (!snapshot) {
+        consecutiveFailures += 1
+        if (consecutiveFailures >= MAX_CONSECUTIVE_POLL_FAILURES) {
+          setError("Mất kết nối khi cập nhật tiến trình. Hãy tải lại hội thoại, không gửi yêu cầu cấu hình lần nữa.")
+          return
+        }
+        await wait(Math.min(POLL_INTERVAL_MS * 2 ** consecutiveFailures, 8000))
+        continue
+      }
+      consecutiveFailures = 0
+      setError(null)
 
       const finalResponse = snapshot.rows.some(
         (message) =>
@@ -259,6 +335,32 @@ export function useChatMessages(options: ChatOptions = {}) {
     } finally { setSending(false) }
   }
 
+  async function retryConversation() {
+    setError(null)
+    if (activeConversationId === DRAFT_ID) {
+      await reloadConversations()
+      return
+    }
+
+    // Tải lại dữ liệu đã lưu, không POST thêm message/configuration request.
+    const generation = pollingGeneration.current + 1
+    pollingGeneration.current = generation
+    const snapshot = await loadConversation(activeConversationId, true)
+    if (!snapshot) return
+
+    const lastUserMessage = [...snapshot.rows]
+      .filter((message) => message.sender_by === "USER")
+      .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0]
+    if (!lastUserMessage) return
+    const preview = snapshot.previews.find(
+      (task) => task.source_message_id === lastUserMessage.id,
+    )
+    const completed = preview && ["SUCCESS", "PARTIAL_SUCCESS", "FAILED", "REJECTED"].includes(preview.task_status)
+    if (!completed && preview?.approval?.status !== "PENDING") {
+      void pollWorkflow(activeConversationId, lastUserMessage.id, generation)
+    }
+  }
+
   const decideApproval = useCallback(async (approvalId: string, decision: "APPROVED" | "REJECTED") => {
     setSending(true)
     setError(null)
@@ -271,10 +373,11 @@ export function useChatMessages(options: ChatOptions = {}) {
       else await loadConversation(activeConversationId)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Không thể xử lý phê duyệt")
+      throw reason
     } finally {
       setSending(false)
     }
   }, [activeConversationId, loadConversation, pollWorkflow, taskPreviews])
 
-  return { input, messages, taskPreviews, conversations, activeConversationId, sending, loadingConversations, loadingMessages, error, createNewConversation, renameConversation, sendMessage, decideApproval, setActiveConversationId, setInput }
+  return { input, messages, taskPreviews, conversations, activeConversationId, sending, loadingConversations, loadingMessages, error, createNewConversation, renameConversation, sendMessage, decideApproval, retryConversation, setActiveConversationId, setInput }
 }

@@ -1,9 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTranslation } from "react-i18next"
+import { cn } from "@/lib/utils"
 import { BENCHMARK_STATUS_KEYS } from "../constants/benchmarks.constants"
 import type { BenchmarkRunHistoryProps } from "../types/benchmark.type"
 
-export function BenchmarkRunHistory({ runs, onSelect }: BenchmarkRunHistoryProps) {
+export function BenchmarkRunHistory({ runs, onSelect, selectedRunId }: BenchmarkRunHistoryProps) {
   const { t, i18n } = useTranslation()
 
   return (
@@ -19,7 +20,11 @@ export function BenchmarkRunHistory({ runs, onSelect }: BenchmarkRunHistoryProps
           <div className="divide-y rounded-lg border">
             {runs.map((run) => (
               <button
-                className="flex w-full flex-wrap items-center justify-between gap-3 p-3 text-left hover:bg-muted/40"
+                className={cn(
+                  "flex w-full flex-wrap items-center justify-between gap-3 p-3 text-left hover:bg-muted/40",
+                  selectedRunId === run.id && "bg-muted/60",
+                )}
+                aria-pressed={selectedRunId === run.id}
                 key={run.id}
                 onClick={() => onSelect(run)}
                 type="button"

@@ -1,12 +1,14 @@
 import { api } from "./api"
-import type { BenchmarkRun, BenchmarkScenario, BenchmarkScenarioCreate } from "./contracts"
+import type { BenchmarkRun, BenchmarkScenario, BenchmarkScenarioCreate, BenchmarkScenarioDetail, BenchmarkScenarioUpdate } from "./contracts"
 
 export const benchmarksApi = {
   listScenarios: async () =>
     (await api.get<BenchmarkScenario[]>("/benchmarks/scenarios")).data,
   createScenario: async (payload: BenchmarkScenarioCreate) =>
     (await api.post<BenchmarkScenario>("/benchmarks/scenarios", payload)).data,
-  updateScenario: async (scenarioId: string, payload: { is_active: boolean }) =>
+  getScenario: async (scenarioId: string) =>
+    (await api.get<BenchmarkScenarioDetail>(`/benchmarks/scenarios/${scenarioId}`)).data,
+  updateScenario: async (scenarioId: string, payload: BenchmarkScenarioUpdate) =>
     (await api.patch<BenchmarkScenario>(`/benchmarks/scenarios/${scenarioId}`, payload)).data,
   listRuns: async (limit = 20) =>
     (await api.get<BenchmarkRun[]>("/benchmarks/runs", { params: { limit } })).data,
