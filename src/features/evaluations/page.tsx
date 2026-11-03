@@ -3,7 +3,7 @@ import { TableTimestamp } from "@/components/shared/TableTimestamp"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Bot, CheckCircle2, ClipboardCheck, Clock3, Eye, History, Target, Wrench, XCircle } from "lucide-react"
+import { Bot, ClipboardCheck, Clock3, Eye, History, Wrench } from "lucide-react"
 
 import {
   DataTable,
@@ -90,8 +90,6 @@ export default function EvaluationsPage() {
     })
   }, [evaluations, runs, t])
 
-  const countPass = evaluations.filter((evaluation) => evaluation.results.RCA === "PASS").length
-  const countFail = evaluations.filter((evaluation) => evaluation.results.RCA === "FAIL").length
   const countAutomated = evaluations.filter((evaluation) => evaluation.evaluator_type === "AUTOMATED").length
 
   // Only v3 stores AI-active time; v2 LATENCY is legacy end-to-end.
@@ -135,35 +133,10 @@ export default function EvaluationsPage() {
       </PageLayoutHeader>
       <PageLayoutOverview>
         <PageLayoutStat
-          label={t("evaluationsPage.tsrTitle")}
-          value={runSummary?.success_rate == null ? "—" : `${runSummary.success_rate.toFixed(2)}%`}
-          description={runSummary
-            ? t("evaluationsPage.tsrSample", {
-                passed: runSummary.passed,
-                eligible: runSummary.eligible_runs,
-              })
-            : t("evaluationsPage.tsrUnavailable")}
-          icon={<Target />}
-        />
-        <PageLayoutStat
           label={t("evaluationsPage.total")}
           value={evaluations.length}
           description={t("evaluationsPage.stats.totalDescription")}
           icon={<ClipboardCheck />}
-        />
-        <PageLayoutStat
-          label={t("evaluationsPage.rcaPass")}
-          value={countPass}
-          description={t("evaluationsPage.stats.passDescription")}
-          icon={<CheckCircle2 />}
-          iconClassName="bg-emerald-500/10 text-emerald-400"
-        />
-        <PageLayoutStat
-          label={t("evaluationsPage.rcaFail")}
-          value={countFail}
-          description={t("evaluationsPage.stats.failDescription")}
-          icon={<XCircle />}
-          iconClassName="bg-red-500/10 text-red-400"
         />
         <PageLayoutStat
           label={t("evaluationsPage.stats.automated")}
