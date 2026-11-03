@@ -223,8 +223,22 @@ const en = {
       deviceRequired: "Select a device for every check, action, and root cause.",
       invalidInterface: "Select an interface type and complete its required numeric slots before saving.",
       invalidIPv4: "Enter four valid IPv4 octets (0–255) for each required network, mask, wildcard, or next-hop field.",
+      cleanupRequired: "Add at least one Cleanup action before saving.",
+      cleanupManualOverrideRequired: "Some injections need manual restoration. Disable auto-generation and complete Cleanup yourself.",
+      cleanupReviewRequired: "Confirm that you reviewed the manual Cleanup actions before saving.",
     },
     form: {
+      cleanup: {
+        autoLabel: "Auto-generate Cleanup",
+        regenerate: "Regenerate",
+        autoDescription: "{{count}} suggested Cleanup action(s), in reverse injection order. Editing one switches to manual mode.",
+        manualDescription: "Manual override: Cleanup no longer follows Injection changes. Regenerate replaces your manual edits.",
+        stateWarning: "Suggestions assume the original lab state. No configuration snapshot is taken, so verify that every operation will restore the original configuration before running.",
+        manualWarning: "Manual cleanup required for some injections",
+        manualStep: "Injection #{{index}}: {{action}} on {{device}}",
+        manualWarningHelp: "IP changes and ACL modifications cannot be safely reversed without their previous settings. Switch to manual mode and add the correct restoration actions.",
+        manualAcknowledgement: "I have reviewed the original configuration and completed the necessary manual Cleanup actions.",
+      },
       interfacePicker: {
         selectType: "Select interface",
         numberLabel: "Interface position {{index}}",
