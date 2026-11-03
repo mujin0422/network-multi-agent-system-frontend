@@ -221,15 +221,15 @@ const vi = {
       loadDevices: "Không thể tải danh sách thiết bị. Tên thiết bị của benchmark hiện có vẫn được giữ nguyên.",
       noDevices: "Chưa có thiết bị mạng. Hãy thêm thiết bị trước khi tạo benchmark.",
       deviceRequired: "Hãy chọn thiết bị cho mọi điều kiện, thao tác và nguyên nhân lỗi.",
-      invalidInterface: "Hãy chọn loại interface và nhập đủ 2 hoặc 3 số nguyên không âm cho mọi interface bắt buộc.",
+      invalidInterface: "Hãy chọn loại interface và nhập đủ các vị trí số cổng bắt buộc trước khi lưu.",
     },
     form: {
       interfacePicker: {
         selectType: "Chọn loại interface",
         numberLabel: "Vị trí interface {{index}}",
-        numberingHint: "Chọn dạng 0/0 hoặc 0/0/0 theo thiết bị mạng.",
+        numberingHint: "Định dạng số cổng tự động: Loopback (0), Ethernet/FastEthernet (0/0), các loại khác (0/0/0).",
         unsupported: "Interface đã lưu ({{value}}) không thuộc các định dạng hỗ trợ. Hãy chọn lại loại và số cổng.",
-        completeNumbers: "Điền số nguyên không âm vào tất cả vị trí interface.",
+        completeNumbers: "Hãy nhập đủ số nguyên không âm ở các vị trí cổng tương ứng với loại interface.",
       },
       loadingDevices: "Đang tải thiết bị mạng...",
       selectDevice: "Chọn thiết bị",
