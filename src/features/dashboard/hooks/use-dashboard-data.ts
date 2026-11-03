@@ -8,7 +8,7 @@ import {
   Router,
   Terminal,
 } from "lucide-react"
-import { brandsApi, devicesApi, tasksApi } from "@/service"
+import { benchmarksApi, devicesApi, evaluationsApi, tasksApi } from "@/service"
 import type { Operation, Task, TaskStatus } from "@/service"
 import type { ActivityItem, DashboardStatus } from "../types/activity-item.type"
 import type { ChartBar } from "../types/chart-bar.type"
@@ -18,6 +18,7 @@ import type {
   TaskOutcomePoint,
 } from "../types/task-analytics.type"
 import type { Tone } from "../types/tone.type"
+import { buildBenchmarkRates, type DashboardRateMetric } from "../utils/benchmark-rates.util"
 
 const DAY_MS = 86_400_000
 
@@ -68,24 +69,49 @@ function operationActivity(operation: Operation): ActivityItem {
 export function useDashboardData() {
   const [activities, setActivities] = useState<ActivityItem[]>([])
   const [deviceActions, setDeviceActions] = useState<ActivityItem[]>([])
-  const [deviceBars, setDeviceBars] = useState<ChartBar[]>([])
   const [taskBars, setTaskBars] = useState<ChartBar[]>([])
   const [taskOutcomes, setTaskOutcomes] = useState<TaskOutcomePoint[]>([])
   const [executionTimes, setExecutionTimes] = useState<ExecutionTimePoint[]>([])
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [successRate, setSuccessRate] = useState(0)
+  const [rateMetrics, setRateMetrics] = useState<DashboardRateMetric[]>(() =>
+    buildBenchmarkRates({ summary: null, evaluations: null, runs: null }),
+  )
+  const [rateError, setRateError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const reload = useCallback(async () => {
     setLoading(true)
     setError(null)
+    setRateError(null)
     try {
-      const [tasks, devicePage, brands] = await Promise.all([
-        tasksApi.list(),
-        devicesApi.list({ page_size: 100 }),
-        brandsApi.list(),
+      // Benchmark metrics have independent permissions and failure states.
+      // One unavailable endpoint must not break the regular Dashboard.
+      const [dashboardResult, summaryResult, evaluationResult, runsResult] = await Promise.allSettled([
+        Promise.all([
+          tasksApi.list(),
+          devicesApi.list({ page_size: 100 }),
+        ]),
+        benchmarksApi.getRunSummary(),
+        evaluationsApi.list(100),
+        benchmarksApi.listRuns(100),
       ])
+      setRateMetrics(buildBenchmarkRates({
+        summary: summaryResult.status === "fulfilled" ? summaryResult.value : null,
+        evaluations: evaluationResult.status === "fulfilled" ? evaluationResult.value : null,
+        runs: runsResult.status === "fulfilled" ? runsResult.value : null,
+      }))
+      const unavailable = [
+        summaryResult.status === "rejected" ? "run summary" : null,
+        evaluationResult.status === "rejected" ? "evaluations" : null,
+        runsResult.status === "rejected" ? "recent runs" : null,
+      ].filter((name): name is string => name !== null)
+      if (unavailable.length) {
+        setRateError(`Some metrics are unavailable: ${unavailable.join(", ")}.`)
+      }
+      if (dashboardResult.status === "rejected") throw dashboardResult.reason
+      const [tasks, devicePage] = dashboardResult.value
       const sortedTasks = [...tasks].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))
       const details = await Promise.all(sortedTasks.slice(0, 6).map((task) => tasksApi.get(task.id)))
       const operations = details
@@ -161,16 +187,6 @@ export function useDashboardData() {
         return { label, averageSeconds, taskCount: durations.length }
       }))
 
-      const brandCounts = brands.map((brand) => ({
-        label: brand.name,
-        count: devicePage.items.filter((device) => device.brand_id === brand.id).length,
-      })).filter((item) => item.count > 0).slice(0, 7)
-      const maxDevices = Math.max(...brandCounts.map((item) => item.count), 1)
-      setDeviceBars(brandCounts.map((item) => ({
-        label: item.label,
-        height: 16 + (item.count / maxDevices) * 96,
-        value: item.count,
-      })))
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Không thể tải dashboard")
     } finally {
@@ -182,7 +198,7 @@ export function useDashboardData() {
   useEffect(() => { void reload() }, [reload])
 
   return {
-    activities, deviceActions, deviceBars, metrics, taskBars,
-    taskOutcomes, executionTimes, successRate, loading, error, reload,
+    activities, deviceActions, metrics, taskBars,
+    taskOutcomes, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
   }
 }
