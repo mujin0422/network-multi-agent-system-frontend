@@ -1,6 +1,4 @@
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Line,
   LineChart,
@@ -47,22 +45,54 @@ export function TaskAnalyticsCharts({
             Task Outcomes – Last 7 Days
           </CardTitle>
           <p className="type-caption text-muted-foreground">
-            Completed tasks grouped by final status
+            Daily completed tasks by final status
           </p>
         </CardHeader>
         <CardContent className="mt-4 px-4">
           <ChartContainer config={outcomeConfig} className="h-56 w-full aspect-auto">
-            <BarChart data={outcomes} accessibilityLayer>
+            <LineChart data={outcomes} accessibilityLayer>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
               <XAxis dataKey="label" tickLine={false} axisLine={false} />
-              <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} />
+              <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={28} domain={[0, "auto"]} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
-              <Bar dataKey="success" stackId="outcome" fill="var(--color-success)" radius={[0, 0, 3, 3]} />
-              <Bar dataKey="partial" stackId="outcome" fill="var(--color-partial)" />
-              <Bar dataKey="failed" stackId="outcome" fill="var(--color-failed)" />
-              <Bar dataKey="rejected" stackId="outcome" fill="var(--color-rejected)" radius={[3, 3, 0, 0]} />
-            </BarChart>
+              <Line
+                type="monotone"
+                dataKey="success"
+                stroke="var(--color-success)"
+                strokeWidth={2}
+                dot={{ fill: "var(--color-success)", r: 3 }}
+                activeDot={{ r: 5 }}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="partial"
+                stroke="var(--color-partial)"
+                strokeWidth={2}
+                dot={{ fill: "var(--color-partial)", r: 3 }}
+                activeDot={{ r: 5 }}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="failed"
+                stroke="var(--color-failed)"
+                strokeWidth={2}
+                dot={{ fill: "var(--color-failed)", r: 3 }}
+                activeDot={{ r: 5 }}
+                connectNulls={false}
+              />
+              <Line
+                type="monotone"
+                dataKey="rejected"
+                stroke="var(--color-rejected)"
+                strokeWidth={2}
+                dot={{ fill: "var(--color-rejected)", r: 3 }}
+                activeDot={{ r: 5 }}
+                connectNulls={false}
+              />
+            </LineChart>
           </ChartContainer>
         </CardContent>
       </Card>
