@@ -29,7 +29,9 @@ export function DashboardOverview() {
     activities, deviceActions, metrics, taskBars,
     taskOutcomes, executionTimes, successRate, rateMetrics, rateError, loading, error, reload,
   } = useDashboardData()
-  if (loading) {
+  // Keep the existing KPI charts mounted during Refresh so identical data
+  // never replays their initial animation. Only first-load uses the skeleton.
+  if (loading && metrics.length === 0) {
     return (
       <PageLoadingSkeleton
         title={DASHBOARD_COPY.title}
