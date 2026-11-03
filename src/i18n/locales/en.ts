@@ -222,6 +222,7 @@ const en = {
       noDevices: "No network devices found. Add a device before creating a benchmark.",
       deviceRequired: "Select a device for every check, action, and root cause.",
       invalidInterface: "Select an interface type and complete its required numeric slots before saving.",
+      invalidIPv4: "Enter four valid IPv4 octets (0–255) for each required network, mask, wildcard, or next-hop field.",
     },
     form: {
       interfacePicker: {
