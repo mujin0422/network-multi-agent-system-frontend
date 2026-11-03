@@ -24,7 +24,7 @@ import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { BenchmarkEvaluationSheet } from "@/features/benchmarks/components/BenchmarkEvaluationSheet"
 import { benchmarksApi, evaluationsApi } from "@/service"
-import type { BenchmarkRun, BenchmarkRunSummary, EvaluationResult, TaskEvaluationSummary } from "@/service"
+import type { BenchmarkRun, EvaluationResult, TaskEvaluationSummary } from "@/service"
 
 type EvaluationTableRow = TaskEvaluationSummary & {
   scenarioName: string
@@ -38,19 +38,15 @@ export default function EvaluationsPage() {
   const [params, setParams] = useSearchParams()
   const [evaluations, setEvaluations] = useState<TaskEvaluationSummary[]>([])
   const [runs, setRuns] = useState<BenchmarkRun[]>([])
-  const [runSummary, setRunSummary] = useState<BenchmarkRunSummary | null>(null)
-  const [summaryError, setSummaryError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const detailTaskId = params.get("task")
 
   const refresh = useCallback(async () => {
     setError(null)
-    setSummaryError(null)
-    const [evaluationResult, runResult, summaryResult] = await Promise.allSettled([
+    const [evaluationResult, runResult] = await Promise.allSettled([
       evaluationsApi.list(100),
       benchmarksApi.listRuns(100),
-      benchmarksApi.getRunSummary(),
     ])
     if (evaluationResult.status === "fulfilled") {
       setEvaluations(evaluationResult.value)
@@ -61,14 +57,6 @@ export default function EvaluationsPage() {
     }
     // Optional enrichment: associate evaluations with recent benchmark runs.
     if (runResult.status === "fulfilled") setRuns(runResult.value)
-    if (summaryResult.status === "fulfilled") {
-      setRunSummary(summaryResult.value)
-    } else {
-      setRunSummary(null)
-      setSummaryError(summaryResult.reason instanceof Error
-        ? summaryResult.reason.message
-        : t("evaluationsPage.tsrLoadError"))
-    }
     setLoading(false)
   }, [t])
 
@@ -157,36 +145,7 @@ export default function EvaluationsPage() {
           icon={<Wrench />}
         />
       </PageLayoutOverview>
-      {runSummary && (
-        <section className="space-y-2 rounded-xl border bg-card p-4 text-xs" aria-label={t("evaluationsPage.tsrBreakdown")}>
-          <h2 className="text-sm font-semibold">{t("evaluationsPage.tsrBreakdown")}</h2>
-          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
-            {([
-              ["passed", t("evaluationsPage.tsrPassed")],
-              ["failed", t("evaluationsPage.tsrFailed")],
-              ["in_progress", t("evaluationsPage.tsrInProgress")],
-              ["not_started", t("evaluationsPage.tsrNotStarted")],
-              ["setup_failed", t("evaluationsPage.tsrSetupFailed")],
-              ["unscored", t("evaluationsPage.tsrUnscored")],
-            ] as const).map(([key, label]) => (
-              <div key={key} className="rounded-lg border p-3">
-                <p className="text-muted-foreground">{label}</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums">{runSummary[key]}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-muted-foreground">
-            {t("evaluationsPage.tsrScope", { total: runSummary.total_runs })}
-          </p>
-          <p className="text-muted-foreground">{t("evaluationsPage.tsrVersionNote")}</p>
-        </section>
-      )}
       <PageLayoutContent>
-        {summaryError && (
-          <p role="alert" className="mb-3 text-xs text-destructive">
-            {t("evaluationsPage.tsrLoadError")}: {summaryError}
-          </p>
-        )}
         {error && <p role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">{error}</p>}
         <DataTable
           data={rows}
