@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { benchmarksApi } from "@/service"
+import { ApiError, benchmarksApi } from "@/service"
 import type { BenchmarkRun, BenchmarkScenario, BenchmarkScenarioCreate, BenchmarkScenarioUpdate } from "@/service"
 import { benchmarkErrorMessage } from "../utils/benchmark.util"
 
@@ -14,22 +14,47 @@ export function useBenchmarksData() {
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [runsLoadFailed, setRunsLoadFailed] = useState(false)
 
   const reload = useCallback(async () => {
     setLoading(true)
     setError(null)
-    try {
-      const [scenarioRows, runRows] = await Promise.all([
-        benchmarksApi.listScenarios(),
-        benchmarksApi.listRuns(100),
-      ])
-      setScenarios(scenarioRows)
-      setRuns(runRows)
-    } catch (reason) {
-      setError(benchmarkErrorMessage(reason, t("benchmarks.errors.load")))
-    } finally {
-      setLoading(false)
+
+    // A failed run-history request must not hide the scenarios (and vice versa).
+    const [scenarioResult, runResult] = await Promise.allSettled([
+      benchmarksApi.listScenarios(),
+      benchmarksApi.listRuns(100),
+    ])
+
+    const messages: string[] = []
+    const describeFailure = (endpoint: string, reason: unknown) => {
+      const detail = benchmarkErrorMessage(reason, t("benchmarks.errors.load"))
+      const status = reason instanceof ApiError && reason.status !== null
+        ? `HTTP ${reason.status}: `
+        : ""
+      const hint = reason instanceof ApiError && reason.status === null
+        ? ` ${t("benchmarks.errors.connectionHint")}`
+        : ""
+      return `${endpoint}: ${status}${detail}.${hint}`
     }
+
+    if (scenarioResult.status === "fulfilled") {
+      setScenarios(scenarioResult.value)
+    } else {
+      messages.push(describeFailure("GET /benchmarks/scenarios", scenarioResult.reason))
+    }
+
+    if (runResult.status === "fulfilled") {
+      setRuns(runResult.value)
+      setRunsLoadFailed(false)
+    } else {
+      // Without run history, we cannot safely check for pending lab cleanup.
+      setRunsLoadFailed(true)
+      messages.push(describeFailure("GET /benchmarks/runs", runResult.reason))
+    }
+
+    setError(messages.length > 0 ? messages.join("\n") : null)
+    setLoading(false)
   }, [t])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ state với API khi mount.
@@ -113,6 +138,7 @@ export function useBenchmarksData() {
   return {
     scenarios,
     runs,
+    runsLoadFailed,
     selectedRun,
     loading,
     busy,

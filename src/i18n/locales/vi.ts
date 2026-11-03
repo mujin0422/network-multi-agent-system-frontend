@@ -172,6 +172,7 @@ const vi = {
     title: "Benchmark Scenarios",
     description: "Quản lý kịch bản trong cơ sở dữ liệu, chẩn đoán qua Chat và tự động lưu kết quả đánh giá tác vụ.",
     addScenario: "Thêm kịch bản",
+    retry: "Thử tải lại",
     chatBanner: "Benchmark",
     warningTitle: "Benchmark sẽ thay đổi cấu hình thiết bị GNS3.",
     warningDescription: "Chỉ chạy trong môi trường lab. Sau khi kiểm thử, hãy dùng Dọn dẹp để khôi phục interface.",
@@ -213,6 +214,7 @@ const vi = {
     },
     errors: {
       load: "Không thể tải các kịch bản benchmark.",
+      connectionHint: "Trình duyệt không nhận được phản hồi API; hãy kiểm tra log backend, phiên bản API sau khi seed BGP và cấu hình CORS.",
       create: "Không thể tạo kịch bản.",
       start: "Không thể bắt đầu benchmark.",
       cleanup: "Không thể khôi phục môi trường.",
