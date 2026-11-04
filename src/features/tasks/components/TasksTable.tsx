@@ -1,4 +1,5 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
+import { MoreMenu } from "@/components/shared/MoreMenu"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { useState } from "react"
 import type { FormMode } from "@/types/components"
@@ -32,7 +33,7 @@ import { TaskRecordsSheet } from "./TaskRecordsSheet"
 /** Màn hình theo dõi task, trạng thái thực thi và các bước cần phê duyệt. */
 export function TasksTable() {
   const { rows, usersById, activeId, selected, operations, summary, setActiveId, loading } = useTasksData()
-  const [recordsOpen, setRecordsOpen] = useState(false)
+  const [recordsTaskId, setRecordsTaskId] = useState<string | null>(null)
   const [form, setForm] = useState<{
     open: boolean
     mode: FormMode
@@ -88,18 +89,20 @@ export function TasksTable() {
               {
                 id: "request",
                 header: "Task request",
-                headerClassName: "pl-4",
-                className: "max-w-[240px] pl-4",
+                headerClassName: "w-[23%] pl-4",
+                className: "w-[23%] pl-4",
                 cell: (task) => (
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-medium">{task.input_message}</p>
-                    <TableIdentifier value={task.id} className="mt-1" />
+                  <div className="min-w-0 max-w-full">
+                    <p className="max-w-full truncate text-xs font-medium" title={task.input_message}>{task.input_message}</p>
+                    <TableIdentifier value={task.id} className="mt-1 max-w-full truncate" />
                   </div>
                 ),
               },
               {
                 id: "status",
                 header: "Status",
+                headerClassName: "w-[19%]",
+                className: "w-[19%]",
                 cell: (task) => (
                   <StatusBadge
                     value={task.task_status}
@@ -110,6 +113,8 @@ export function TasksTable() {
               {
                 id: "owner",
                 header: "Owner",
+                headerClassName: "hidden w-[28%] md:table-cell",
+                className: "hidden w-[28%] md:table-cell",
                 cell: (task) => {
                   const owner = usersById.get(task.user_id)
                   return (
@@ -127,7 +132,8 @@ export function TasksTable() {
               {
                 id: "timestamp",
                 header: "Timestamp",
-                className: "min-w-72 text-muted-foreground",
+                headerClassName: "hidden w-[24%] md:table-cell",
+                className: "hidden w-[24%] text-muted-foreground md:table-cell",
                 cell: (task) =>
                   <div className="type-micro space-y-1 whitespace-nowrap">
                     <p>
@@ -144,6 +150,27 @@ export function TasksTable() {
                     </p>
                   </div>
               },
+              {
+                id: "actions",
+                header: null,
+                headerClassName: "w-[6%] px-2 text-right",
+                className: "w-[6%] px-2 text-right",
+                cell: (task) => (
+                  <div
+                    className="flex justify-end"
+                    onClick={(event) => event.stopPropagation()}
+                    onKeyDown={(event) => event.stopPropagation()}
+                  >
+                    <MoreMenu
+                      onCopy={() => void navigator.clipboard?.writeText(task.id)}
+                      onView={() => {
+                        setActiveId(task.id)
+                        setRecordsTaskId(task.id)
+                      }}
+                    />
+                  </div>
+                ),
+              },
             ]}
           >
             <DataTablePanel>
@@ -153,22 +180,23 @@ export function TasksTable() {
                   <DataTableFilters />
                 </DataTableToolbarActions>
               </DataTableToolbar>
-              <DataTableContent />
+              <DataTableContent className="table-fixed" />
               <DataTablePagination itemLabel="tasks" />
             </DataTablePanel>
           </DataTable>
           <TaskExecutionPanel
             task={selected}
             operations={operations}
-            onView={() => selected && setRecordsOpen(true)}
             onEdit={() => selected && openForm("edit", selected)}
           />
         </PageLayoutContent>
       </PageLayout>
       <TaskRecordsSheet
-        open={recordsOpen}
-        taskId={selected?.id ?? null}
-        onOpenChange={setRecordsOpen}
+        open={recordsTaskId !== null}
+        taskId={recordsTaskId}
+        onOpenChange={(open) => {
+          if (!open) setRecordsTaskId(null)
+        }}
       />
       <TaskForm
         open={form.open}

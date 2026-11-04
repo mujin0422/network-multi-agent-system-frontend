@@ -12,7 +12,6 @@ type BenchmarkRunDetailsPanelProps = {
   busy: boolean
   confirmCleanup: boolean
   onOpenChat: () => void
-  onViewEvaluation: () => void
   onRequestCleanup: () => void
   onCancelCleanup: () => void
   onConfirmCleanup: () => void
@@ -39,7 +38,6 @@ export function BenchmarkRunDetailsPanel({
   busy,
   confirmCleanup,
   onOpenChat,
-  onViewEvaluation,
   onRequestCleanup,
   onCancelCleanup,
   onConfirmCleanup,
@@ -102,11 +100,6 @@ export function BenchmarkRunDetailsPanel({
           {run.status === "READY" && (
             <Button size="sm" onClick={onOpenChat} disabled={busy}>
               {t("benchmarks.openInChat")}
-            </Button>
-          )}
-          {run.evaluation_id && run.task_id && (
-            <Button size="sm" variant="outline" onClick={onViewEvaluation} disabled={busy}>
-              {t("benchmarkRuns.viewEvaluation")}
             </Button>
           )}
           {run.cleanup_required && !confirmCleanup && (

@@ -1,13 +1,16 @@
 import { TableIdentifier } from "@/components/shared/TableIdentifier"
 import { TableTimestamp } from "@/components/shared/TableTimestamp"
+import { MoreMenu } from "@/components/shared/MoreMenu"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { CheckCircle2, ListChecks, Play, ShieldAlert } from "lucide-react"
+import type { DateRange } from "react-day-picker"
+import { CheckCircle2, Eye, ListChecks, Play, ShieldAlert } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
 
 import {
   DataTable,
   DataTableContent,
+  DataTableDateRangeFilter,
   DataTableFilters,
   DataTablePanel,
   DataTablePagination,
@@ -40,6 +43,7 @@ export default function BenchmarkRunsPage() {
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
   const [runs, setRuns] = useState<BenchmarkRun[]>([])
+  const [createdRange, setCreatedRange] = useState<DateRange | undefined>()
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,11 +64,30 @@ export default function BenchmarkRunsPage() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch after mount.
   useEffect(() => { void refresh() }, [refresh])
 
-  const rows = useMemo<BenchmarkRunRow[]>(
-    () => runs.map((run) => ({ ...run, runGroup: groupRun(run) })),
-    [runs],
-  )
-  const selectedRun = runs.find((run) => run.id === selectedId) ?? runs[0] ?? null
+  // The run API exposes started_at rather than created_at. The backend sets
+  // started_at when creating the run, so filter by that timestamp in local time.
+  // End is exclusive at the next local midnight: includes the entire last day.
+  const rows = useMemo<BenchmarkRunRow[]>(() => {
+    const from = createdRange?.from
+    const to = createdRange?.to ?? from
+    const start = from
+      ? new Date(from.getFullYear(), from.getMonth(), from.getDate())
+      : null
+    const end = to
+      ? new Date(to.getFullYear(), to.getMonth(), to.getDate() + 1)
+      : null
+
+    return runs
+      .filter((run) => {
+        if (!start || !end) return true
+        const createdAt = new Date(run.started_at)
+        return !Number.isNaN(createdAt.getTime()) && createdAt >= start && createdAt < end
+      })
+      .map((run) => ({ ...run, runGroup: groupRun(run) }))
+  }, [runs, createdRange])
+
+  // Keep the details panel aligned with the date-filtered rows.
+  const selectedRun = rows.find((run) => run.id === selectedId) ?? rows[0] ?? null
 
   const summary = {
     total: runs.length,
@@ -207,14 +230,6 @@ export default function BenchmarkRunsPage() {
                     : <span className="text-xs text-muted-foreground">—</span>,
                 },
                 {
-                  id: "task",
-                  header: "Task ID",
-                  className: "min-w-36 max-w-44",
-                  cell: (run) => (
-                    <TableIdentifier value={run.task_id} variant="reference" className="max-w-40 truncate text-[11px]" />
-                  ),
-                },
-                {
                   id: "timestamp",
                   header: t("benchmarkRuns.table.timestamp"),
                   className: "min-w-64 text-muted-foreground",
@@ -228,12 +243,48 @@ export default function BenchmarkRunsPage() {
                     />
                   ),
                 },
+                {
+                  id: "actions",
+                  header: null,
+                  headerClassName: "w-12 px-2 text-right",
+                  className: "w-12 px-2 text-right",
+                  cell: (run) => (
+                    <div
+                      className="flex justify-end"
+                      onClick={(event) => event.stopPropagation()}
+                      onKeyDown={(event) => event.stopPropagation()}
+                    >
+                      {run.evaluation_id && run.task_id ? (
+                        <MoreMenu
+                          actions={[{
+                            id: "view-evaluation",
+                            label: t("benchmarkRuns.viewEvaluation"),
+                            icon: <Eye className="size-4" />,
+                            onClick: () => {
+                              if (run.task_id) {
+                                navigate(`/evaluations?task=${encodeURIComponent(run.task_id)}`)
+                              }
+                            },
+                          }]}
+                        />
+                      ) : (
+                        <span className="px-2 text-xs text-muted-foreground">—</span>
+                      )}
+                    </div>
+                  ),
+                },
               ]}
             >
               <DataTablePanel>
-                <DataTableToolbar>
+                <DataTableToolbar className="gap-2 sm:flex-row sm:flex-nowrap sm:items-center [&_[data-slot=data-table-search]]:min-w-0 [&_[data-slot=data-table-search]]:flex-1">
                   <DataTableSearch placeholder={t("benchmarkRuns.search")} />
-                  <DataTableToolbarActions>
+                  <DataTableToolbarActions className="shrink-0 sm:flex-nowrap">
+                    <DataTableDateRangeFilter
+                      label="Created at"
+                      value={createdRange}
+                      onChange={setCreatedRange}
+                      className="w-44"
+                    />
                     <DataTableFilters />
                   </DataTableToolbarActions>
                 </DataTableToolbar>
@@ -241,7 +292,10 @@ export default function BenchmarkRunsPage() {
                 <DataTablePagination itemLabel="runs" />
               </DataTablePanel>
             </DataTable>
-            <p className="text-xs text-muted-foreground">{t("benchmarkRuns.latestLimit")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("benchmarkRuns.latestLimit")} Created at filters the latest 100 runs
+              using the run start timestamp.
+            </p>
           </div>
 
           <div className="min-w-0">
@@ -252,11 +306,6 @@ export default function BenchmarkRunsPage() {
               onOpenChat={() => {
                 if (selectedRun) {
                   navigate(benchmarkChatPath(selectedRun.id, selectedRun.initial_message))
-                }
-              }}
-              onViewEvaluation={() => {
-                if (selectedRun?.task_id) {
-                  navigate(`/evaluations?task=${encodeURIComponent(selectedRun.task_id)}`)
                 }
               }}
               onRequestCleanup={() => setConfirmCleanup(true)}

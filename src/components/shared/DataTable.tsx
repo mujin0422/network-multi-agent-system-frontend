@@ -113,7 +113,7 @@ function DataTable<TData>({
   searchValue,
   selectedRowId,
   onRowClick,
-  initialPageSize = 10,
+  initialPageSize = 5,
   children,
   className,
   ...props
@@ -379,6 +379,8 @@ type DataTableDateRangeFilterProps = {
   onChange: (next: DateRange | undefined) => void
   className?: string
   disabled?: boolean
+  /** Accessible field name, e.g. "Created at"; defaults to the generic label. */
+  label?: string
 }
 
 /** Shared shadcn Base date-range control for DataTable toolbars. */
@@ -387,6 +389,7 @@ function DataTableDateRangeFilter({
   onChange,
   className,
   disabled,
+  label = "Date range",
 }: DataTableDateRangeFilterProps) {
   const [open, setOpen] = useState(false)
 
@@ -394,7 +397,7 @@ function DataTableDateRangeFilter({
     ? value.to
       ? `${format(value.from, "dd/MM/yyyy")} – ${format(value.to, "dd/MM/yyyy")}`
       : format(value.from, "dd/MM/yyyy")
-    : "Date range"
+    : label
 
   function selectDates(range: DateRange | undefined) {
     if (!range?.from) {
@@ -402,7 +405,7 @@ function DataTableDateRangeFilter({
       return
     }
 
-    // Keep only calendar dates. Audit logs apply the full inclusive end day.
+    // Keep local calendar dates; consumers apply their own inclusive end day.
     const start = new Date(
       range.from.getFullYear(), range.from.getMonth(), range.from.getDate(),
     )
@@ -420,7 +423,7 @@ function DataTableDateRangeFilter({
           <button
             type="button"
             disabled={disabled}
-            aria-label="Filter events by date range"
+            aria-label={`Filter ${label} by date range`}
             className={cn(
               "flex h-9 w-[280px] max-w-full items-center justify-between gap-2 rounded-lg border border-input bg-background px-3 text-xs text-muted-foreground outline-none",
               "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50",

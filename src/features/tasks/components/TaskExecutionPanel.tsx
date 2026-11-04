@@ -9,12 +9,10 @@ import type { Task } from "../types/task.type"
 export function TaskExecutionPanel({
   task,
   operations,
-  onView,
   onEdit,
 }: {
   task: Task | null
   operations: TaskOperation[]
-  onView: () => void
   onEdit: () => void
 }) {
   if (!task) {
@@ -31,9 +29,6 @@ export function TaskExecutionPanel({
             </p>
           </div>
           <div className="flex gap-1">
-            <Button size="xs" variant="outline" onClick={onView}>
-              View
-            </Button>
             {["PENDING", "PLANNING"].includes(task.task_status) && (
               <Button size="icon-xs" variant="ghost" onClick={onEdit}>
                 <Pencil />

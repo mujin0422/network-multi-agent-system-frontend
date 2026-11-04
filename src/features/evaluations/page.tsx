@@ -3,7 +3,7 @@ import { TableTimestamp } from "@/components/shared/TableTimestamp"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { Bot, CheckCircle2, ClipboardCheck, Clock3, Eye, History, Target, Wrench, XCircle } from "lucide-react"
+import { Bot, ClipboardCheck, Clock3, Eye, History, Wrench } from "lucide-react"
 
 import {
   DataTable,
@@ -23,13 +23,16 @@ import { MoreMenu } from "@/components/shared/MoreMenu"
 import { StatusBadge } from "@/components/shared/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { BenchmarkEvaluationSheet } from "@/features/benchmarks/components/BenchmarkEvaluationSheet"
-import { benchmarksApi, evaluationsApi } from "@/service"
-import type { BenchmarkRun, BenchmarkRunSummary, EvaluationResult, TaskEvaluationSummary } from "@/service"
+import { benchmarksApi, evaluationsApi, tasksApi, usersApi } from "@/service"
+import type { BenchmarkRun, EvaluationResult, Task, TaskEvaluationSummary, User } from "@/service"
 
 type EvaluationTableRow = TaskEvaluationSummary & {
   scenarioName: string
   run: BenchmarkRun | null
   rcaResult: EvaluationResult
+  ownerId: string | null
+  ownerName: string | null
+  ownerEmail: string | null
 }
 
 export default function EvaluationsPage() {
@@ -38,19 +41,19 @@ export default function EvaluationsPage() {
   const [params, setParams] = useSearchParams()
   const [evaluations, setEvaluations] = useState<TaskEvaluationSummary[]>([])
   const [runs, setRuns] = useState<BenchmarkRun[]>([])
-  const [runSummary, setRunSummary] = useState<BenchmarkRunSummary | null>(null)
-  const [summaryError, setSummaryError] = useState<string | null>(null)
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [usersById, setUsersById] = useState<Map<string, User>>(new Map())
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const detailTaskId = params.get("task")
 
   const refresh = useCallback(async () => {
     setError(null)
-    setSummaryError(null)
-    const [evaluationResult, runResult, summaryResult] = await Promise.allSettled([
+    const [evaluationResult, runResult, taskResult, userResult] = await Promise.allSettled([
       evaluationsApi.list(100),
       benchmarksApi.listRuns(100),
-      benchmarksApi.getRunSummary(),
+      tasksApi.list(),
+      usersApi.list(),
     ])
     if (evaluationResult.status === "fulfilled") {
       setEvaluations(evaluationResult.value)
@@ -59,16 +62,15 @@ export default function EvaluationsPage() {
         ? evaluationResult.reason.message
         : t("evaluationsPage.loadError"))
     }
-    // Optional enrichment: associate evaluations with recent benchmark runs.
-    if (runResult.status === "fulfilled") setRuns(runResult.value)
-    if (summaryResult.status === "fulfilled") {
-      setRunSummary(summaryResult.value)
-    } else {
-      setRunSummary(null)
-      setSummaryError(summaryResult.reason instanceof Error
-        ? summaryResult.reason.message
-        : t("evaluationsPage.tsrLoadError"))
-    }
+    // Optional enrichment: associate evaluations with recent benchmark runs
+    // and resolve their actual Task owner, without confusing it with run.started_by.
+    setRuns(runResult.status === "fulfilled" ? runResult.value : [])
+    setTasks(taskResult.status === "fulfilled" ? taskResult.value : [])
+    setUsersById(
+      userResult.status === "fulfilled"
+        ? new Map(userResult.value.map((user) => [user.id, user]))
+        : new Map(),
+    )
     setLoading(false)
   }, [t])
 
@@ -76,22 +78,26 @@ export default function EvaluationsPage() {
   useEffect(() => { void refresh() }, [refresh])
 
   const rows = useMemo<EvaluationTableRow[]>(() => {
-    const byTask = new Map(
+    const runsByTask = new Map(
       runs.flatMap((run) => run.task_id ? [[run.task_id, run] as const] : []),
     )
+    const tasksById = new Map(tasks.map((task) => [task.id, task]))
     return evaluations.map((evaluation) => {
-      const run = byTask.get(evaluation.task_id) ?? null
+      const run = runsByTask.get(evaluation.task_id) ?? null
+      const ownerId = tasksById.get(evaluation.task_id)?.user_id ?? null
+      const owner = ownerId ? usersById.get(ownerId) : undefined
       return {
         ...evaluation,
         run,
         scenarioName: run?.scenario_name ?? t("evaluationsPage.taskEvaluation"),
         rcaResult: evaluation.results.RCA ?? "UNKNOWN",
+        ownerId,
+        ownerName: owner?.full_name ?? null,
+        ownerEmail: owner?.email ?? null,
       }
     })
-  }, [evaluations, runs, t])
+  }, [evaluations, runs, tasks, usersById, t])
 
-  const countPass = evaluations.filter((evaluation) => evaluation.results.RCA === "PASS").length
-  const countFail = evaluations.filter((evaluation) => evaluation.results.RCA === "FAIL").length
   const countAutomated = evaluations.filter((evaluation) => evaluation.evaluator_type === "AUTOMATED").length
 
   // Only v3 stores AI-active time; v2 LATENCY is legacy end-to-end.
@@ -135,35 +141,10 @@ export default function EvaluationsPage() {
       </PageLayoutHeader>
       <PageLayoutOverview>
         <PageLayoutStat
-          label={t("evaluationsPage.tsrTitle")}
-          value={runSummary?.success_rate == null ? "—" : `${runSummary.success_rate.toFixed(2)}%`}
-          description={runSummary
-            ? t("evaluationsPage.tsrSample", {
-                passed: runSummary.passed,
-                eligible: runSummary.eligible_runs,
-              })
-            : t("evaluationsPage.tsrUnavailable")}
-          icon={<Target />}
-        />
-        <PageLayoutStat
           label={t("evaluationsPage.total")}
           value={evaluations.length}
           description={t("evaluationsPage.stats.totalDescription")}
           icon={<ClipboardCheck />}
-        />
-        <PageLayoutStat
-          label={t("evaluationsPage.rcaPass")}
-          value={countPass}
-          description={t("evaluationsPage.stats.passDescription")}
-          icon={<CheckCircle2 />}
-          iconClassName="bg-emerald-500/10 text-emerald-400"
-        />
-        <PageLayoutStat
-          label={t("evaluationsPage.rcaFail")}
-          value={countFail}
-          description={t("evaluationsPage.stats.failDescription")}
-          icon={<XCircle />}
-          iconClassName="bg-red-500/10 text-red-400"
         />
         <PageLayoutStat
           label={t("evaluationsPage.stats.automated")}
@@ -184,42 +165,13 @@ export default function EvaluationsPage() {
           icon={<Wrench />}
         />
       </PageLayoutOverview>
-      {runSummary && (
-        <section className="space-y-2 rounded-xl border bg-card p-4 text-xs" aria-label={t("evaluationsPage.tsrBreakdown")}>
-          <h2 className="text-sm font-semibold">{t("evaluationsPage.tsrBreakdown")}</h2>
-          <div className="grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
-            {([
-              ["passed", t("evaluationsPage.tsrPassed")],
-              ["failed", t("evaluationsPage.tsrFailed")],
-              ["in_progress", t("evaluationsPage.tsrInProgress")],
-              ["not_started", t("evaluationsPage.tsrNotStarted")],
-              ["setup_failed", t("evaluationsPage.tsrSetupFailed")],
-              ["unscored", t("evaluationsPage.tsrUnscored")],
-            ] as const).map(([key, label]) => (
-              <div key={key} className="rounded-lg border p-3">
-                <p className="text-muted-foreground">{label}</p>
-                <p className="mt-1 text-lg font-semibold tabular-nums">{runSummary[key]}</p>
-              </div>
-            ))}
-          </div>
-          <p className="text-muted-foreground">
-            {t("evaluationsPage.tsrScope", { total: runSummary.total_runs })}
-          </p>
-          <p className="text-muted-foreground">{t("evaluationsPage.tsrVersionNote")}</p>
-        </section>
-      )}
       <PageLayoutContent>
-        {summaryError && (
-          <p role="alert" className="mb-3 text-xs text-destructive">
-            {t("evaluationsPage.tsrLoadError")}: {summaryError}
-          </p>
-        )}
         {error && <p role="alert" className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive">{error}</p>}
         <DataTable
           data={rows}
           getRowId={(evaluation) => evaluation.id}
           searchValue={(evaluation) =>
-            `${evaluation.task_id} ${evaluation.id} ${evaluation.scenarioName} ${evaluation.evaluator_type} ${evaluation.evaluator_version ?? ""}`
+            `${evaluation.task_id} ${evaluation.id} ${evaluation.scenarioName} ${evaluation.evaluator_type} ${evaluation.evaluator_version ?? ""} ${evaluation.ownerId ?? ""} ${evaluation.ownerName ?? ""} ${evaluation.ownerEmail ?? ""}`
           }
           filters={[
             {
@@ -241,10 +193,14 @@ export default function EvaluationsPage() {
               className: "min-w-56 pl-4",
               cell: (evaluation) => (
                 <div className="min-w-0">
-                  <p className="max-w-64 truncate text-xs font-medium" title={evaluation.scenarioName}>
-                    {evaluation.scenarioName}
-                  </p>
-                  <TableIdentifier value={evaluation.id} className="mt-1 break-all" />
+                  <div className="flex min-w-0 items-center gap-2">
+                    <p className="max-w-64 truncate text-xs font-medium" title={evaluation.scenarioName}>
+                      {evaluation.scenarioName}
+                    </p>
+                    {evaluation.evaluation_status !== "COMPLETED" && (
+                      <StatusBadge value={evaluation.evaluation_status} />
+                    )}
+                  </div>
                   <p className="mt-1 type-caption text-muted-foreground">
                     Task: <TableIdentifier value={evaluation.task_id} variant="reference" inline />
                   </p>
@@ -252,9 +208,32 @@ export default function EvaluationsPage() {
               ),
             },
             {
-              id: "status",
-              header: t("evaluationsPage.status"),
-              cell: (evaluation) => <StatusBadge value={evaluation.evaluation_status} />,
+              id: "owner",
+              header: "Owner",
+              className: "min-w-36 max-w-48",
+              cell: (evaluation) => (
+                <div className="min-w-0">
+                  <p
+                    className="max-w-44 truncate text-xs font-medium"
+                    title={evaluation.ownerName ?? evaluation.ownerId ?? undefined}
+                  >
+                    {evaluation.ownerName ?? evaluation.ownerId ?? "—"}
+                  </p>
+                  {evaluation.ownerEmail && (
+                    <p className="mt-1 max-w-44 truncate text-[11px] text-muted-foreground" title={evaluation.ownerEmail}>
+                      {evaluation.ownerEmail}
+                    </p>
+                  )}
+                </div>
+              ),
+            },
+            {
+              id: "evaluatorType",
+              header: "Evaluator Type",
+              className: "whitespace-nowrap",
+              cell: (evaluation) => (
+                <span className="text-xs font-medium">{evaluation.evaluator_type}</span>
+              ),
             },
             {
               id: "goal",
@@ -279,93 +258,45 @@ export default function EvaluationsPage() {
               },
             },
             {
-              id: "latency",
-              header: t("evaluationsPage.latency"),
-              cell: (evaluation) => {
-                const ms = evaluation.measurements?.LATENCY
-                const legacy = evaluation.evaluator_version !== "db-benchmark-v3"
-                return (
-                  <span className="whitespace-nowrap text-xs tabular-nums">
-                    {ms == null ? "—" : (
-                      <>
-                        {(ms / 1000).toFixed(2)} s
-                        {legacy && <span className="ml-1 text-muted-foreground">{t("evaluationsPage.legacyE2E")}</span>}
-                      </>
-                    )}
-                  </span>
-                )
-              },
-            },
-            {
-              id: "interactionTurns",
-              header: t("evaluationsPage.interactionTurns"),
-              cell: (evaluation) => (
-                <span className="text-xs tabular-nums">
-                  {evaluation.measurements?.INTERACTION_TURNS ?? "—"}
-                </span>
-              ),
-            },
-            {
-              id: "remediation",
-              header: "REMEDIATION",
-              cell: (evaluation) => <StatusBadge value={evaluation.results.REMEDIATION ?? "UNKNOWN"} />,
-            },
-            {
-              id: "safety",
-              header: "SAFETY",
-              cell: (evaluation) => <StatusBadge value={evaluation.results.SAFETY ?? "UNKNOWN"} />,
-            },
-            {
-              id: "evaluator",
-              header: t("evaluationsPage.evaluator"),
-              className: "min-w-36 text-xs",
-              cell: (evaluation) => (
-                <div>
-                  <p className="font-medium">{evaluation.evaluator_type}</p>
-                  <p className="mt-1 text-muted-foreground">{evaluation.evaluator_version ?? "—"}</p>
-                </div>
-              ),
-            },
-            {
               id: "timestamp",
-              header: t("evaluationsPage.timestamp"),
-              className: "min-w-64 text-muted-foreground",
+              header: t("evaluationsPage.evaluatedAt"),
+              className: "whitespace-nowrap text-muted-foreground",
               cell: (evaluation) => (
                 <TableTimestamp
-                  items={[
-                    { label: t("evaluationsPage.createdAt"), value: evaluation.created_at },
-                    { label: t("evaluationsPage.evaluatedAt"), value: evaluation.evaluated_at },
-                  ]}
+                  items={[{ label: t("evaluationsPage.evaluatedAt"), value: evaluation.evaluated_at }]}
                 />
               ),
             },
             {
               id: "actions",
               header: null,
-              className: "whitespace-nowrap",
+              headerClassName: "w-12 px-2 text-right",
+              className: "w-12 px-2 text-right",
               cell: (evaluation) => {
                 const runId = evaluation.run?.id
                 return (
-                  <MoreMenu
-                    actions={[
-                      ...(runId
-                        ? [{
-                            id: "view-run",
-                            label: t("evaluationsPage.viewRun"),
-                            icon: <History className="size-4" />,
-                            onClick: () => navigate(
-                              `/benchmark-runs?run=${encodeURIComponent(runId)}`,
-                            ),
-                          }]
-                        : []),
-                      {
-                        id: "view-details",
-                        label: t("evaluationsPage.viewDetails"),
-                        icon: <Eye className="size-4" />,
-                        onClick: () => openDetails(evaluation.task_id),
-                      },
-                    ]}
-                  />
+                  <div className="flex w-full justify-end">
+                    <MoreMenu
+                      actions={[
+                        ...(runId
+                          ? [{
+                              id: "view-run",
+                              label: t("evaluationsPage.viewRun"),
+                              icon: <History className="size-4" />,
+                              onClick: () => navigate(
+                                `/benchmark-runs?run=${encodeURIComponent(runId)}`,
+                              ),
+                            }]
+                          : []),
+                        {
+                          id: "view-details",
+                          label: t("evaluationsPage.viewDetails"),
+                          icon: <Eye className="size-4" />,
+                          onClick: () => openDetails(evaluation.task_id),
+                        },
+                      ]}
+                    />
+                  </div>
                 )
               },
             },

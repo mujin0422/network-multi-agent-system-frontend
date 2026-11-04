@@ -255,7 +255,6 @@ export function BenchmarkScenarioForm({ scenario, open, onOpenChange, onSave }: 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <label className="flex cursor-pointer items-center gap-2 text-xs font-medium">
             <Switch
-              type="button"
               size="sm"
               checked={autoCleanup}
               onCheckedChange={changeAutoCleanup}

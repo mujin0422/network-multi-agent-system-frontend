@@ -78,6 +78,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
       devices: ["P3"],
       commands: ["router ospf 1", "network 10.0.3.0 0.0.0.255 area 0"],
       status: "PENDING",
+      expires_at: null,
     },
   },
 ]
