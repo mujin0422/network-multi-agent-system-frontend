@@ -90,7 +90,7 @@ export function TasksTable() {
                 id: "request",
                 header: "Task request",
                 headerClassName: "w-[23%] pl-4",
-                className: "w-[23%] pl-4"
+                className: "w-[23%] pl-4",
                 cell: (task) => (
                   <div className="min-w-0 max-w-full">
                     <p className="max-w-full truncate text-xs font-medium" title={task.input_message}>{task.input_message}</p>
