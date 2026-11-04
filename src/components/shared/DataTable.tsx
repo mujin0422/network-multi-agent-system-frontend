@@ -113,7 +113,7 @@ function DataTable<TData>({
   searchValue,
   selectedRowId,
   onRowClick,
-  initialPageSize = 10,
+  initialPageSize = 5,
   children,
   className,
   ...props
