@@ -51,7 +51,7 @@ export default function EvaluationsPage() {
     setError(null)
     const [evaluationResult, runResult, taskResult, userResult] = await Promise.allSettled([
       evaluationsApi.list(100),
-      benchmarksApi.listRuns(100),
+      benchmarksApi.listAllRuns(),
       tasksApi.list(),
       usersApi.list(),
     ])

@@ -23,7 +23,7 @@ export function useBenchmarksData() {
     // A failed run-history request must not hide the scenarios (and vice versa).
     const [scenarioResult, runResult] = await Promise.allSettled([
       benchmarksApi.listScenarios(),
-      benchmarksApi.listRuns(100),
+      benchmarksApi.listAllRuns(),
     ])
 
     const messages: string[] = []
