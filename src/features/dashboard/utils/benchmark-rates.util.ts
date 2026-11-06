@@ -22,6 +22,7 @@ type RateInputs = {
   summary: BenchmarkRunSummary | null
   evaluations: TaskEvaluationSummary[] | null
   runs: BenchmarkRun[] | null
+  filtered?: boolean
 }
 
 function asPercent(numerator: number, denominator: number): number | null {
@@ -36,8 +37,8 @@ const hasResult = (value: unknown): value is "PASS" | "FAIL" =>
 /**
  * Rates use real persisted API data.
  * - TSR and run finalization are derived from the backend's all-run summary.
- * - GOAL, RCA and F1 use only v4 evaluations from the last 100 results.
- * - Cleanup coverage uses the last 100 runs and is not a claim of remediation.
+ * - GOAL, RCA and F1 use completed evaluations from the last 100 results.
+ * - Cleanup coverage uses the complete run history and is not a claim of remediation.
  *
  * An unavailable endpoint yields null (a dash), never an invented 0% score.
  */
@@ -45,18 +46,23 @@ export function buildBenchmarkRates({
   summary,
   evaluations,
   runs,
+  filtered = false,
 }: RateInputs): DashboardRateMetric[] {
-  const v4 = evaluations?.filter(
-    (evaluation) =>
-      evaluation.evaluator_version === "db-benchmark-v4" &&
-      evaluation.evaluation_status === "COMPLETED",
+  const runScope = filtered
+    ? "Selected dates · complete run history"
+    : "All benchmark runs · mixed evaluator versions"
+  const evaluationScope = filtered
+    ? "Selected dates · latest 100 evaluations"
+    : "Latest 100 completed evaluations"
+  const completedEvaluations = evaluations?.filter(
+    (evaluation) => evaluation.evaluation_status === "COMPLETED",
   )
-  const goalScored = v4?.filter((evaluation) => hasResult(evaluation.results.GOAL))
-  const rcaScored = v4?.filter((evaluation) => hasResult(evaluation.results.RCA))
+  const goalScored = completedEvaluations?.filter((evaluation) => hasResult(evaluation.results.GOAL))
+  const rcaScored = completedEvaluations?.filter((evaluation) => hasResult(evaluation.results.RCA))
   const goalPassed = goalScored?.filter((evaluation) => evaluation.results.GOAL === "PASS").length ?? 0
   const rcaPassed = rcaScored?.filter((evaluation) => evaluation.results.RCA === "PASS").length ?? 0
 
-  const f1Values = v4?.flatMap((evaluation) => {
+  const f1Values = completedEvaluations?.flatMap((evaluation) => {
     const score = evaluation.scores?.rca_f1
     return typeof score === "number" && Number.isFinite(score) && score >= 0 && score <= 1
       ? [score]
@@ -86,7 +92,9 @@ export function buildBenchmarkRates({
     {
       id: "tsr",
       label: "Task Success Rate",
-      description: "Percentage of eligible Benchmark Runs that passed GOAL: passed / (passed + failed). In-progress, setup-failed and unscored runs are excluded. The all-time history includes older evaluator versions.",
+      description: filtered
+        ? "Percentage of eligible Benchmark Runs in the selected dates that passed GOAL: passed / (passed + failed). In-progress, setup-failed and unscored runs are excluded."
+        : "Percentage of eligible Benchmark Runs that passed GOAL: passed / (passed + failed). In-progress, setup-failed and unscored runs are excluded. The all-time history includes older evaluator versions.",
       color: "#16a34a",
       secondaryColor: "#14532d",
       positiveLabel: "Task Success",
@@ -94,12 +102,12 @@ export function buildBenchmarkRates({
       value: summary?.success_rate ?? null,
       sampleSize: summary?.eligible_runs ?? null,
       numerator: summary?.passed,
-      scope: "All benchmark runs · mixed evaluator versions",
+      scope: runScope,
     },
     {
       id: "goal",
       label: "Goal Pass Rate",
-      description: "Percentage of completed v4 evaluations with GOAL PASS among those scored PASS or FAIL. GOAL v4 requires anomaly detection and an exact match against all expected root causes.",
+      description: "Percentage of completed evaluations with GOAL PASS among those scored PASS or FAIL.",
       color: "#0891b2",
       secondaryColor: "#164e63",
       positiveLabel: "GOAL Pass",
@@ -107,12 +115,12 @@ export function buildBenchmarkRates({
       value: goalScored ? asPercent(goalPassed, goalScored.length) : null,
       sampleSize: goalScored?.length ?? null,
       numerator: goalPassed,
-      scope: "v4 only · latest 100 evaluations",
+      scope: evaluationScope,
     },
     {
       id: "rca",
       label: "RCA Pass Rate",
-      description: "Percentage of completed v4 RCA evaluations that pass. A pass requires every predicted (resource, fault type) pair to match Ground Truth, with no missing or extra causes.",
+      description: "Percentage of completed RCA evaluations that pass according to the evaluator used by each run.",
       color: "#7c3aed",
       secondaryColor: "#4c1d95",
       positiveLabel: "RCA Pass",
@@ -120,19 +128,19 @@ export function buildBenchmarkRates({
       value: rcaScored ? asPercent(rcaPassed, rcaScored.length) : null,
       sampleSize: rcaScored?.length ?? null,
       numerator: rcaPassed,
-      scope: "v4 only · latest 100 evaluations",
+      scope: evaluationScope,
     },
     {
       id: "rca-f1",
       label: "Average RCA F1",
-      description: "Average v4 RCA F1: the harmonic mean of precision and recall for predicted (resource, fault type) pairs. The remainder to 100% is a score gap, not a number of failed tasks.",
+      description: "Average RCA F1 across completed evaluations that contain an RCA F1 measurement. The remainder to 100% is a score gap, not a number of failed tasks.",
       color: "#d97706",
       secondaryColor: "#78350f",
       positiveLabel: "F1 Score",
       negativeLabel: "Remaining",
       value: meanF1,
       sampleSize: f1Values?.length ?? null,
-      scope: "v4 only · latest 100 evaluations",
+      scope: evaluationScope,
     },
     {
       id: "completion",
@@ -145,7 +153,7 @@ export function buildBenchmarkRates({
       value: summary ? asPercent(finalized, started) : null,
       sampleSize: summary ? started : null,
       numerator: summary ? finalized : undefined,
-      scope: "All benchmark runs · terminal outcomes",
+      scope: filtered ? "Selected dates · terminal outcomes" : "All benchmark runs · terminal outcomes",
     },
     {
       id: "cleanup",
@@ -158,7 +166,7 @@ export function buildBenchmarkRates({
       value: finishedRuns ? asPercent(cleaned, finishedRuns.length) : null,
       sampleSize: finishedRuns?.length ?? null,
       numerator: cleaned,
-      scope: "Latest 100 runs · not remediation success",
+      scope: filtered ? "Selected dates · complete run history" : "All benchmark runs · not remediation success",
     },
   ]
 }

@@ -53,7 +53,7 @@ export default function BenchmarkRunsPage() {
   const refresh = useCallback(async () => {
     setError(null)
     try {
-      setRuns(await benchmarksApi.listRuns(100))
+      setRuns(await benchmarksApi.listAllRuns())
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : t("benchmarkRuns.loadError"))
     } finally {
@@ -293,7 +293,7 @@ export default function BenchmarkRunsPage() {
               </DataTablePanel>
             </DataTable>
             <p className="text-xs text-muted-foreground">
-              {t("benchmarkRuns.latestLimit")} Created at filters the latest 100 runs
+              Loaded all {runs.length} benchmark runs. Created at filters the complete history
               using the run start timestamp.
             </p>
           </div>

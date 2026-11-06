@@ -247,6 +247,14 @@ export type BenchmarkRun = {
   cleaned_at: string | null
 }
 
+export type BenchmarkRunPage = {
+  items: BenchmarkRun[]
+  page: number
+  page_size: number
+  total: number
+  total_pages: number
+}
+
 export type TaskStatus = "PENDING" | "PLANNING" | "RUNNING" | "SUCCESS" | "PARTIAL_SUCCESS" | "FAILED" | "REJECTED"
 export type TaskType = "UNCLASSIFIED" | "INFORMATION_RETRIEVAL" | "DIAGNOSIS" | "CONFIGURATION" | "REMEDIATION" | "COMPOSITE"
 export type OperationStatus = "PENDING" | "WAITING_APPROVAL" | "RUNNING" | "SUCCESS" | "PARTIAL_SUCCESS" | "FAILED" | "REJECTED" | "SKIPPED"

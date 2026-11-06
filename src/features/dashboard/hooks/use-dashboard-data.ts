@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import type { DateRange } from "react-day-picker"
 import {
   CheckCircle2,
   CircleAlert,
@@ -7,6 +8,7 @@ import {
   Router,
 } from "lucide-react"
 import { benchmarksApi, devicesApi, evaluationsApi, tasksApi } from "@/service"
+import type { BenchmarkRun, BenchmarkRunSummary, TaskEvaluationSummary } from "@/service"
 import type { ChartBar } from "../types/chart-bar.type"
 import type { Metric } from "../types/metric.type"
 import type {
@@ -17,16 +19,48 @@ import { buildBenchmarkRates, type DashboardRateMetric } from "../utils/benchmar
 
 const DAY_MS = 86_400_000
 
-export function useDashboardData() {
+function summarizeRuns(runs: BenchmarkRun[]): BenchmarkRunSummary {
+  const passed = runs.filter((run) => run.evaluation_result === "PASS").length
+  const failed = runs.filter((run) => run.evaluation_result === "FAIL").length
+  const inProgress = runs.filter((run) => ["PREPARING", "READY", "RUNNING"].includes(run.status)).length
+  const setupFailed = runs.filter((run) => run.status === "FAILED" && run.source_message_id == null).length
+  const unscored = runs.filter((run) =>
+    run.source_message_id != null && run.evaluation_result == null && !["PREPARING", "READY", "RUNNING"].includes(run.status),
+  ).length
+  const eligibleRuns = passed + failed
+  return {
+    total_runs: runs.length,
+    passed,
+    failed,
+    in_progress: inProgress,
+    not_started: 0,
+    setup_failed: setupFailed,
+    unscored,
+    eligible_runs: eligibleRuns,
+    success_rate: eligibleRuns ? Math.round((passed / eligibleRuns) * 1000) / 10 : null,
+  }
+}
+
+function localDateBounds(range?: DateRange) {
+  if (!range?.from) return null
+  const to = range.to ?? range.from
+  return {
+    start: new Date(range.from.getFullYear(), range.from.getMonth(), range.from.getDate()),
+    end: new Date(to.getFullYear(), to.getMonth(), to.getDate() + 1),
+  }
+}
+
+export function useDashboardData(rateDateRange?: DateRange) {
   const [taskBars, setTaskBars] = useState<ChartBar[]>([])
   const [taskOutcomes, setTaskOutcomes] = useState<TaskOutcomePoint[]>([])
   const [taskOutcomes30, setTaskOutcomes30] = useState<TaskOutcomePoint[]>([])
   const [executionTimes, setExecutionTimes] = useState<ExecutionTimePoint[]>([])
+  const [executionTimes30, setExecutionTimes30] = useState<ExecutionTimePoint[]>([])
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [successRate, setSuccessRate] = useState(0)
-  const [rateMetrics, setRateMetrics] = useState<DashboardRateMetric[]>(() =>
-    buildBenchmarkRates({ summary: null, evaluations: null, runs: null }),
-  )
+  const [rateSummary, setRateSummary] = useState<BenchmarkRunSummary | null>(null)
+  const [rateEvaluations, setRateEvaluations] = useState<TaskEvaluationSummary[] | null>(null)
+  const [rateRuns, setRateRuns] = useState<BenchmarkRun[] | null>(null)
   const [rateError, setRateError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,13 +79,11 @@ export function useDashboardData() {
         ]),
         benchmarksApi.getRunSummary(),
         evaluationsApi.list(100),
-        benchmarksApi.listRuns(100),
+        benchmarksApi.listAllRuns(),
       ])
-      setRateMetrics(buildBenchmarkRates({
-        summary: summaryResult.status === "fulfilled" ? summaryResult.value : null,
-        evaluations: evaluationResult.status === "fulfilled" ? evaluationResult.value : null,
-        runs: runsResult.status === "fulfilled" ? runsResult.value : null,
-      }))
+      setRateSummary(summaryResult.status === "fulfilled" ? summaryResult.value : null)
+      setRateEvaluations(evaluationResult.status === "fulfilled" ? evaluationResult.value : null)
+      setRateRuns(runsResult.status === "fulfilled" ? runsResult.value : null)
       const unavailable = [
         summaryResult.status === "rejected" ? "run summary" : null,
         evaluationResult.status === "rejected" ? "evaluations" : null,
@@ -131,20 +163,33 @@ export function useDashboardData() {
       setTaskOutcomes(outcomesForPeriod(7))
       setTaskOutcomes30(outcomesForPeriod(30))
 
-      setExecutionTimes(days.map(({ label, day, next }) => {
-        const durations = tasks.flatMap((task) => {
-          if (!task.started_at || !task.completed_at) return []
-          const startedAt = new Date(task.started_at)
-          const completedAt = new Date(task.completed_at)
-          if (completedAt < day || completedAt >= next) return []
-          const durationSeconds = (completedAt.getTime() - startedAt.getTime()) / 1000
-          return durationSeconds >= 0 ? [durationSeconds] : []
+      const executionTimesForPeriod = (period: 7 | 30): ExecutionTimePoint[] =>
+        Array.from({ length: period }, (_, index) => {
+          const day = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() - (period - 1 - index),
+          )
+          const next = new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1)
+          const label = period === 7
+            ? new Intl.DateTimeFormat(undefined, { weekday: "short" }).format(day)
+            : new Intl.DateTimeFormat(undefined, { day: "2-digit", month: "short" }).format(day)
+          const durations = tasks.flatMap((task) => {
+            if (!task.started_at || !task.completed_at) return []
+            const startedAt = new Date(task.started_at)
+            const completedAt = new Date(task.completed_at)
+            if (completedAt < day || completedAt >= next) return []
+            const durationSeconds = (completedAt.getTime() - startedAt.getTime()) / 1000
+            return durationSeconds >= 0 ? [durationSeconds] : []
+          })
+          const averageSeconds = durations.length
+            ? Math.round((durations.reduce((total, duration) => total + duration, 0) / durations.length) * 10) / 10
+            : 0
+          return { label, averageSeconds, taskCount: durations.length }
         })
-        const averageSeconds = durations.length
-          ? Math.round((durations.reduce((total, duration) => total + duration, 0) / durations.length) * 10) / 10
-          : 0
-        return { label, averageSeconds, taskCount: durations.length }
-      }))
+
+      setExecutionTimes(executionTimesForPeriod(7))
+      setExecutionTimes30(executionTimesForPeriod(30))
 
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Không thể tải dashboard")
@@ -156,9 +201,35 @@ export function useDashboardData() {
   // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ dashboard với API khi mount.
   useEffect(() => { void reload() }, [reload])
 
+  const rateMetrics = useMemo<DashboardRateMetric[]>(() => {
+    const bounds = localDateBounds(rateDateRange)
+    if (!bounds) {
+      return buildBenchmarkRates({
+        summary: rateSummary,
+        evaluations: rateEvaluations,
+        runs: rateRuns,
+      })
+    }
+
+    const runs = rateRuns?.filter((run) => {
+      const startedAt = new Date(run.started_at)
+      return !Number.isNaN(startedAt.getTime()) && startedAt >= bounds.start && startedAt < bounds.end
+    }) ?? null
+    const evaluationIds = new Set(runs?.flatMap((run) => run.evaluation_id ? [run.evaluation_id] : []) ?? [])
+    const evaluations = rateEvaluations?.filter((evaluation) => evaluationIds.has(evaluation.id)) ?? null
+
+    return buildBenchmarkRates({
+      summary: runs ? summarizeRuns(runs) : null,
+      evaluations,
+      runs,
+      filtered: true,
+    })
+  }, [rateDateRange, rateEvaluations, rateRuns, rateSummary])
+
   return {
     metrics, taskBars,
-    taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError,
+    taskOutcomes, taskOutcomes30, executionTimes, executionTimes30,
+    successRate, rateMetrics, rateError,
     loading, error, reload,
   }
 }
