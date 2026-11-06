@@ -174,10 +174,10 @@ export function TasksTable() {
             ]}
           >
             <DataTablePanel>
-              <DataTableToolbar>
+              <DataTableToolbar className="gap-2 sm:flex-row sm:flex-nowrap sm:items-center [&_[data-slot=data-table-search]]:min-w-0 [&_[data-slot=data-table-search]]:flex-1">
                 <DataTableSearch placeholder="Search tasks, status, owner..." />
-                <DataTableToolbarActions>
-                  <DataTableFilters />
+                <DataTableToolbarActions className="w-full shrink-0 sm:w-auto sm:flex-nowrap">
+                  <DataTableFilters className="w-full flex-nowrap sm:w-auto" />
                 </DataTableToolbarActions>
               </DataTableToolbar>
               <DataTableContent className="table-fixed" />
