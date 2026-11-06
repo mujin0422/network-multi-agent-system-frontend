@@ -1,3 +1,5 @@
+import { useState } from "react"
+import type { DateRange } from "react-day-picker"
 import { PageLoadingSkeleton } from "@/components/shared/PageLoadingSkeleton"
 import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -22,11 +24,13 @@ import { TaskAnalyticsCharts } from "./TaskAnalyticsCharts"
 
 /** Màn hình tổng quan hệ thống với KPI và biểu đồ thống kê. */
 export function DashboardOverview() {
+  const [benchmarkDateRange, setBenchmarkDateRange] = useState<DateRange | undefined>()
   const {
     metrics, taskBars,
-    taskOutcomes, taskOutcomes30, executionTimes, successRate, rateMetrics, rateError,
+    taskOutcomes, taskOutcomes30, executionTimes, executionTimes30,
+    successRate, rateMetrics, rateError,
     loading, error, reload,
-  } = useDashboardData()
+  } = useDashboardData(benchmarkDateRange)
   // Keep the existing KPI charts mounted during Refresh so identical data
   // never replays their initial animation. Only first-load uses the skeleton.
   if (loading && metrics.length === 0) {
@@ -84,7 +88,12 @@ export function DashboardOverview() {
             {error}
           </div>
         )}
-        <BenchmarkRateCharts metrics={rateMetrics} error={rateError} />
+        <BenchmarkRateCharts
+          metrics={rateMetrics}
+          error={rateError}
+          dateRange={benchmarkDateRange}
+          onDateRangeChange={setBenchmarkDateRange}
+        />
         <section>
           <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
             <CardHeader className="grid grid-cols-[1fr_auto] px-4">
@@ -114,6 +123,7 @@ export function DashboardOverview() {
           outcomes={taskOutcomes}
           outcomes30={taskOutcomes30}
           executionTimes={executionTimes}
+          executionTimes30={executionTimes30}
         />
       </PageLayoutContent>
     </PageLayout>

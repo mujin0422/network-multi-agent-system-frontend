@@ -1,6 +1,8 @@
 import { useMemo } from "react"
+import type { DateRange } from "react-day-picker"
 import { Cell, Pie, PieChart } from "recharts"
 
+import { DataTableDateRangeFilter } from "@/components/shared/DataTable"
 import { ChartContainer } from "@/components/ui/chart"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
@@ -147,21 +149,38 @@ function BenchmarkDonut({ metric }: { metric: DashboardRateMetric }) {
 export function BenchmarkRateCharts({
   metrics,
   error,
+  dateRange,
+  onDateRangeChange,
 }: {
   metrics: DashboardRateMetric[]
   error: string | null
+  dateRange?: DateRange
+  onDateRangeChange: (range: DateRange | undefined) => void
 }) {
   return (
     <TooltipProvider delay={100}>
       <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-        <CardHeader className="gap-1 px-4">
-          <CardTitle className="type-caption text-foreground">
-            Benchmark Evaluation KPIs
-          </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Pass rates and diagnostic quality · v4 scores are kept separate from legacy evaluations
-          </p>
-          {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
+        <CardHeader className="grid gap-3 px-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="min-w-0 space-y-1">
+            <CardTitle className="type-caption text-foreground">
+              Benchmark Evaluation KPIs
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Pass rates and diagnostic quality for the selected Benchmark Run dates
+            </p>
+            {dateRange?.from && (
+              <p className="text-[11px] text-muted-foreground">
+                Date filter uses Benchmark Run start time across the complete run history.
+              </p>
+            )}
+            {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
+          </div>
+          <DataTableDateRangeFilter
+            label="Run date"
+            value={dateRange}
+            onChange={onDateRangeChange}
+            className="w-full sm:w-52"
+          />
         </CardHeader>
         <CardContent className="mt-4 min-w-0 px-4">
           <div className="flex w-full gap-3 overflow-x-auto pb-2 xl:overflow-visible">

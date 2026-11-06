@@ -36,16 +36,25 @@ export function TaskAnalyticsCharts({
   outcomes,
   outcomes30,
   executionTimes,
+  executionTimes30,
 }: {
   outcomes: TaskOutcomePoint[]
   outcomes30: TaskOutcomePoint[]
   executionTimes: ExecutionTimePoint[]
+  executionTimes30: ExecutionTimePoint[]
 }) {
   const [period, setPeriod] = useState<7 | 30>(7)
+  const [executionPeriod, setExecutionPeriod] = useState<7 | 30>(7)
   const visibleOutcomes = period === 7 ? outcomes : outcomes30
+  const visibleExecutionTimes = executionPeriod === 7 ? executionTimes : executionTimes30
   const xTicks = period === 30
     ? visibleOutcomes
         .filter((_, index) => index % 5 === 0 || index === visibleOutcomes.length - 1)
+        .map(({ label }) => label)
+    : undefined
+  const executionXTicks = executionPeriod === 30
+    ? visibleExecutionTimes
+        .filter((_, index) => index % 5 === 0 || index === visibleExecutionTimes.length - 1)
         .map(({ label }) => label)
     : undefined
 
@@ -131,19 +140,46 @@ export function TaskAnalyticsCharts({
       </Card>
 
       <Card className="gap-0 rounded-xl border-0 bg-card py-4 ring-1 ring-border">
-        <CardHeader className="px-4">
-          <CardTitle className="type-caption text-foreground">
-            Execution Time Trend
-          </CardTitle>
-          <p className="type-caption text-muted-foreground">
-            Average end-to-end task duration in seconds
-          </p>
+        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3 px-4">
+          <div className="space-y-1">
+            <CardTitle className="type-caption text-foreground">
+              Execution Time Trend – Last {executionPeriod} Days
+            </CardTitle>
+            <p className="type-caption text-muted-foreground">
+              Average end-to-end task duration in seconds
+            </p>
+          </div>
+          <div
+            role="group"
+            aria-label="Execution Time Trend time range"
+            className="inline-flex shrink-0 items-center gap-0.5 rounded-lg border border-border bg-muted/30 p-0.5"
+          >
+            {([7, 30] as const).map((days) => (
+              <Button
+                key={days}
+                type="button"
+                size="sm"
+                variant={executionPeriod === days ? "secondary" : "ghost"}
+                aria-pressed={executionPeriod === days}
+                className="h-7 rounded-md px-2.5 text-xs"
+                onClick={() => setExecutionPeriod(days)}
+              >
+                {days} Days
+              </Button>
+            ))}
+          </div>
         </CardHeader>
         <CardContent className="mt-4 px-4">
           <ChartContainer config={durationConfig} className="h-56 w-full aspect-auto">
-            <LineChart data={executionTimes} accessibilityLayer>
+            <LineChart data={visibleExecutionTimes} accessibilityLayer>
               <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis dataKey="label" tickLine={false} axisLine={false} />
+              <XAxis
+                dataKey="label"
+                ticks={executionXTicks}
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+              />
               <YAxis tickLine={false} axisLine={false} width={40} unit="s" />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line
@@ -151,7 +187,7 @@ export function TaskAnalyticsCharts({
                 dataKey="averageSeconds"
                 stroke="var(--color-averageSeconds)"
                 strokeWidth={2}
-                dot={{ fill: "var(--color-averageSeconds)", r: 3 }}
+                dot={false}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
