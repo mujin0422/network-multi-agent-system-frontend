@@ -30,9 +30,13 @@ export function MoreMenu({ onView, onEdit, onCopy, actions = [] }: MoreMenuProps
       >
         <Ellipsis />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-36">
+      <DropdownMenuContent align="end" className="w-max min-w-36">
         {actions.map((action) => (
-          <DropdownMenuItem className="text-[13px]" key={action.id} onClick={action.onClick}>
+          <DropdownMenuItem
+            className="whitespace-nowrap text-[13px]"
+            key={action.id}
+            onClick={action.onClick}
+          >
             {action.icon}
             {action.label}
           </DropdownMenuItem>
