@@ -372,12 +372,14 @@ export type TaskRecords = {
   approvals: OperationDeviceApproval[]
 }
 
-export type ActivityActorType = "ORCHESTRATOR" | "PLANNER" | "NETWORK" | "ANALYST" | "TOOL"
+export type ActivityActorType = "ORCHESTRATOR" | "PLANNER" | "CONFIGURATION" | "NETWORK" | "ANALYST" | "TOOL"
 export type ActivityEventStatus = "PENDING" | "RUNNING" | "WAITING_APPROVAL" | "SUCCESS" | "FAILED" | "SKIPPED"
 export type ActivityEventType =
   | "MESSAGE_RECEIVED"
   | "TASK_CREATED"
   | "PLAN_GENERATED"
+  | "CONFIGURATION_STARTED"
+  | "CONFIGURATION_COMPLETED"
   | "OPERATIONS_CREATED"
   | "DEPENDENCIES_CREATED"
   | "DEVICES_ASSIGNED"
@@ -388,6 +390,7 @@ export type ActivityEventType =
   | "APPROVAL_REJECTED"
   | "ANALYSIS_STARTED"
   | "ANALYSIS_COMPLETED"
+  | "EVIDENCE_COVERAGE_EVALUATED"
   | "FINAL_RESPONSE_CREATED"
   | "TASK_COMPLETED"
   | "TASK_FAILED"
