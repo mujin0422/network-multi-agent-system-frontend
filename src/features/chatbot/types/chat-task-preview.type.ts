@@ -17,7 +17,7 @@ export type AgentActivityStatus =
 
 export type AgentActivity = {
   id: string
-  actor: "ORCHESTRATOR" | "PLANNER" | "NETWORK" | "ANALYST"
+  actor: "ORCHESTRATOR" | "PLANNER" | "CONFIGURATION" | "NETWORK" | "ANALYST"
   title: string
   detail?: string
   status: AgentActivityStatus
