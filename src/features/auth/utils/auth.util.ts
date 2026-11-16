@@ -1,6 +1,7 @@
 import type { LoginCredentials } from "../types/login.type"
 import { POST_LOGIN_PATH } from "../constants/auth.constants"
-import { authApi, hasStoredTokens } from "@/service"
+import { authApi } from "../api/auth.api"
+import { hasStoredTokens } from "@/service/token-storage"
 
 /** Đọc và chuẩn hóa dữ liệu từ form đăng nhập. */
 export function readLoginCredentials(formData: FormData): LoginCredentials {

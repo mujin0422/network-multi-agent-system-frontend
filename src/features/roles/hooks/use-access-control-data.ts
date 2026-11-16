@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { accessControlApi, rolesApi } from "@/service"
+import { accessControlApi, rolesApi } from "../api/roles.api"
 import type { RoleCreate, RoleUpdate } from "@/service"
 import type { Action } from "../types/action.type"
 import type { ManagementFunction } from "../types/management-function.type"

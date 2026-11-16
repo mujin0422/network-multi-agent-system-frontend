@@ -1,11 +1,11 @@
-import { api } from "./api"
-import type { LoginRequest, TokenResponse, User } from "./contracts"
+import { api } from "@/service/api"
+import type { LoginRequest, TokenResponse, User } from "@/service/contracts"
 import {
   clearTokens,
   getAccessToken,
   getRefreshToken,
   storeTokens,
-} from "./token-storage"
+} from "@/service/token-storage"
 
 export const authApi = {
   async login(payload: LoginRequest) {

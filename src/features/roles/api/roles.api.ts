@@ -1,22 +1,11 @@
-import { api } from "./api"
+import { api } from "@/service/api"
 import type {
   PermissionCatalog,
   Role,
   RoleCreate,
   RolePermission,
   RoleUpdate,
-  User,
-  UserCreate,
-  UserUpdate,
-} from "./contracts"
-
-export const usersApi = {
-  list: async () => (await api.get<User[]>("/users/")).data,
-  get: async (userId: string) => (await api.get<User>(`/users/${userId}`)).data,
-  create: async (payload: UserCreate) => (await api.post<User>("/users/", payload)).data,
-  update: async (userId: string, payload: UserUpdate) =>
-    (await api.patch<User>(`/users/${userId}`, payload)).data,
-}
+} from "@/service/contracts"
 
 export const rolesApi = {
   list: async () => (await api.get<Role[]>("/roles/")).data,

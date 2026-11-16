@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { DateRange } from "react-day-picker"
-import { auditLogsApi } from "@/service"
+import { auditLogsApi } from "../api/audit-logs.api"
 import type { AuditLog } from "../types/audit-log.type"
 
 function csvCell(value: unknown) {
@@ -74,8 +74,8 @@ export function useAuditLogsData(dateRange?: DateRange) {
     }
   }, [occurredFrom, occurredTo])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ audit logs với API khi mount.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ audit logs với API khi mount.
     void reload()
     return () => { latestRequestId.current += 1 }
   }, [reload])

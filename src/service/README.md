@@ -1,6 +1,7 @@
-# External services
+# Shared transport infrastructure
 
-Thư mục `src/service` là tầng kết nối ứng dụng với các dịch vụ bên ngoài như REST API và WebSocket.
+Thư mục `src/service` chỉ chứa hạ tầng giao tiếp dùng chung. Các endpoint nghiệp
+vụ được đặt trong `src/features/<feature>/api` của feature sở hữu.
 
 ## Cấu trúc
 
@@ -9,11 +10,6 @@ src/service/
 ├── api.ts
 ├── token-storage.ts
 ├── contracts.ts
-├── auth.api.ts
-├── identity.api.ts
-├── inventory.api.ts
-├── conversation.api.ts
-├── execution.api.ts
 ├── index.ts
 └── websocket.ts
 ```
@@ -23,8 +19,16 @@ src/service/
 - `api.ts`: Axios client, bearer token, refresh interceptor và lỗi dùng chung.
 - `token-storage.ts`: quản lý access/refresh token theo contract backend hiện tại.
 - `contracts.ts`: request/response types khớp OpenAPI.
-- Các file `*.api.ts`: endpoint được chia theo domain backend.
 - `websocket.ts`: khởi tạo, quản lý vòng đời và cấu hình kết nối WebSocket.
+
+Ví dụ endpoint theo feature:
+
+```text
+src/features/auth/api/auth.api.ts
+src/features/devices/api/devices.api.ts
+src/features/tasks/api/tasks.api.ts
+src/features/benchmark-runs/api/benchmark-runs.api.ts
+```
 
 Base URL được cấu hình bằng:
 
@@ -43,7 +47,7 @@ một refresh promise để tránh dùng lại refresh token cũ nhiều lần.
 ## Quy tắc
 
 1. Chỉ đặt cấu hình kết nối và primitive giao tiếp dùng chung tại đây.
-2. Hàm gọi endpoint theo nghiệp vụ nằm trong module service riêng, không dồn vào `api.ts`.
+2. Hàm gọi endpoint theo nghiệp vụ phải nằm trong thư mục `api` của feature sở hữu.
 3. Base URL và thông tin môi trường phải lấy từ biến môi trường của Vite.
 4. Không hard-code token, mật khẩu hoặc thông tin nhạy cảm trong mã nguồn.
 5. Kết nối WebSocket phải có cơ chế cleanup, xử lý reconnect và tránh đăng ký listener trùng lặp.

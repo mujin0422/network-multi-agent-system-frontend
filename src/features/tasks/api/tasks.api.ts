@@ -1,4 +1,4 @@
-import { api } from "./api"
+import { api } from "@/service/api"
 import type {
   ApprovalDecision,
   Operation,
@@ -10,7 +10,7 @@ import type {
   TaskDetail,
   TaskRecords,
   DeviceActionLog,
-} from "./contracts"
+} from "@/service/contracts"
 
 export const tasksApi = {
   list: async () => (await api.get<Task[]>("/tasks/")).data,

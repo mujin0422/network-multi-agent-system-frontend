@@ -1,5 +1,5 @@
-import { api } from "./api"
-import type { AuditEventStatus, AuditLog } from "./contracts"
+import { api } from "@/service/api"
+import type { AuditEventStatus, AuditLog } from "@/service/contracts"
 
 export type AuditLogListParams = {
   actor_user_id?: string
