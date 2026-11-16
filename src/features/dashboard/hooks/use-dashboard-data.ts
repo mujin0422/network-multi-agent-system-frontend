@@ -7,7 +7,10 @@ import {
   ListTodo,
   Router,
 } from "lucide-react"
-import { benchmarksApi, devicesApi, evaluationsApi, tasksApi } from "@/service"
+import { benchmarkRunsApi } from "@/features/benchmark-runs/api/benchmark-runs.api"
+import { devicesApi } from "@/features/devices/api/devices.api"
+import { evaluationsApi } from "@/features/evaluations/api/evaluations.api"
+import { tasksApi } from "@/features/tasks/api/tasks.api"
 import type { BenchmarkRun, BenchmarkRunSummary, TaskEvaluationSummary } from "@/service"
 import type { ChartBar } from "../types/chart-bar.type"
 import type { Metric } from "../types/metric.type"
@@ -77,9 +80,9 @@ export function useDashboardData(rateDateRange?: DateRange) {
           tasksApi.list(),
           devicesApi.list({ page_size: 100 }),
         ]),
-        benchmarksApi.getRunSummary(),
+        benchmarkRunsApi.getSummary(),
         evaluationsApi.list(100),
-        benchmarksApi.listAllRuns(),
+        benchmarkRunsApi.listAll(),
       ])
       setRateSummary(summaryResult.status === "fulfilled" ? summaryResult.value : null)
       setRateEvaluations(evaluationResult.status === "fulfilled" ? evaluationResult.value : null)

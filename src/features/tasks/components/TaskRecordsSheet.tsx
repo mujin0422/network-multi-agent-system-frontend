@@ -7,7 +7,10 @@ import {
   Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle,
 } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ApiError, deviceActionLogsApi, devicesApi, evaluationsApi, tasksApi } from "@/service"
+import { evaluationsApi } from "@/features/evaluations/api/evaluations.api"
+import { devicesApi } from "@/features/devices/api/devices.api"
+import { deviceActionLogsApi, tasksApi } from "../api/tasks.api"
+import { ApiError } from "@/service/api"
 import type { DeviceActionLog, TaskEvaluationDetail, TaskRecords } from "@/service"
 
 type RecordTab = "plan" | "executions" | "devices" | "events" | "approvals" | "commands" | "evaluation"

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { brandsApi, categoriesApi, devicesApi } from "@/service"
+import { devicesApi } from "@/features/devices/api/devices.api"
+import { brandsApi, categoriesApi } from "../api/device-catalog.api"
 import type { BrandCreate, BrandUpdate } from "@/service"
 import type { Brand } from "../types/brand.type"
 import type { Category } from "../types/category.type"

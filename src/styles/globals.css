@@ -152,6 +152,18 @@
     font-size: var(--font-size-caption);
     line-height: 1rem;
   }
+
+  /* Chỉ component kế thừa chủ động dùng class này mới ẩn thanh cuộn. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
 }
 
 @layer base {

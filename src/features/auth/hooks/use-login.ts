@@ -8,7 +8,8 @@ import {
   getSafeRedirectPath,
   readLoginCredentials,
 } from "../utils/auth.util"
-import { authApi, toApiError } from "@/service"
+import { authApi } from "../api/auth.api"
+import { toApiError } from "@/service/api"
 
 /** Quản lý tương tác của form đăng nhập demo. */
 export function useLogin() {

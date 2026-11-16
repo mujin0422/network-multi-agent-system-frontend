@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { credentialsApi, devicesApi, usersApi } from "@/service"
+import { devicesApi } from "@/features/devices/api/devices.api"
+import { usersApi } from "@/features/users/api/users.api"
+import { credentialsApi } from "../api/credentials.api"
 import type { CredentialCreate, CredentialUpdate, User } from "@/service"
 import type { Credential } from "../types/credentials.type"
 

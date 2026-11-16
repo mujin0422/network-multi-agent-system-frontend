@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { tasksApi, usersApi } from "@/service"
+import { tasksApi } from "../api/tasks.api"
+import { usersApi } from "@/features/users/api/users.api"
 import type { User } from "@/service"
 import type { TaskOperation } from "../types/task-operation.type"
 import type { Task } from "../types/task.type"

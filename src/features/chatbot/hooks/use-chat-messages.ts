@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { approvalsApi, authApi, conversationsApi, devicesApi, tasksApi } from "@/service"
-import type { TaskActivityEvent } from "@/service"
+import { authApi } from "@/features/auth/api/auth.api"
+import { devicesApi } from "@/features/devices/api/devices.api"
+import { approvalsApi, tasksApi } from "@/features/tasks/api/tasks.api"
+import { conversationsApi } from "../api/conversations.api"
+import { streamTaskEvents } from "../api/task-event-stream"
+import type { TaskActivityEvent, TaskStreamEvent } from "@/service"
 import type { ChatMessage } from "../types/chat-message.type"
 import type { ChatTaskPreview } from "../types/chat-task-preview.type"
 import type { Conversation } from "../types/conversation.type"
@@ -9,6 +13,7 @@ const DRAFT_ID = "new-conversation"
 const POLL_INTERVAL_MS = 1500
 const MAX_POLL_ATTEMPTS = 400
 const MAX_CONSECUTIVE_POLL_FAILURES = 6
+const MAX_SSE_RECONNECT_FAILURES = 3
 const wait = (duration: number) => new Promise((resolve) => window.setTimeout(resolve, duration))
 const draftConversation = (): Conversation => ({
   id: DRAFT_ID, user_id: "", title: "New conversation",
@@ -37,20 +42,29 @@ const activityTitle: Record<TaskActivityEvent["event_type"], string> = {
   TASK_FAILED: "Task thất bại",
 }
 
-type ChatOptions = { benchmarkRunId?: string; initialPrompt?: string }
+type ChatOptions = { benchmarkRunId?: string }
 
 export function useChatMessages(options: ChatOptions = {}) {
-  const { benchmarkRunId, initialPrompt } = options
-  const [input, setInput] = useState(initialPrompt ?? "")
+  const { benchmarkRunId } = options
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [taskPreviews, setTaskPreviews] = useState<ChatTaskPreview[]>([])
   const [conversations, setConversations] = useState<Conversation[]>([draftConversation()])
   const [activeConversationId, setActiveConversationIdState] = useState(DRAFT_ID)
   const [loadingConversations, setLoadingConversations] = useState(true)
+  const [loadingMoreConversations, setLoadingMoreConversations] = useState(false)
+  const [hasMoreConversations, setHasMoreConversations] = useState(false)
+  const [loadingOlderMessages, setLoadingOlderMessages] = useState(false)
+  const [hasOlderMessages, setHasOlderMessages] = useState(false)
   const [loadingMessages, setLoadingMessages] = useState(false)
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const pollingGeneration = useRef(0)
+  const messagesRef = useRef<ChatMessage[]>([])
+  const loadedConversationId = useRef<string | null>(null)
+  const messageCursor = useRef<string | null>(null)
+  const conversationCursor = useRef<string | null>(null)
+  const conversationUserId = useRef<string | null>(null)
+  const activeStreams = useRef(new Map<string, { controller: AbortController; promise: Promise<void> }>())
   const deviceNames = useRef<Map<string, string> | null>(null)
   const benchmarkStarted = useRef(false)
 
@@ -180,8 +194,21 @@ export function useChatMessages(options: ChatOptions = {}) {
   ) => {
     if (showSkeleton) setLoadingMessages(true)
     try {
-      const rows = await conversationsApi.listMessages(conversationId)
+      const page = await conversationsApi.listMessages(conversationId)
+      const shouldReset = showSkeleton || loadedConversationId.current !== conversationId
+      const rows = shouldReset
+        ? page.items
+        : [...messagesRef.current, ...page.items].filter(
+            (message, index, all) => all.findIndex((item) => item.id === message.id) === index,
+          )
+      rows.sort((left, right) => Date.parse(left.created_at) - Date.parse(right.created_at))
+      messagesRef.current = rows
+      loadedConversationId.current = conversationId
       setMessages(rows)
+      if (shouldReset) {
+        messageCursor.current = page.next_cursor
+        setHasOlderMessages(page.has_more)
+      }
       const previews = await loadTaskPreviews(rows)
       return { rows, previews }
     } catch (reason) {
@@ -198,7 +225,11 @@ export function useChatMessages(options: ChatOptions = {}) {
   const reloadConversations = useCallback(async () => {
     try {
       const me = await authApi.me()
-      const rows = await conversationsApi.list(me.id)
+      conversationUserId.current = me.id
+      const page = await conversationsApi.list({ userId: me.id })
+      const rows = page.items
+      conversationCursor.current = page.next_cursor
+      setHasMoreConversations(page.has_more)
       const shouldKeepBenchmarkDraft = Boolean(benchmarkRunId) && !benchmarkStarted.current
       const visibleRows = shouldKeepBenchmarkDraft ? [draftConversation(), ...rows] : rows.length ? rows : [draftConversation()]
       setConversations(visibleRows)
@@ -210,6 +241,61 @@ export function useChatMessages(options: ChatOptions = {}) {
     finally { setLoadingConversations(false) }
   }, [benchmarkRunId])
 
+  const loadMoreConversations = useCallback(async () => {
+    if (
+      loadingMoreConversations ||
+      !hasMoreConversations ||
+      !conversationCursor.current ||
+      !conversationUserId.current
+    ) return
+    setLoadingMoreConversations(true)
+    try {
+      const page = await conversationsApi.list({
+        userId: conversationUserId.current,
+        cursor: conversationCursor.current,
+      })
+      conversationCursor.current = page.next_cursor
+      setHasMoreConversations(page.has_more)
+      setConversations((current) => {
+        const draft = current.filter((item) => item.id === DRAFT_ID)
+        const persisted = [...current.filter((item) => item.id !== DRAFT_ID), ...page.items]
+          .filter((item, index, all) => all.findIndex((row) => row.id === item.id) === index)
+        return [...draft, ...persisted]
+      })
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Không thể tải thêm hội thoại")
+    } finally {
+      setLoadingMoreConversations(false)
+    }
+  }, [hasMoreConversations, loadingMoreConversations])
+
+  const loadOlderMessages = useCallback(async () => {
+    if (
+      activeConversationId === DRAFT_ID ||
+      loadingOlderMessages ||
+      !hasOlderMessages ||
+      !messageCursor.current
+    ) return
+    setLoadingOlderMessages(true)
+    try {
+      const page = await conversationsApi.listMessages(activeConversationId, {
+        cursor: messageCursor.current,
+      })
+      const rows = [...page.items, ...messagesRef.current]
+        .filter((message, index, all) => all.findIndex((item) => item.id === message.id) === index)
+        .sort((left, right) => Date.parse(left.created_at) - Date.parse(right.created_at))
+      messagesRef.current = rows
+      messageCursor.current = page.next_cursor
+      setHasOlderMessages(page.has_more)
+      setMessages(rows)
+      await loadTaskPreviews(rows)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Không thể tải thêm tin nhắn")
+    } finally {
+      setLoadingOlderMessages(false)
+    }
+  }, [activeConversationId, hasOlderMessages, loadTaskPreviews, loadingOlderMessages])
+
   // eslint-disable-next-line react-hooks/set-state-in-effect -- đồng bộ state với API khi mount.
   useEffect(() => { void reloadConversations() }, [reloadConversations])
   useEffect(() => {
@@ -217,29 +303,22 @@ export function useChatMessages(options: ChatOptions = {}) {
     if (activeConversationId !== DRAFT_ID) void loadConversation(activeConversationId, true)
   }, [activeConversationId, loadConversation])
 
-  // Once the workflow pauses, the initial polling loop stops. Keep refreshing
-  // while the user is viewing a pending approval so server-side expiry appears
-  // without a manual reload. Backend expiry is independent of this UI polling.
-  const hasPendingApproval = taskPreviews.some(
-    (preview) =>
-      preview.task_status === "RUNNING" &&
-      preview.approval?.status === "PENDING",
-  )
-  useEffect(() => {
-    if (activeConversationId === DRAFT_ID || !hasPendingApproval) return
-    const timer = window.setInterval(() => {
-      void loadConversation(activeConversationId, false, true)
-    }, 10_000)
-    return () => window.clearInterval(timer)
-  }, [activeConversationId, hasPendingApproval, loadConversation])
-
   function createNewConversation() {
+    activeStreams.current.forEach(({ controller }) => controller.abort())
+    activeStreams.current.clear()
     pollingGeneration.current += 1
     if (!conversations.some((conversation) => conversation.id === DRAFT_ID)) setConversations((current) => [draftConversation(), ...current])
-    setActiveConversationIdState(DRAFT_ID); setMessages([]); setTaskPreviews([]); setLoadingMessages(false); setInput(""); setError(null)
+    loadedConversationId.current = null; messagesRef.current = []; messageCursor.current = null
+    setHasOlderMessages(false); setActiveConversationIdState(DRAFT_ID); setMessages([]); setTaskPreviews([]); setLoadingMessages(false); setError(null)
   }
   function setActiveConversationId(id: string) {
+    activeStreams.current.forEach(({ controller }) => controller.abort())
+    activeStreams.current.clear()
     pollingGeneration.current += 1
+    loadedConversationId.current = null
+    messagesRef.current = []
+    messageCursor.current = null
+    setHasOlderMessages(false)
     setActiveConversationIdState(id)
   }
 
@@ -259,7 +338,7 @@ export function useChatMessages(options: ChatOptions = {}) {
     }
   }
 
-  const pollWorkflow = useCallback(async (
+  const pollWorkflowFallback = useCallback(async (
     conversationId: string,
     sourceMessageId: string,
     generation: number,
@@ -309,10 +388,99 @@ export function useChatMessages(options: ChatOptions = {}) {
     setError("Quá thời gian chờ phản hồi từ AI")
   }, [loadConversation])
 
-  async function sendMessage() {
-    const content = input.trim()
-    if (!content || sending) return
-    setSending(true); setError(null); setInput("")
+  const streamWorkflow = useCallback((
+    conversationId: string,
+    sourceMessageId: string,
+    generation: number,
+  ): Promise<void> => {
+    const current = activeStreams.current.get(sourceMessageId)
+    if (current) return current.promise
+
+    const controller = new AbortController()
+    const promise = (async () => {
+      let lastSequence = 0
+      let failures = 0
+      let stoppedForApproval = false
+      let refreshTimer: number | undefined
+      const scheduleRefresh = () => {
+        if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
+        refreshTimer = window.setTimeout(() => {
+          refreshTimer = undefined
+          if (pollingGeneration.current === generation) {
+            void loadConversation(conversationId, false, true)
+          }
+        }, 120)
+      }
+
+      try {
+        while (!controller.signal.aborted && pollingGeneration.current === generation) {
+          try {
+            await streamTaskEvents({
+              sourceMessageId,
+              afterSequence: lastSequence,
+              signal: controller.signal,
+              onEvent: (event: TaskStreamEvent) => {
+                lastSequence = Math.max(lastSequence, event.sequence_number)
+                failures = 0
+                scheduleRefresh()
+                if (event.event_type === "APPROVAL_REQUESTED") {
+                  stoppedForApproval = true
+                  return false
+                }
+                return true
+              },
+            })
+            break
+          } catch {
+            if (controller.signal.aborted || pollingGeneration.current !== generation) return
+            failures += 1
+            if (failures >= MAX_SSE_RECONNECT_FAILURES) {
+              await pollWorkflowFallback(conversationId, sourceMessageId, generation)
+              return
+            }
+            await wait(Math.min(1000 * 2 ** (failures - 1), 5000))
+          }
+        }
+      } finally {
+        if (refreshTimer !== undefined) window.clearTimeout(refreshTimer)
+        if (!controller.signal.aborted && pollingGeneration.current === generation) {
+          await loadConversation(conversationId, false, true)
+        }
+        if (stoppedForApproval) setError(null)
+      }
+    })()
+
+    activeStreams.current.set(sourceMessageId, { controller, promise })
+    void promise.finally(() => {
+      const active = activeStreams.current.get(sourceMessageId)
+      if (active?.promise === promise) activeStreams.current.delete(sourceMessageId)
+    })
+    return promise
+  }, [loadConversation, pollWorkflowFallback])
+
+  useEffect(() => {
+    if (activeConversationId === DRAFT_ID) return
+    const generation = pollingGeneration.current
+    taskPreviews
+      .filter(
+        (preview) =>
+          ["PENDING", "PLANNING", "RUNNING"].includes(preview.task_status) &&
+          preview.approval?.status !== "PENDING",
+      )
+      .forEach((preview) => {
+        void streamWorkflow(activeConversationId, preview.source_message_id, generation)
+      })
+  }, [activeConversationId, streamWorkflow, taskPreviews])
+
+  useEffect(() => () => {
+    activeStreams.current.forEach(({ controller }) => controller.abort())
+    activeStreams.current.clear()
+  }, [])
+
+  async function sendMessage(rawContent: string): Promise<boolean> {
+    const content = rawContent.trim()
+    if (!content || sending) return false
+    setSending(true); setError(null)
     const generation = pollingGeneration.current + 1
     pollingGeneration.current = generation
     try {
@@ -323,18 +491,33 @@ export function useChatMessages(options: ChatOptions = {}) {
         benchmarkStarted.current = true
         conversationId = started.conversation.id
         sourceMessage = started.message
+        messagesRef.current = [started.message]
+        loadedConversationId.current = conversationId
         setActiveConversationIdState(conversationId)
         setMessages([started.message])
+        setConversations((current) => [
+          started.conversation,
+          ...current.filter((item) => item.id !== DRAFT_ID && item.id !== started.conversation.id),
+        ])
       } else {
         sourceMessage = await conversationsApi.addMessage(conversationId, { sender_by: "USER", message_type: "USER_REQUEST", message: content })
-        setMessages((current) => [...current, sourceMessage])
+        messagesRef.current = [...messagesRef.current, sourceMessage]
+        setMessages(messagesRef.current)
+        setConversations((current) => {
+          const selected = current.find((item) => item.id === conversationId)
+          if (!selected) return current
+          return [
+            { ...selected, last_updated_at: sourceMessage.created_at },
+            ...current.filter((item) => item.id !== conversationId),
+          ]
+        })
       }
-      await reloadConversations()
       setActiveConversationIdState(conversationId)
-      await pollWorkflow(conversationId, sourceMessage.id, generation)
+      await streamWorkflow(conversationId, sourceMessage.id, generation)
+      return true
     } catch (reason) {
-      setInput(content)
       setError(reason instanceof Error ? reason.message : "Không thể gửi tin nhắn")
+      return false
     } finally { setSending(false) }
   }
 
@@ -360,7 +543,7 @@ export function useChatMessages(options: ChatOptions = {}) {
     )
     const completed = preview && ["SUCCESS", "PARTIAL_SUCCESS", "FAILED", "REJECTED"].includes(preview.task_status)
     if (!completed && preview?.approval?.status !== "PENDING") {
-      void pollWorkflow(activeConversationId, lastUserMessage.id, generation)
+      void streamWorkflow(activeConversationId, lastUserMessage.id, generation)
     }
   }
 
@@ -372,7 +555,7 @@ export function useChatMessages(options: ChatOptions = {}) {
     pollingGeneration.current = generation
     try {
       await approvalsApi.decide(approvalId, decision)
-      if (preview) await pollWorkflow(activeConversationId, preview.source_message_id, generation)
+      if (preview) await streamWorkflow(activeConversationId, preview.source_message_id, generation)
       else await loadConversation(activeConversationId)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "Không thể xử lý phê duyệt")
@@ -380,7 +563,7 @@ export function useChatMessages(options: ChatOptions = {}) {
     } finally {
       setSending(false)
     }
-  }, [activeConversationId, loadConversation, pollWorkflow, taskPreviews])
+  }, [activeConversationId, loadConversation, streamWorkflow, taskPreviews])
 
-  return { input, messages, taskPreviews, conversations, activeConversationId, sending, loadingConversations, loadingMessages, error, createNewConversation, renameConversation, sendMessage, decideApproval, retryConversation, setActiveConversationId, setInput }
+  return { messages, taskPreviews, conversations, activeConversationId, sending, loadingConversations, loadingMoreConversations, hasMoreConversations, loadingMessages, loadingOlderMessages, hasOlderMessages, error, createNewConversation, renameConversation, sendMessage, decideApproval, retryConversation, setActiveConversationId, loadMoreConversations, loadOlderMessages }
 }

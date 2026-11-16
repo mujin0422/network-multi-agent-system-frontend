@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { rolesApi, usersApi } from "@/service"
+import { rolesApi } from "@/features/roles/api/roles.api"
+import { usersApi } from "../api/users.api"
 import type { Role, UserCreate, UserUpdate } from "@/service"
 import type { User } from "../types/user.type"
 import { roleName as resolveRoleName } from "../utils/users.util"

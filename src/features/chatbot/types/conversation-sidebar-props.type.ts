@@ -3,6 +3,8 @@ import type { Conversation } from "./conversation.type"
 export type ConversationSidebarProps = {
   conversations: Conversation[]
   loading?: boolean
+  loadingMore?: boolean
+  hasMore?: boolean
   activeConversationId: string
   query: string
   mobileOpen: boolean
@@ -13,4 +15,5 @@ export type ConversationSidebarProps = {
   onCreate: () => void
   onClose: () => void
   onCollapse: () => void
+  onLoadMore: () => Promise<void>
 }

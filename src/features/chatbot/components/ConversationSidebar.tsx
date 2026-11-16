@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton"
 import { PanelLeftClose, Search } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -20,6 +20,8 @@ import { ConversationTitleDialog } from "./ConversationTitleDialog"
 export function ConversationSidebar({
   conversations,
   loading = false,
+  loadingMore = false,
+  hasMore = false,
   activeConversationId,
   query,
   mobileOpen,
@@ -30,12 +32,41 @@ export function ConversationSidebar({
   onCreate,
   onClose,
   onCollapse,
+  onLoadMore,
 }: ConversationSidebarProps) {
+  const rowHeight = 48
+  const overscan = 4
   const [renamingConversation, setRenamingConversation] = useState<Conversation | null>(null)
+  const [scrollTop, setScrollTop] = useState(0)
+  const [viewportHeight, setViewportHeight] = useState(0)
+  const listRef = useRef<HTMLDivElement>(null)
   const normalizedQuery = query.trim().toLocaleLowerCase()
   const visibleConversations = conversations.filter((conversation) =>
     conversation.title.toLocaleLowerCase().includes(normalizedQuery),
   )
+  const virtualRange = useMemo(() => {
+    const start = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan)
+    const count = Math.ceil(viewportHeight / rowHeight) + overscan * 2
+    return { start, end: Math.min(visibleConversations.length, start + count) }
+  }, [scrollTop, viewportHeight, visibleConversations.length])
+  const virtualConversations = visibleConversations.slice(virtualRange.start, virtualRange.end)
+
+  useEffect(() => {
+    const element = listRef.current
+    if (!element) return
+    const observer = new ResizeObserver(([entry]) => setViewportHeight(entry.contentRect.height))
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (
+      !normalizedQuery &&
+      hasMore &&
+      !loadingMore &&
+      visibleConversations.length * rowHeight <= viewportHeight + rowHeight
+    ) void onLoadMore()
+  }, [hasMore, loadingMore, normalizedQuery, onLoadMore, viewportHeight, visibleConversations.length])
 
   return (
     <aside
@@ -65,14 +96,31 @@ export function ConversationSidebar({
             <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
-              onChange={(event) => onQueryChange(event.target.value)}
+              onChange={(event) => {
+                if (listRef.current) listRef.current.scrollTop = 0
+                setScrollTop(0)
+                onQueryChange(event.target.value)
+              }}
               className="h-9 bg-background pl-9 text-xs md:text-xs placeholder:text-xs"
               placeholder="Search conversations..."
             />
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div
+          ref={listRef}
+          className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          onScroll={(event) => {
+            const element = event.currentTarget
+            setScrollTop(element.scrollTop)
+            if (
+              !normalizedQuery &&
+              hasMore &&
+              !loadingMore &&
+              element.scrollHeight - element.scrollTop - element.clientHeight < rowHeight * 3
+            ) void onLoadMore()
+          }}
+        >
           {loading ? (
             <div role="status" aria-label="Loading conversations" className="px-1">
               <span className="sr-only">Loading conversations...</span>
@@ -80,7 +128,8 @@ export function ConversationSidebar({
             </div>
           ) : (
           <TooltipProvider delay={300}>
-            {visibleConversations.map((conversation) => (
+            <div className="relative" style={{ height: visibleConversations.length * rowHeight }}>
+            {virtualConversations.map((conversation, index) => (
               <Tooltip key={conversation.id}>
                 <TooltipTrigger
                   render={
@@ -94,11 +143,12 @@ export function ConversationSidebar({
                         if (conversation.user_id) setRenamingConversation(conversation)
                       }}
                       className={cn(
-                        "group mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors",
+                        "group absolute left-0 flex h-11 w-full items-center gap-3 rounded-lg px-3 text-left transition-colors",
                         activeConversationId === conversation.id
                           ? "bg-background text-foreground shadow-sm"
                           : "text-muted-foreground hover:bg-background/70 hover:text-foreground",
                       )}
+                      style={{ top: (virtualRange.start + index) * rowHeight }}
                     />
                   }
                 >
@@ -111,6 +161,10 @@ export function ConversationSidebar({
                 </TooltipContent>
               </Tooltip>
             ))}
+            </div>
+            {loadingMore && (
+              <p className="py-2 text-center text-xs text-muted-foreground">Loading more...</p>
+            )}
           </TooltipProvider>
           )}
           {!loading && visibleConversations.length === 0 && (
