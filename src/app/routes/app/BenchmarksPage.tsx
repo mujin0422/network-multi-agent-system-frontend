@@ -1,5 +1,4 @@
 import { AlertTriangle, ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
-import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { useNavigate } from "react-router-dom"
 
@@ -13,109 +12,26 @@ import {
   PaginationItem,
   PaginationLink,
 } from "@/components/ui/pagination"
-import { benchmarksApi } from "@/service"
-import type { BenchmarkScenarioCreate, BenchmarkScenarioDetail, BenchmarkScenarioUpdate } from "@/service"
-import { BenchmarkScenarioCard } from "./components/BenchmarkScenarioCard"
-import { BenchmarkScenarioForm } from "./components/BenchmarkScenarioForm"
-import { useBenchmarksData } from "./hooks/use-benchmarks-data"
-import { benchmarkErrorMessage } from "./utils/benchmark.util"
-
-const SCENARIOS_PER_PAGE = 6
-
-function createScenarioPageItems(
-  currentPage: number,
-  pageCount: number,
-): readonly (number | "ellipsis")[] {
-  const visiblePages = Array.from(
-    { length: pageCount },
-    (_, index) => index + 1,
-  ).filter(
-    (page) =>
-      page === 1 ||
-      page === pageCount ||
-      Math.abs(page - currentPage) <= 1,
-  )
-
-  return visiblePages.flatMap((page, index) =>
-    index > 0 && page - visiblePages[index - 1] > 1
-      ? ["ellipsis" as const, page]
-      : [page],
-  )
-}
+import { BenchmarkScenarioCard } from "@/features/benchmark-scenarios/components/BenchmarkScenarioCard"
+import { BenchmarkScenarioForm } from "@/features/benchmark-scenarios/components/BenchmarkScenarioForm"
+import { BENCHMARK_SCENARIOS_PER_PAGE } from "@/features/benchmark-scenarios/constants/benchmark-scenarios.constants"
+import { useBenchmarkScenariosPage } from "@/features/benchmark-scenarios/hooks/use-benchmark-scenarios-page"
 
 export default function BenchmarksPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const [createOpen, setCreateOpen] = useState(false)
-  const [editingScenario, setEditingScenario] = useState<BenchmarkScenarioDetail | null>(null)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editError, setEditError] = useState<string | null>(null)
-  const [formVersion, setFormVersion] = useState(0)
-  const [requestedScenarioPage, setRequestedScenarioPage] = useState(1)
-  const { scenarios, runs, runsLoadFailed, loading, busy, error, reload, createScenario, updateScenario, startScenario, toggleScenario } = useBenchmarksData()
-
-  function openCreateForm() {
-    setEditingScenario(null)
-    setEditError(null)
-    setFormVersion((current) => current + 1)
-    setCreateOpen(true)
-  }
-
-  async function openEditForm(scenarioId: string) {
-    if (editingId) return
-    setEditingId(scenarioId)
-    setEditError(null)
-    try {
-      const detail = await benchmarksApi.getScenario(scenarioId)
-      setEditingScenario(detail)
-      setFormVersion((current) => current + 1)
-      setCreateOpen(true)
-    } catch (reason) {
-      setEditError(benchmarkErrorMessage(reason, t("benchmarks.errors.load")))
-    } finally {
-      setEditingId(null)
-    }
-  }
-
-  async function saveScenario(payload: BenchmarkScenarioCreate) {
-    if (!editingScenario) {
-      await createScenario(payload)
-      return
-    }
-    const changes: BenchmarkScenarioUpdate = {
-      version: payload.version,
-      name: payload.name,
-      description: payload.description,
-      topology: payload.topology,
-      initial_message: payload.initial_message,
-      preconditions: payload.preconditions,
-      injection: payload.injection,
-      fault_verification: payload.fault_verification,
-      ground_truth: payload.ground_truth,
-      evaluation_required_terms: payload.evaluation_required_terms,
-      cleanup: payload.cleanup,
-    }
-    await updateScenario(editingScenario.id, changes)
-  }
+  const {
+    scenarios, runsLoadFailed, loading, busy, error, reload, startScenario, toggleScenario,
+    createOpen, setCreateOpen, editingScenario, editingId, editError, formVersion,
+    openCreateForm, openEditForm, saveScenario, existingRunNeedsAttention,
+    scenarioPage, scenarioPageCount, scenarioPageItems, setScenarioPage,
+    visibleScenarios, scenarioStartItem, scenarioEndItem,
+  } = useBenchmarkScenariosPage()
 
   async function startAndOpenRun(scenarioId: string) {
     const run = await startScenario(scenarioId)
     if (run) navigate(`/benchmark-runs?run=${encodeURIComponent(run.id)}`)
   }
-
-  const existingRunNeedsAttention = runs.some(
-    (run) => ["PREPARING", "READY", "RUNNING"].includes(run.status) || run.cleanup_required,
-  )
-  const scenarioPageCount = Math.max(1, Math.ceil(scenarios.length / SCENARIOS_PER_PAGE))
-  const scenarioPage = Math.min(requestedScenarioPage, scenarioPageCount)
-  const scenarioPageItems = createScenarioPageItems(scenarioPage, scenarioPageCount)
-  const scenarioStartIndex = (scenarioPage - 1) * SCENARIOS_PER_PAGE
-  const visibleScenarios = scenarios.slice(
-    scenarioStartIndex,
-    scenarioStartIndex + SCENARIOS_PER_PAGE,
-  )
-  const scenarioStartItem = scenarios.length === 0 ? 0 : scenarioStartIndex + 1
-  const scenarioEndItem = Math.min(scenarioStartIndex + SCENARIOS_PER_PAGE, scenarios.length)
 
   if (loading) {
     return <PageLoadingSkeleton title={t("benchmarks.title")} description={t("benchmarks.description")} stats={4} variant="cards" />
@@ -171,7 +87,7 @@ export default function BenchmarksPage() {
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <span>{t("benchmarks.scenariosPerPage")}</span>
                 <span className="flex h-8 w-20 items-center rounded-lg border border-border bg-background px-3 text-foreground">
-                  {SCENARIOS_PER_PAGE}
+                  {BENCHMARK_SCENARIOS_PER_PAGE}
                 </span>
               </div>
               <Pagination className="mx-0 w-auto justify-start sm:justify-end">
@@ -185,7 +101,7 @@ export default function BenchmarksPage() {
                       className={`size-8 gap-1 p-0 sm:w-auto sm:px-3 ${scenarioPage === 1 ? "pointer-events-none opacity-50" : ""}`}
                       onClick={(event) => {
                         event.preventDefault()
-                        setRequestedScenarioPage(Math.max(1, scenarioPage - 1))
+                        setScenarioPage(Math.max(1, scenarioPage - 1))
                       }}
                     >
                       <ChevronLeftIcon />
@@ -206,7 +122,7 @@ export default function BenchmarksPage() {
                           className="text-xs"
                           onClick={(event) => {
                             event.preventDefault()
-                            setRequestedScenarioPage(page)
+                            setScenarioPage(page)
                           }}
                         >
                           {page}
@@ -223,7 +139,7 @@ export default function BenchmarksPage() {
                       className={`size-8 gap-1 p-0 sm:w-auto sm:px-3 ${scenarioPage === scenarioPageCount ? "pointer-events-none opacity-50" : ""}`}
                       onClick={(event) => {
                         event.preventDefault()
-                        setRequestedScenarioPage(Math.min(scenarioPageCount, scenarioPage + 1))
+                        setScenarioPage(Math.min(scenarioPageCount, scenarioPage + 1))
                       }}
                     >
                       <span className="hidden text-xs sm:inline">{t("common.next")}</span>

@@ -1,12 +1,12 @@
 # Feature-based architecture
 
-Thư mục `src/features` tổ chức mã nguồn theo từng module nghiệp vụ. Mỗi route chính có một feature riêng.
+Thư mục `src/features` tổ chức mã nguồn theo từng module nghiệp vụ. Việc lắp ráp
+feature thành page thuộc `src/app/routes`, không thuộc feature.
 
 ## Cấu trúc chuẩn
 
 ```text
 src/features/devices/
-├── page.tsx
 ├── components/
 │   ├── DevicesTable.tsx
 │   ├── DeviceStats.tsx
@@ -25,7 +25,6 @@ src/features/devices/
 
 ## Trách nhiệm của từng nhánh
 
-- `page.tsx`: entry point của route. File này nên ngắn, chỉ compose hoặc render component cấp cao nhất của feature.
 - `components/`: UI chỉ thuộc feature. Component bảng dùng hậu tố `Table`; thống kê, panel, selector và form phải là component riêng, không dồn toàn bộ JSX vào một file.
 - `constants/`: cấu hình và giá trị bất biến của feature như tiêu đề, route, giới hạn hoặc key.
 - `mocks/`: mock data riêng của feature trong giai đoạn thiết kế. Mỗi entity/dataset đặt trong một file riêng; không import dữ liệu từ file mock khác.
@@ -37,21 +36,21 @@ src/features/devices/
 
 1. Dùng alias `@/` khi import ngoài feature.
 2. Dùng relative import khi import giữa các nhánh trong cùng feature.
-3. Feature không import component nội bộ của feature khác. Nếu nhiều feature cùng dùng, chuyển phần đó vào `src/components/shared`.
-4. Router chỉ import `page.tsx` của feature.
+3. Feature không import page hoặc layout từ `src/app`.
+4. Route page trong `src/app/routes/app` chịu trách nhiệm lắp ráp feature.
 
 ```tsx
-import DevicesPage from "@/features/devices/page"
+import { DevicesTable } from "@/features/devices/components/DevicesTable"
 ```
 
 ## Tạo feature mới
 
 1. Tạo folder bằng tên kebab-case, ví dụ `device-groups`.
-2. Tạo đủ sáu phần theo cấu trúc chuẩn phía trên.
+2. Tạo các nhánh cần thiết theo cấu trúc chuẩn phía trên.
 3. Định nghĩa type trước, sau đó mock data, constants và hook.
 4. Xây dựng UI trong `components/`.
-5. Export page mặc định từ `page.tsx`.
-6. Khai báo route trong `src/app/router.tsx`.
+5. Tạo page lắp ráp trong `src/app/routes/app` hoặc `src/app/routes/auth`.
+6. Khai báo route trong `src/app/routes/index.tsx`.
 7. Chạy kiểm tra:
 
 ```bash
@@ -70,7 +69,7 @@ npm run lint
 
 ## Lưu ý
 
-- Không thêm lại `src/pages`.
+- Không thêm lại `src/pages` hoặc `features/*/page.tsx`.
 - Không đặt mock data trực tiếp trong component.
 - Không đặt JSX trong hook.
-- Giữ `page.tsx` nhẹ để module dễ kiểm thử và bảo trì.
+- Giữ route page tập trung vào composition; logic nghiệp vụ vẫn nằm trong hook của feature.

@@ -1,26 +1,39 @@
-# Application setup
+# Application layer
 
-Thư mục `src/app` chứa phần khởi tạo ứng dụng, cấu hình ở cấp toàn cục và các màn hình thuộc vòng đời của ứng dụng thay vì một nghiệp vụ cụ thể.
+`src/app` là composition root của frontend. Thư mục này sở hữu layout, route,
+route guard và global provider; không chứa logic nghiệp vụ của từng feature.
 
 ## Cấu trúc hiện tại
 
 ```text
 src/app/
+├── layouts/
+│   ├── AuthLayout.tsx
+│   └── MainLayout.tsx
+├── routes/
+│   ├── app/
+│   ├── auth/
+│   ├── NotFoundPage.tsx
+│   └── index.tsx
+├── guards/
+│   ├── ProtectedRoute.tsx
+│   └── RoleGuard.tsx
 ├── App.tsx
-├── not-found.tsx
-└── router.tsx
+└── provider.tsx
 ```
 
 ## Trách nhiệm
 
-- `App.tsx`: component gốc, gắn các provider cấp ứng dụng như router, query client hoặc theme provider.
-- `router.tsx`: khai báo route, layout và ánh xạ route tới `page.tsx` của từng feature.
-- `not-found.tsx`: fallback cho route không tồn tại; đặt ở cấp ứng dụng vì không thuộc module nghiệp vụ nào.
+- `routes/app`: page yêu cầu xác thực và nơi lắp ráp các feature.
+- `routes/auth`: page công khai thuộc luồng xác thực.
+- `layouts`: bộ khung dùng chung cho từng nhánh route.
+- `guards`: kiểm tra phiên đăng nhập và role trước khi vào route.
+- `provider.tsx`: điểm tập trung các global provider.
 
 ## Quy tắc
 
-1. Chỉ import entry point của feature, không import component nội bộ của feature vào router.
-2. Giữ `App.tsx` nhẹ; logic nghiệp vụ phải nằm trong `src/features`.
-3. Layout dùng chung cho nhiều route được đặt trong `src/components/layout`.
-4. Provider mới chỉ nên thêm tại đây khi có phạm vi toàn ứng dụng.
+1. Page chỉ tồn tại trong `src/app/routes`; không tạo `page.tsx` trong feature.
+2. Page được phép lắp ráp component và hook từ một hoặc nhiều feature.
+3. Layout dùng cho route tree đặt trong `src/app/layouts`.
+4. Feature không import ngược page, layout hoặc router từ `src/app`.
 
