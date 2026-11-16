@@ -4,7 +4,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Fragment } from "react"
+import { Fragment, useLayoutEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { MESSAGE_SENDER_LABELS } from "../constants/chatbot.constants"
 import type { ChatMessage } from "../types/chat-message.type"
@@ -19,12 +19,32 @@ export function MessageList({
   taskPreviews,
   onApprovalDecision,
   onRetryConversation,
+  hasOlderMessages,
+  loadingOlderMessages,
+  onLoadOlderMessages,
 }: {
   messages: ChatMessage[]
   taskPreviews: ChatTaskPreview[]
   onApprovalDecision: (approvalId: string, decision: "APPROVED" | "REJECTED") => Promise<void>
   onRetryConversation: () => void
+  hasOlderMessages: boolean
+  loadingOlderMessages: boolean
+  onLoadOlderMessages: () => Promise<void>
 }) {
+  const scrollerRef = useRef<HTMLDivElement>(null)
+  const orderedMessages = [...messages].sort(
+    (left, right) =>
+      Date.parse(left.created_at) - Date.parse(right.created_at),
+  )
+  const conversationId = orderedMessages[0]?.conversation_id
+  const lastMessageId = orderedMessages.at(-1)?.id
+
+  useLayoutEffect(() => {
+    if (scrollerRef.current) {
+      scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight
+    }
+  }, [conversationId, lastMessageId])
+
   if (messages.length === 0) {
     return (
       <div className="no-scrollbar grid min-h-0 flex-1 place-items-center overflow-y-auto px-5 py-10 text-center">
@@ -41,14 +61,27 @@ export function MessageList({
     )
   }
 
-  const orderedMessages = [...messages].sort(
-    (left, right) =>
-      Date.parse(left.created_at) - Date.parse(right.created_at),
-  )
-
   return (
-    <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto scroll-smooth">
+    <div
+      ref={scrollerRef}
+      className="no-scrollbar min-h-0 flex-1 overflow-y-auto scroll-smooth"
+      onScroll={() => {
+        const scroller = scrollerRef.current
+        if (!scroller || scroller.scrollTop > 80 || !hasOlderMessages || loadingOlderMessages) return
+        const previousHeight = scroller.scrollHeight
+        void onLoadOlderMessages().then(() => {
+          window.requestAnimationFrame(() => {
+            if (scrollerRef.current) {
+              scrollerRef.current.scrollTop += scrollerRef.current.scrollHeight - previousHeight
+            }
+          })
+        })
+      }}
+    >
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-7 px-4 py-8 sm:px-6 sm:py-10">
+        {loadingOlderMessages && (
+          <p className="text-center text-xs text-muted-foreground">Loading older messages...</p>
+        )}
         <TooltipProvider delay={300}>
           {orderedMessages.map((item) => {
             const taskPreview = taskPreviews.find(

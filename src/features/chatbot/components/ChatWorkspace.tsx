@@ -11,7 +11,7 @@ import {
 } from "@/components/shared/PageLayout"
 import { CHAT_COPY } from "../constants/chatbot.constants"
 import { Button } from "@/components/ui/button"
-import { benchmarksApi } from "@/service"
+import { benchmarkRunsApi } from "@/features/benchmark-runs/api/benchmark-runs.api"
 import type { BenchmarkRun } from "@/service"
 import { useChatMessages } from "../hooks/use-chat-messages"
 import { ChatComposer } from "./ChatComposer"
@@ -26,7 +26,6 @@ export function ChatWorkspace() {
   const benchmarkRunId = searchParams.get("benchmark_run_id") ?? undefined
   const initialPrompt = searchParams.get("prompt") ?? undefined
   const {
-    input,
     messages,
     taskPreviews,
     conversations,
@@ -35,14 +34,19 @@ export function ChatWorkspace() {
     renameConversation,
     sendMessage,
     setActiveConversationId,
-    setInput,
     sending,
     loadingConversations,
+    loadingMoreConversations,
+    hasMoreConversations,
     loadingMessages,
+    loadingOlderMessages,
+    hasOlderMessages,
     error,
     decideApproval,
     retryConversation,
-  } = useChatMessages({ benchmarkRunId, initialPrompt })
+    loadMoreConversations,
+    loadOlderMessages,
+  } = useChatMessages({ benchmarkRunId })
   const visibleMessages = messages.filter(
     (item) => item.conversation_id === activeConversationId,
   )
@@ -56,7 +60,7 @@ export function ChatWorkspace() {
     let active = true
     const refresh = async () => {
       try {
-        const nextRun = await benchmarksApi.getRun(benchmarkRunId)
+        const nextRun = await benchmarkRunsApi.get(benchmarkRunId)
         if (active) setBenchmarkRun(nextRun)
       } catch {
         if (active) setBenchmarkRun(null)
@@ -72,7 +76,7 @@ export function ChatWorkspace() {
 
   async function cleanupBenchmark() {
     if (!benchmarkRun) return
-    setBenchmarkRun(await benchmarksApi.cleanup(benchmarkRun.id))
+    setBenchmarkRun(await benchmarkRunsApi.cleanup(benchmarkRun.id))
   }
 
   function handleNewChat() {
@@ -100,6 +104,8 @@ export function ChatWorkspace() {
         <ConversationSidebar
           conversations={conversations}
           loading={loadingConversations}
+          loadingMore={loadingMoreConversations}
+          hasMore={hasMoreConversations}
           activeConversationId={activeConversationId}
           query={conversationQuery}
           mobileOpen={mobileSidebarOpen}
@@ -110,6 +116,7 @@ export function ChatWorkspace() {
           onCreate={handleNewChat}
           onClose={() => setMobileSidebarOpen(false)}
           onCollapse={() => setSidebarCollapsed(true)}
+          onLoadMore={loadMoreConversations}
         />
 
         <section className="relative flex min-w-0 flex-1 flex-col bg-background">
@@ -141,6 +148,9 @@ export function ChatWorkspace() {
             taskPreviews={taskPreviews}
             onApprovalDecision={decideApproval}
             onRetryConversation={() => void retryConversation()}
+            hasOlderMessages={hasOlderMessages}
+            loadingOlderMessages={loadingOlderMessages}
+            onLoadOlderMessages={loadOlderMessages}
           />
           )}
           {error && (
@@ -152,8 +162,8 @@ export function ChatWorkspace() {
             </div>
           )}
           <ChatComposer
-            input={input}
-            onInputChange={setInput}
+            key={activeConversationId}
+            initialValue={activeConversationId === "new-conversation" ? initialPrompt : ""}
             onSend={sendMessage}
             disabled={sending}
           />

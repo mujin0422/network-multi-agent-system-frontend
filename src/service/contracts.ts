@@ -139,6 +139,13 @@ export type Conversation = {
   created_at: string
   last_updated_at: string
 }
+export type CursorPage<T> = {
+  items: T[]
+  next_cursor: string | null
+  has_more: boolean
+}
+export type ConversationPage = CursorPage<Conversation>
+export type MessagePage = CursorPage<Message>
 export type ConversationDetail = Conversation & { messages: Message[] }
 export type ConversationStarted = { conversation: Conversation; message: Message }
 
@@ -407,6 +414,15 @@ export type TaskActivityEvent = {
   started_at: string | null
   completed_at: string | null
   created_at: string
+}
+
+export type TaskStreamEvent = {
+  event_id: string
+  event_type: ActivityEventType
+  task_id: string
+  sequence_number: number
+  occurred_at: string
+  data: TaskActivityEvent
 }
 
 export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED"
