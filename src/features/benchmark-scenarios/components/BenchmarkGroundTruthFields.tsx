@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkRootCause } from "@/service"
 import { useTranslation } from "react-i18next"
-import type { BenchmarkGroundTruthFieldsProps } from "../types/benchmark.type"
+import type { BenchmarkGroundTruthFieldsProps } from "../types/benchmark-scenario.type"
 import { createEmptyRootCause } from "../utils/benchmark-scenario-form.util"
 
 export function BenchmarkGroundTruthFields({ deviceOptions, items, onChange }: BenchmarkGroundTruthFieldsProps) {

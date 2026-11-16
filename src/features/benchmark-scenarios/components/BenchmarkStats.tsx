@@ -1,7 +1,7 @@
 import { CheckCircle2, FlaskConical, Play, ShieldAlert } from "lucide-react"
 
 import { PageLayoutOverview, PageLayoutStat } from "@/components/shared/PageLayout"
-import type { BenchmarkSummary } from "../types/benchmark.type"
+import type { BenchmarkSummary } from "../types/benchmark-scenario.type"
 
 export function BenchmarkStats({ summary }: { summary: BenchmarkSummary }) {
   return (

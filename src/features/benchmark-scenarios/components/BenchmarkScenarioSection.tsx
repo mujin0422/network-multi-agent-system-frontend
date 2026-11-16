@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import type { BenchmarkScenarioSectionProps } from "../types/benchmark.type"
+import type { BenchmarkScenarioSectionProps } from "../types/benchmark-scenario.type"
 
 export function BenchmarkScenarioSection({ title, description, children, plain = false }: BenchmarkScenarioSectionProps) {
   return (

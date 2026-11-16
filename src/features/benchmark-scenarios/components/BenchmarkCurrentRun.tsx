@@ -3,8 +3,8 @@ import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BENCHMARK_STATUS_KEYS } from "../constants/benchmarks.constants"
-import type { BenchmarkCurrentRunProps } from "../types/benchmark.type"
+import { BENCHMARK_STATUS_KEYS } from "../constants/benchmark-scenarios.constants"
+import type { BenchmarkCurrentRunProps } from "../types/benchmark-scenario.type"
 
 export function BenchmarkCurrentRun({ run, busy, onOpenChat, onCleanup, onViewEvaluation }: BenchmarkCurrentRunProps) {
   const { t } = useTranslation()

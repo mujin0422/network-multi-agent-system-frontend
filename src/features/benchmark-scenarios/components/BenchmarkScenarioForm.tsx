@@ -8,16 +8,16 @@ import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import { isValidIPv4 } from "@/lib/ipv4"
-import { devicesApi } from "@/service"
+import { devicesApi } from "@/features/devices/api/devices.api"
 import type { ComboboxOption } from "@/types/components"
 import type {
   BenchmarkAction,
   BenchmarkCheck,
   BenchmarkRootCause,
 } from "@/service"
-import type { BenchmarkScenarioFormProps } from "../types/benchmark.type"
+import type { BenchmarkScenarioFormProps } from "../types/benchmark-scenario.type"
 import { isValidBenchmarkInterface } from "../utils/benchmark-interface.util"
-import { BENCHMARK_ACTION_IPV4_FIELDS, BENCHMARK_ACTION_OPTIONS } from "../constants/benchmarks.constants"
+import { BENCHMARK_ACTION_IPV4_FIELDS, BENCHMARK_ACTION_OPTIONS } from "../constants/benchmark-scenarios.constants"
 import { generateBenchmarkCleanup } from "../utils/benchmark-cleanup.util"
 import {
   createEmptyAction,

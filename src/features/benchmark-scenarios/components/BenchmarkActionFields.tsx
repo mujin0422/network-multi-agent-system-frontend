@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkAction } from "@/service"
 import { useTranslation } from "react-i18next"
-import { BENCHMARK_ACTION_OPTIONS, BENCHMARK_ACTION_IPV4_FIELDS } from "../constants/benchmarks.constants"
-import type { BenchmarkActionFieldsProps } from "../types/benchmark.type"
+import { BENCHMARK_ACTION_OPTIONS, BENCHMARK_ACTION_IPV4_FIELDS } from "../constants/benchmark-scenarios.constants"
+import type { BenchmarkActionFieldsProps } from "../types/benchmark-scenario.type"
 import { createEmptyAction } from "../utils/benchmark-scenario-form.util"
 
 type ActionField = Exclude<keyof BenchmarkAction, "device" | "action">

@@ -1,8 +1,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
-import { BENCHMARK_STATUS_KEYS } from "../constants/benchmarks.constants"
-import type { BenchmarkRunHistoryProps } from "../types/benchmark.type"
+import { BENCHMARK_STATUS_KEYS } from "../constants/benchmark-scenarios.constants"
+import type { BenchmarkRunHistoryProps } from "../types/benchmark-scenario.type"
 
 export function BenchmarkRunHistory({ runs, onSelect, selectedRunId }: BenchmarkRunHistoryProps) {
   const { t, i18n } = useTranslation()

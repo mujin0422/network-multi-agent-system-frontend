@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { BenchmarkCheck } from "@/service"
 import { useTranslation } from "react-i18next"
-import type { BenchmarkCheckFieldsProps } from "../types/benchmark.type"
+import type { BenchmarkCheckFieldsProps } from "../types/benchmark-scenario.type"
 import { createEmptyCheck } from "../utils/benchmark-scenario-form.util"
 
 export function BenchmarkCheckFields({ section, deviceOptions, title, items, onChange }: BenchmarkCheckFieldsProps) {

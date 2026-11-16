@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import type { BenchmarkScenarioCardProps } from "../types/benchmark.type"
+import type { BenchmarkScenarioCardProps } from "../types/benchmark-scenario.type"
 
 /** Thẻ kịch bản: ưu tiên nội dung, hành động tách rõ khỏi metadata. */
 export function BenchmarkScenarioCard({

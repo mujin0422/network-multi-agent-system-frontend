@@ -1,5 +1,7 @@
 import type { BenchmarkAction, BenchmarkRun } from "@/service"
 
+export const BENCHMARK_SCENARIOS_PER_PAGE = 6
+
 export const BENCHMARK_STATUS_KEYS: Record<BenchmarkRun["status"], string> = {
   PREPARING: "benchmarks.status.PREPARING",
   READY: "benchmarks.status.READY",

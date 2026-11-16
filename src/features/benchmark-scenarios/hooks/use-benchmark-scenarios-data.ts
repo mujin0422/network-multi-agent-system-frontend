@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useTranslation } from "react-i18next"
 
-import { ApiError, benchmarksApi } from "@/service"
+import { benchmarkRunsApi } from "@/features/benchmark-runs/api/benchmark-runs.api"
+import { benchmarkScenariosApi } from "../api/benchmark-scenarios.api"
+import { ApiError } from "@/service/api"
 import type { BenchmarkRun, BenchmarkScenario, BenchmarkScenarioCreate, BenchmarkScenarioUpdate } from "@/service"
 import { benchmarkErrorMessage } from "../utils/benchmark.util"
 
 /** Quản lý dữ liệu và các thao tác API của trang GNS3 Benchmarks. */
-export function useBenchmarksData() {
+export function useBenchmarkScenariosData() {
   const { t } = useTranslation()
   const [scenarios, setScenarios] = useState<BenchmarkScenario[]>([])
   const [runs, setRuns] = useState<BenchmarkRun[]>([])
@@ -22,8 +24,8 @@ export function useBenchmarksData() {
 
     // A failed run-history request must not hide the scenarios (and vice versa).
     const [scenarioResult, runResult] = await Promise.allSettled([
-      benchmarksApi.listScenarios(),
-      benchmarksApi.listAllRuns(),
+      benchmarkScenariosApi.listScenarios(),
+      benchmarkRunsApi.listAll(),
     ])
 
     const messages: string[] = []
@@ -63,7 +65,7 @@ export function useBenchmarksData() {
   const createScenario = useCallback(async (payload: BenchmarkScenarioCreate) => {
     setError(null)
     try {
-      const created = await benchmarksApi.createScenario(payload)
+      const created = await benchmarkScenariosApi.createScenario(payload)
       setScenarios((current) => [created, ...current])
     } catch (reason) {
       const message = benchmarkErrorMessage(reason, t("benchmarks.errors.create"))
@@ -75,7 +77,7 @@ export function useBenchmarksData() {
   const updateScenario = useCallback(async (scenarioId: string, payload: BenchmarkScenarioUpdate) => {
     setError(null)
     try {
-      const updated = await benchmarksApi.updateScenario(scenarioId, payload)
+      const updated = await benchmarkScenariosApi.updateScenario(scenarioId, payload)
       setScenarios((current) => current.map((item) => item.id === updated.id ? updated : item))
     } catch (reason) {
       const message = benchmarkErrorMessage(reason, t("benchmarks.errors.update"))
@@ -88,7 +90,7 @@ export function useBenchmarksData() {
     setBusy(true)
     setError(null)
     try {
-      const nextRun = await benchmarksApi.start(scenarioId)
+      const nextRun = await benchmarkScenariosApi.start(scenarioId)
       setSelectedRun(nextRun)
       setRuns((current) => [nextRun, ...current])
       return nextRun
@@ -103,7 +105,7 @@ export function useBenchmarksData() {
     setBusy(true)
     setError(null)
     try {
-      const cleaned = await benchmarksApi.cleanup(runId)
+      const cleaned = await benchmarkRunsApi.cleanup(runId)
       setSelectedRun(cleaned)
       setRuns((current) => current.map((item) => item.id === cleaned.id ? cleaned : item))
     } catch (reason) {
@@ -117,7 +119,7 @@ export function useBenchmarksData() {
     setBusy(true)
     setError(null)
     try {
-      const updated = await benchmarksApi.updateScenario(scenario.id, {
+      const updated = await benchmarkScenariosApi.updateScenario(scenario.id, {
         is_active: !scenario.is_active,
       })
       setScenarios((current) => current.map((item) => item.id === updated.id ? updated : item))
