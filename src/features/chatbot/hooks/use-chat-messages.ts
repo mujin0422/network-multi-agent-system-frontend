@@ -127,15 +127,28 @@ export function useChatMessages(options: ChatOptions = {}) {
         if (!event.started_at || !event.completed_at) return total
         return total + Math.max(0, Date.parse(event.completed_at) - Date.parse(event.started_at))
       }, 0)
-      const approvalEntry = approvalEntries.find((item) => item.approval.approval_status === "PENDING") ?? approvalEntries[0]
-      const approval = approvalEntry?.approval
-      const approvalDevices = approval
-        ? [...names.entries()].filter(([deviceId]) => approval.reason.includes(deviceId))
-        : []
-      const approvalDescription = approvalDevices.reduce(
-        (description, [deviceId, hostname]) => description.replaceAll(deviceId, hostname),
-        approval?.reason ?? "",
-      )
+      const approvals = approvalEntries.map(({ approval, operationId }) => {
+        const approvalDevices = [...names.entries()].filter(([deviceId]) =>
+          approval.reason.includes(deviceId),
+        )
+        const approvalDescription = approvalDevices.reduce(
+          (description, [deviceId, hostname]) => description.replaceAll(deviceId, hostname),
+          approval.reason,
+        )
+        return {
+          id: approval.id,
+          operation_id: operationId,
+          title: "Phê duyệt thay đổi cấu hình",
+          description: approvalDescription,
+          risk_level: approval.risk_level,
+          devices: approvalDevices.length
+            ? approvalDevices.map(([, hostname]) => hostname)
+            : [approval.operation_device_id],
+          commands: approval.commands_snapshot,
+          status: approval.approval_status,
+          expires_at: approval.expires_at,
+        }
+      }).sort((left, right) => Number(right.status === "PENDING") - Number(left.status === "PENDING"))
       return {
         source_message_id: task.source_message_id,
         response_message_id: response?.id ?? "",
@@ -160,23 +173,11 @@ export function useChatMessages(options: ChatOptions = {}) {
           started_at: event.started_at ?? undefined,
           completed_at: event.completed_at ?? undefined,
         })),
-        approval: approval ? {
-          id: approval.id,
-          operation_id: approvalEntry.operationId,
-          title: "Phê duyệt thay đổi cấu hình",
-          description: approvalDescription,
-          risk_level: approval.risk_level,
-          devices: approvalDevices.length
-            ? approvalDevices.map(([, hostname]) => hostname)
-            : [approval.operation_device_id],
-          commands: approval.commands_snapshot,
-          status: approval.approval_status,
-          expires_at: approval.expires_at,
-        } : undefined,
+        approvals,
         approvalLoadError:
           task.task_status === "RUNNING" &&
           (approvalResponse || approvalOperationIds.size > 0) &&
-          !approval
+          approvals.length === 0
             ? approvalFetchFailed
               ? "Không thể tải phiếu phê duyệt. Hãy thử tải lại hội thoại, không gửi yêu cầu cấu hình lần nữa."
               : "Phiếu phê duyệt chưa sẵn sàng. Bạn có thể tải lại hội thoại."
@@ -373,7 +374,7 @@ export function useChatMessages(options: ChatOptions = {}) {
       // APPROVAL_REQUESTED là sự kiện lịch sử nên vẫn mang WAITING_APPROVAL
       // sau khi người dùng đã quyết định. Chỉ dừng polling theo trạng thái
       // approval hiện tại để workflow có thể tiếp tục ngay sau phê duyệt.
-      const waitingApproval = preview?.approval?.status === "PENDING"
+      const waitingApproval = preview?.approvals.some((approval) => approval.status === "PENDING")
       const analysisFailed = preview?.activities.some(
         (activity) =>
           activity.title === activityTitle.ANALYSIS_COMPLETED &&
@@ -465,7 +466,7 @@ export function useChatMessages(options: ChatOptions = {}) {
       .filter(
         (preview) =>
           ["PENDING", "PLANNING", "RUNNING"].includes(preview.task_status) &&
-          preview.approval?.status !== "PENDING",
+          !preview.approvals.some((approval) => approval.status === "PENDING"),
       )
       .forEach((preview) => {
         void streamWorkflow(activeConversationId, preview.source_message_id, generation)
@@ -542,7 +543,7 @@ export function useChatMessages(options: ChatOptions = {}) {
       (task) => task.source_message_id === lastUserMessage.id,
     )
     const completed = preview && ["SUCCESS", "PARTIAL_SUCCESS", "FAILED", "REJECTED"].includes(preview.task_status)
-    if (!completed && preview?.approval?.status !== "PENDING") {
+    if (!completed && !preview?.approvals.some((approval) => approval.status === "PENDING")) {
       void streamWorkflow(activeConversationId, lastUserMessage.id, generation)
     }
   }
@@ -550,7 +551,9 @@ export function useChatMessages(options: ChatOptions = {}) {
   const decideApproval = useCallback(async (approvalId: string, decision: "APPROVED" | "REJECTED") => {
     setSending(true)
     setError(null)
-    const preview = taskPreviews.find((item) => item.approval?.id === approvalId)
+    const preview = taskPreviews.find((item) =>
+      item.approvals.some((approval) => approval.id === approvalId),
+    )
     const generation = pollingGeneration.current + 1
     pollingGeneration.current = generation
     try {

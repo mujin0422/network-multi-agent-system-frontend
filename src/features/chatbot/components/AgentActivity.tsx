@@ -34,7 +34,7 @@ function ActivityRow({ activity }: { activity: AgentActivityItem }) {
 export function AgentActivity({ task }: { task: ChatTaskPreview }) {
   const [open, setOpen] = useState(true)
   const [now, setNow] = useState<number | null>(null)
-  const waitingApproval = task.approval?.status === "PENDING"
+  const waitingApproval = task.approvals.some((approval) => approval.status === "PENDING")
   const workflowCompleted = [
     "SUCCESS",
     "PARTIAL_SUCCESS",
