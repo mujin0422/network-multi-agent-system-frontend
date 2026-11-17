@@ -88,10 +88,6 @@ export function LoginForm() {
         </div>
       )}
 
-      <div className="rounded-lg border border-success/20 bg-success/10 px-3 py-2 text-xs text-success">
-        {LOGIN_COPY.demoNotice}
-      </div>
-
       <Button type="submit" className="h-10 w-full" disabled={isSubmitting}>
         {LOGIN_COPY.submitLabel}
       </Button>

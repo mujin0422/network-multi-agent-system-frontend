@@ -39,9 +39,12 @@ export function ChatComposer({
             value={input}
             onChange={(event) => setInput(event.target.value)}
             onKeyDown={handleKeyDown}
-            className="h-10 max-h-32 min-h-10 resize-none rounded-xl bg-card py-[11px] pr-11 pl-3 text-xs leading-4 placeholder:text-xs shadow-sm"
+            className="h-10 max-h-32 min-h-10 resize-none overflow-y-auto rounded-xl bg-card py-[11px] pr-11 pl-3 text-xs leading-4 placeholder:text-xs shadow-sm [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             placeholder={CHAT_COPY.placeholder}
             rows={1}
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="none"
             disabled={disabled}
           />
           <Button
