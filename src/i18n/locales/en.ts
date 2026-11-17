@@ -169,7 +169,7 @@ const en = {
     scenario: "Scenario / Task",
     latency: "AI workflow active time",
     latencyDetail: "AI workflow lifetime (excludes approval waits)",
-    legacyLatencyDetail: "Legacy end-to-end latency (includes approval waits)",
+    legacyLatencyDetail: "Legacy end-to-end latency",
     legacyE2E: "(legacy E2E)",
     tsrTitle: "Task Success Rate (TSR)",
     tsrSample: "{{passed}} / {{eligible}} scored attempts",

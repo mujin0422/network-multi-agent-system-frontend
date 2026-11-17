@@ -13,7 +13,7 @@ const METRIC_LABELS: Record<TaskEvaluationMetric["metric_type"], string> = {
   REMEDIATION: "Remediation",
   SAFETY: "Safety",
   LATENCY: "AI workflow active time",
-  INTERACTION_TURNS: "Interaction turns (Agent → Tool)",
+  INTERACTION_TURNS: "Interaction turns",
 }
 
 function formatMeasurement(metric: TaskEvaluationMetric, version: string | null): string | null {
