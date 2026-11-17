@@ -69,7 +69,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
         status: "PENDING",
       },
     ],
-    approval: {
+    approvals: [{
       id: "appr-031026-0001",
       operation_id: "oper-031026-0003",
       title: "Phê duyệt cấu hình OSPF trên P3",
@@ -79,6 +79,6 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
       commands: ["router ospf 1", "network 10.0.3.0 0.0.0.255 area 0"],
       status: "PENDING",
       expires_at: null,
-    },
+    }],
   },
 ]

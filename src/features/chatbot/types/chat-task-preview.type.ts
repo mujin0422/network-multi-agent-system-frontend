@@ -50,7 +50,8 @@ export type ChatTaskPreview = {
   /** Tổng thời gian agent thực sự chạy, không gồm thời gian chờ phê duyệt. */
   active_duration_ms: number
   activities: AgentActivity[]
-  approval?: ApprovalRequest
+  /** Một phiếu cho mỗi operation-device cần người dùng quyết định. */
+  approvals: ApprovalRequest[]
   /** Lỗi tải approval không được làm mất timeline của task. */
   approvalLoadError?: string
 }

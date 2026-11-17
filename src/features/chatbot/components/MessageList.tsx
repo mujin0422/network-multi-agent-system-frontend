@@ -144,9 +144,9 @@ export function MessageList({
                     {formatMessageTimestamp(item.created_at)}
                   </TooltipContent>
                 </Tooltip>
-                {taskPreview?.approval && (
-                  <ApprovalRequestCard key={taskPreview.approval.id} approval={taskPreview.approval} onDecision={onApprovalDecision} />
-                )}
+                {taskPreview?.approvals.map((approval) => (
+                  <ApprovalRequestCard key={approval.id} approval={approval} onDecision={onApprovalDecision} />
+                ))}
                 {taskPreview?.approvalLoadError && (
                   <ApprovalLoadWarning message={taskPreview.approvalLoadError} onRetry={onRetryConversation} />
                 )}
@@ -156,9 +156,9 @@ export function MessageList({
               <article aria-label="AI processing" className="flex items-start">
                 <div className="min-w-0 flex-1">
                   <AgentActivity task={pendingTaskPreview} />
-                  {pendingTaskPreview.approval && (
-                    <ApprovalRequestCard key={pendingTaskPreview.approval.id} approval={pendingTaskPreview.approval} onDecision={onApprovalDecision} />
-                  )}
+                  {pendingTaskPreview.approvals.map((approval) => (
+                    <ApprovalRequestCard key={approval.id} approval={approval} onDecision={onApprovalDecision} />
+                  ))}
                   {pendingTaskPreview.approvalLoadError && (
                     <ApprovalLoadWarning message={pendingTaskPreview.approvalLoadError} onRetry={onRetryConversation} />
                   )}
