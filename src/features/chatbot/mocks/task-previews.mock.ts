@@ -11,6 +11,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
     activities: [
       {
         id: "evt-001",
+        event_type: "MESSAGE_RECEIVED",
         actor: "ORCHESTRATOR",
         title: "Tiếp nhận message và tạo Task",
         detail: "Đã tạo task-031026-0001-0001 từ yêu cầu của người dùng.",
@@ -20,6 +21,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
       },
       {
         id: "evt-002",
+        event_type: "PLAN_GENERATED",
         actor: "PLANNER",
         title: "Phân tích yêu cầu và tạo 3 TaskOperation",
         detail: "Thu thập route P1, P2; phân tích; chuẩn bị cấu hình OSPF P3.",
@@ -29,6 +31,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
       },
       {
         id: "evt-003",
+        event_type: "DEPENDENCIES_CREATED",
         actor: "PLANNER",
         title: "Tạo OperationDependency",
         detail: "Bước cấu hình phụ thuộc vào kết quả thu thập và phân tích.",
@@ -38,6 +41,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
       },
       {
         id: "evt-004",
+        event_type: "DEVICES_ASSIGNED",
         actor: "PLANNER",
         title: "Gán thiết bị cho TaskOperation",
         detail: "P1 và P2 ở chế độ READ; P3 ở chế độ WRITE.",
@@ -47,6 +51,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
       },
       {
         id: "evt-005",
+        event_type: "COMMAND_EXECUTED",
         actor: "NETWORK",
         title: "Thu thập routing table trên P1 và P2",
         detail: "Netmiko thực thi show ip route thành công trên 2 thiết bị.",
@@ -56,6 +61,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
       },
       {
         id: "evt-006",
+        event_type: "APPROVAL_REQUESTED",
         actor: "ORCHESTRATOR",
         title: "Chờ phê duyệt thay đổi cấu hình P3",
         detail: "Workflow sẽ tiếp tục ngay sau khi có quyết định.",
@@ -64,6 +70,7 @@ export const MOCK_CHAT_TASK_PREVIEWS: ChatTaskPreview[] = [
       },
       {
         id: "evt-007",
+        event_type: "ANALYSIS_STARTED",
         actor: "ANALYST",
         title: "Phân tích kết quả và phản hồi",
         status: "PENDING",
