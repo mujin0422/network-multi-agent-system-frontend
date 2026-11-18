@@ -17,7 +17,7 @@ export function useEvaluationsData(loadError: string) {
   const refresh = useCallback(async () => {
     setError(null)
     const [evaluationResult, runResult, taskResult, userResult] = await Promise.allSettled([
-      evaluationsApi.list(100),
+      evaluationsApi.listAll(),
       benchmarkRunsApi.listAll(),
       tasksApi.list(),
       usersApi.list(),
