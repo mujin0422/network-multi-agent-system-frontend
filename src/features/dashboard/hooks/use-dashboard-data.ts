@@ -5,10 +5,8 @@ import {
   CircleAlert,
   Clock3,
   ListTodo,
-  Router,
 } from "lucide-react"
 import { benchmarkRunsApi } from "@/features/benchmark-runs/api/benchmark-runs.api"
-import { devicesApi } from "@/features/devices/api/devices.api"
 import { evaluationsApi } from "@/features/evaluations/api/evaluations.api"
 import { tasksApi } from "@/features/tasks/api/tasks.api"
 import type { BenchmarkRun, BenchmarkRunSummary, TaskEvaluationSummary } from "@/service"
@@ -61,7 +59,6 @@ export function useDashboardData(rateDateRange?: DateRange) {
   const [executionTimes30, setExecutionTimes30] = useState<ExecutionTimePoint[]>([])
   const [metrics, setMetrics] = useState<Metric[]>([])
   const [successRate, setSuccessRate] = useState(0)
-  const [rateSummary, setRateSummary] = useState<BenchmarkRunSummary | null>(null)
   const [rateEvaluations, setRateEvaluations] = useState<TaskEvaluationSummary[] | null>(null)
   const [rateRuns, setRateRuns] = useState<BenchmarkRun[] | null>(null)
   const [rateError, setRateError] = useState<string | null>(null)
@@ -75,37 +72,30 @@ export function useDashboardData(rateDateRange?: DateRange) {
     try {
       // Benchmark metrics have independent permissions and failure states.
       // One unavailable endpoint must not break the regular Dashboard.
-      const [dashboardResult, summaryResult, evaluationResult, runsResult] = await Promise.allSettled([
-        Promise.all([
-          tasksApi.list(),
-          devicesApi.list({ page_size: 100 }),
-        ]),
-        benchmarkRunsApi.getSummary(),
-        evaluationsApi.list(100),
+      const [dashboardResult, evaluationResult, runsResult] = await Promise.allSettled([
+        tasksApi.list(),
+        evaluationsApi.listAll(),
         benchmarkRunsApi.listAll(),
       ])
-      setRateSummary(summaryResult.status === "fulfilled" ? summaryResult.value : null)
       setRateEvaluations(evaluationResult.status === "fulfilled" ? evaluationResult.value : null)
       setRateRuns(runsResult.status === "fulfilled" ? runsResult.value : null)
       const unavailable = [
-        summaryResult.status === "rejected" ? "run summary" : null,
         evaluationResult.status === "rejected" ? "evaluations" : null,
-        runsResult.status === "rejected" ? "recent runs" : null,
+        runsResult.status === "rejected" ? "benchmark runs" : null,
       ].filter((name): name is string => name !== null)
       if (unavailable.length) {
         setRateError(`Some metrics are unavailable: ${unavailable.join(", ")}.`)
       }
       if (dashboardResult.status === "rejected") throw dashboardResult.reason
-      const [tasks, devicePage] = dashboardResult.value
-      const terminal = tasks.filter((task) => ["SUCCESS", "PARTIAL_SUCCESS", "FAILED", "REJECTED"].includes(task.task_status))
-      const rate = terminal.length
-        ? Math.round((terminal.filter((task) => task.task_status === "SUCCESS").length / terminal.length) * 1000) / 10
+      const tasks = dashboardResult.value
+      const successfulTasks = tasks.filter((task) => task.task_status === "SUCCESS").length
+      const rate = tasks.length
+        ? Math.round((successfulTasks / tasks.length) * 1000) / 10
         : 0
       setSuccessRate(rate)
       setMetrics([
-        { label: "Total Devices", value: String(devicePage.total), change: "Managed inventory", tone: "running", icon: Router },
         { label: "Total Tasks", value: tasks.length.toLocaleString(), change: "Automation requests", tone: "running", icon: ListTodo },
-        { label: "Success Rate", value: `${rate}%`, change: `${terminal.length} completed`, tone: "success", icon: CheckCircle2 },
+        { label: "Success Rate", value: `${rate}%`, change: `${successfulTasks} successful tasks`, tone: "success", icon: CheckCircle2 },
         { label: "Pending Tasks", value: String(tasks.filter((task) => task.task_status === "PENDING").length), change: "Waiting to start", tone: "waiting", icon: Clock3 },
         { label: "Needs Attention", value: String(tasks.filter((task) => ["PARTIAL_SUCCESS", "FAILED", "REJECTED"].includes(task.task_status)).length), change: "Partial, failed or rejected", tone: "danger", icon: CircleAlert },
       ])
@@ -206,18 +196,12 @@ export function useDashboardData(rateDateRange?: DateRange) {
 
   const rateMetrics = useMemo<DashboardRateMetric[]>(() => {
     const bounds = localDateBounds(rateDateRange)
-    if (!bounds) {
-      return buildBenchmarkRates({
-        summary: rateSummary,
-        evaluations: rateEvaluations,
-        runs: rateRuns,
-      })
-    }
-
-    const runs = rateRuns?.filter((run) => {
-      const startedAt = new Date(run.started_at)
-      return !Number.isNaN(startedAt.getTime()) && startedAt >= bounds.start && startedAt < bounds.end
-    }) ?? null
+    const runs = bounds
+      ? rateRuns?.filter((run) => {
+          const startedAt = new Date(run.started_at)
+          return !Number.isNaN(startedAt.getTime()) && startedAt >= bounds.start && startedAt < bounds.end
+        }) ?? null
+      : rateRuns
     const evaluationIds = new Set(runs?.flatMap((run) => run.evaluation_id ? [run.evaluation_id] : []) ?? [])
     const evaluations = rateEvaluations?.filter((evaluation) => evaluationIds.has(evaluation.id)) ?? null
 
@@ -225,9 +209,9 @@ export function useDashboardData(rateDateRange?: DateRange) {
       summary: runs ? summarizeRuns(runs) : null,
       evaluations,
       runs,
-      filtered: true,
+      filtered: bounds != null,
     })
-  }, [rateDateRange, rateEvaluations, rateRuns, rateSummary])
+  }, [rateDateRange, rateEvaluations, rateRuns])
 
   return {
     metrics, taskBars,

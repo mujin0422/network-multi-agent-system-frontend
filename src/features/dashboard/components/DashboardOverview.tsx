@@ -38,7 +38,7 @@ export function DashboardOverview() {
       <PageLoadingSkeleton
         title={DASHBOARD_COPY.title}
         description={DASHBOARD_COPY.description}
-        stats={5}
+        stats={4}
         variant="dashboard"
       />
     )
@@ -60,7 +60,7 @@ export function DashboardOverview() {
           Refresh
         </Button>
       </PageLayoutHeader>
-      <PageLayoutOverview className="grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+      <PageLayoutOverview className="grid-cols-2 gap-3 xl:grid-cols-4">
         {metrics.map((metric) => {
           const Icon = metric.icon
           return (

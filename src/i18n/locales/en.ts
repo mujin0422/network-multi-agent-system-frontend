@@ -151,7 +151,7 @@ const en = {
     description: "Review saved AI metric results and evidence.",
     refresh: "Refresh",
     search: "Search task ID, evaluation ID or scenario...",
-    latestLimit: "Showing at most the 100 latest evaluations. PASS follows the current rubric, not independent network verification.",
+    latestLimit: "PASS follows the current rubric, not independent network verification.",
     total: "Evaluations",
     rcaPass: "RCA pass",
     rcaFail: "RCA fail",

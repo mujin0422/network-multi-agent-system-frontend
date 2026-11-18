@@ -20,6 +20,28 @@ const draftConversation = (): Conversation => ({
   created_at: new Date().toISOString(), last_updated_at: new Date().toISOString(),
 })
 
+function calculateActiveDuration(events: TaskActivityEvent[]): number {
+  const intervals = events
+    .filter((event) => event.started_at && event.completed_at)
+    .map((event) => [Date.parse(event.started_at!), Date.parse(event.completed_at!)] as const)
+    .filter(([start, end]) => Number.isFinite(start) && Number.isFinite(end) && end >= start)
+    .sort(([left], [right]) => left - right)
+  if (!intervals.length) return 0
+
+  let total = 0
+  let [currentStart, currentEnd] = intervals[0]
+  for (const [start, end] of intervals.slice(1)) {
+    if (start <= currentEnd) {
+      currentEnd = Math.max(currentEnd, end)
+      continue
+    }
+    total += currentEnd - currentStart
+    currentStart = start
+    currentEnd = end
+  }
+  return total + currentEnd - currentStart
+}
+
 const activityTitle: Record<TaskActivityEvent["event_type"], string> = {
   MESSAGE_RECEIVED: "Tiếp nhận yêu cầu người dùng",
   TASK_CREATED: "Tạo task xử lý yêu cầu",
@@ -123,11 +145,8 @@ export function useChatMessages(options: ChatOptions = {}) {
       // Giữ workflow và thẻ phê duyệt tại đúng vị trí của approval message.
       // Nếu task không cần phê duyệt, workflow được đặt cạnh final response.
       const response = approvalResponse ?? finalResponse ?? responses[0]
-      const activeDuration = events.reduce((total, event) => {
-        if (!event.started_at || !event.completed_at) return total
-        return total + Math.max(0, Date.parse(event.completed_at) - Date.parse(event.started_at))
-      }, 0)
-      const approvals = approvalEntries.map(({ approval, operationId }) => {
+      const activeDuration = calculateActiveDuration(events)
+      const allApprovals = approvalEntries.map(({ approval, operationId }) => {
         const approvalDevices = [...names.entries()].filter(([deviceId]) =>
           approval.reason.includes(deviceId),
         )
@@ -148,7 +167,11 @@ export function useChatMessages(options: ChatOptions = {}) {
           status: approval.approval_status,
           expires_at: approval.expires_at,
         }
-      }).sort((left, right) => Number(right.status === "PENDING") - Number(left.status === "PENDING"))
+      })
+      // Backend chỉ phát hành một phiếu mới tại mỗi thời điểm. Frontend giữ
+      // nguyên các phiếu đã quyết định làm lịch sử và nối phiếu hiện hành xuống
+      // dưới, thay vì thay thế thẻ cũ sau mỗi lần resume workflow.
+      const approvals = allApprovals
       return {
         source_message_id: task.source_message_id,
         response_message_id: response?.id ?? "",
@@ -159,6 +182,7 @@ export function useChatMessages(options: ChatOptions = {}) {
         active_duration_ms: activeDuration,
         activities: events.map((event) => ({
           id: event.id,
+          event_type: event.event_type,
           actor: event.actor_type === "TOOL" ? "NETWORK" : event.actor_type,
           title: activityTitle[event.event_type],
           detail:

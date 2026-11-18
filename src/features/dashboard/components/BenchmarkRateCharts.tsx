@@ -168,11 +168,6 @@ export function BenchmarkRateCharts({
             <p className="text-xs text-muted-foreground">
               Pass rates and diagnostic quality for the selected Benchmark Run dates
             </p>
-            {dateRange?.from && (
-              <p className="text-[11px] text-muted-foreground">
-                Date filter uses Benchmark Run start time across the complete run history.
-              </p>
-            )}
             {error && <p className="text-xs text-amber-400" role="status">{error}</p>}
           </div>
           <DataTableDateRangeFilter

@@ -1,5 +1,6 @@
 import { api } from "@/service/api"
 import type { AuditEventStatus, AuditLog } from "@/service/contracts"
+import type { PageResponse } from "@/types/shared/page-response.type"
 
 export type AuditLogListParams = {
   actor_user_id?: string
@@ -12,6 +13,11 @@ export type AuditLogListParams = {
   limit?: number
 }
 
+export type AuditLogPageParams = Omit<AuditLogListParams, "offset" | "limit"> & {
+  page?: number
+  page_size?: number
+}
+
 export const auditLogsApi = {
   list: async (params: AuditLogListParams = {}) =>
     (
@@ -19,6 +25,8 @@ export const auditLogsApi = {
         params: { limit: 500, ...params },
       })
     ).data,
+  page: async (params: AuditLogPageParams = {}) =>
+    (await api.get<PageResponse<AuditLog>>("/audit-logs/page", { params })).data,
   getById: async (auditLogId: string) =>
     (await api.get<AuditLog>(`/audit-logs/${auditLogId}`)).data,
 }

@@ -17,6 +17,7 @@ export type AgentActivityStatus =
 
 export type AgentActivity = {
   id: string
+  event_type: string
   actor: "ORCHESTRATOR" | "PLANNER" | "CONFIGURATION" | "NETWORK" | "ANALYST"
   title: string
   detail?: string

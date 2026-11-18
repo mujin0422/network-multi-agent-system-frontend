@@ -8,7 +8,7 @@ import type {
 } from "../types/chat-task-preview.type"
 
 function elapsedLabel(durationMs: number) {
-  const seconds = Math.max(0, Math.round(durationMs / 1000))
+  const seconds = Math.max(0, Math.floor(durationMs / 1000))
   if (seconds < 60) return `${seconds}s`
   return `${Math.floor(seconds / 60)}m ${seconds % 60}s`
 }
@@ -33,28 +33,47 @@ function ActivityRow({ activity }: { activity: AgentActivityItem }) {
 /** Timeline thu gọn mô tả những gì các agent đã làm cho một user message. */
 export function AgentActivity({ task }: { task: ChatTaskPreview }) {
   const [open, setOpen] = useState(true)
-  const [now, setNow] = useState<number | null>(null)
+  const [displayedDuration, setDisplayedDuration] = useState({
+    taskId: task.task_id,
+    value: task.active_duration_ms,
+  })
   const waitingApproval = task.approvals.some((approval) => approval.status === "PENDING")
-  const workflowCompleted = [
-    "SUCCESS",
-    "PARTIAL_SUCCESS",
-    "FAILED",
-    "REJECTED",
-  ].includes(task.task_status)
+  const workflowCompleted = task.activities.some(
+    (activity) => activity.event_type === "FINAL_RESPONSE_CREATED",
+  )
   const running = !workflowCompleted && !waitingApproval
 
-  useEffect(() => {
-    if (!running) return
-    const timer = window.setInterval(() => setNow(Date.now()), 1000)
-    return () => window.clearInterval(timer)
-  }, [running])
+  const latestActivity = task.activities.at(-1)
+  const latestTimestamp = latestActivity?.completed_at
+    ?? latestActivity?.started_at
+    ?? task.started_at
+  const latestTimestampMs = Date.parse(latestTimestamp)
 
-  const latestStartedAt = task.activities.at(-1)?.started_at ?? task.started_at
-  const latestStartedAtMs = Date.parse(latestStartedAt)
-  const liveDuration = running
-    ? task.active_duration_ms + Math.max(0, (now ?? latestStartedAtMs) - latestStartedAtMs)
-    : task.active_duration_ms
-  const duration = elapsedLabel(liveDuration)
+  useEffect(() => {
+    const updateDuration = () => {
+      const calculatedDuration = task.active_duration_ms + (
+        running && Number.isFinite(latestTimestampMs)
+          ? Math.max(0, Date.now() - latestTimestampMs)
+          : 0
+      )
+      setDisplayedDuration((current) => ({
+        taskId: task.task_id,
+        value: current.taskId === task.task_id
+          ? Math.max(current.value, calculatedDuration)
+          : calculatedDuration,
+      }))
+    }
+    const initialUpdate = window.setTimeout(updateDuration, 0)
+    const timer = running
+      ? window.setInterval(updateDuration, 1000)
+      : undefined
+    return () => {
+      window.clearTimeout(initialUpdate)
+      if (timer !== undefined) window.clearInterval(timer)
+    }
+  }, [latestTimestampMs, running, task.active_duration_ms, task.task_id])
+
+  const duration = elapsedLabel(displayedDuration.value)
 
   return (
     <div className="mt-3">

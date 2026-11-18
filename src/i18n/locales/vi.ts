@@ -151,7 +151,7 @@ const vi = {
     description: "Xem các tiêu chí đánh giá AI đã lưu và bằng chứng kèm theo.",
     refresh: "Làm mới",
     search: "Tìm mã Task, mã Evaluation hoặc tên kịch bản...",
-    latestLimit: "Hiển thị tối đa 100 đánh giá gần nhất. PASS phản ánh tiêu chí chấm hiện tại, không phải xác minh mạng độc lập.",
+    latestLimit: "PASS phản ánh tiêu chí chấm hiện tại, không phải xác minh mạng độc lập.",
     total: "Số đánh giá",
     rcaPass: "RCA đạt",
     rcaFail: "RCA không đạt",
