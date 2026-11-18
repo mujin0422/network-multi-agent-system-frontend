@@ -36,9 +36,9 @@ const hasResult = (value: unknown): value is "PASS" | "FAIL" =>
 
 /**
  * Rates use real persisted API data.
- * - TSR and run finalization are derived from the backend's all-run summary.
- * - GOAL, RCA and F1 use completed evaluations from the last 100 results.
- * - Cleanup coverage uses the complete run history and is not a claim of remediation.
+ * Every metric is scoped to persisted Benchmark Runs. Evaluation-based metrics
+ * receive only evaluations referenced by those runs, so ordinary Task
+ * evaluations never affect Benchmark KPIs.
  *
  * An unavailable endpoint yields null (a dash), never an invented 0% score.
  */
@@ -52,8 +52,8 @@ export function buildBenchmarkRates({
     ? "Selected dates · complete run history"
     : "All benchmark runs · mixed evaluator versions"
   const evaluationScope = filtered
-    ? "Selected dates · latest 100 evaluations"
-    : "Latest 100 completed evaluations"
+    ? "Selected Benchmark Runs with completed evaluations"
+    : "All Benchmark Runs with completed evaluations"
   const completedEvaluations = evaluations?.filter(
     (evaluation) => evaluation.evaluation_status === "COMPLETED",
   )
