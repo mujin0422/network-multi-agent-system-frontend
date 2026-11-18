@@ -12,6 +12,7 @@ import type { ChatTaskPreview } from "../types/chat-task-preview.type"
 import { formatMessageTimestamp } from "../utils/chatbot.util"
 import { AgentActivity } from "./AgentActivity"
 import { ApprovalRequestCard } from "./ApprovalRequestCard"
+import { ChatMarkdown } from "./ChatMarkdown"
 
 /** Hiển thị luồng tin nhắn và phân biệt nội dung của người dùng với AI. */
 export function MessageList({
@@ -117,22 +118,17 @@ export function MessageList({
                 <Tooltip>
                   <TooltipTrigger
                     render={
-                      <span
+                      <div
                         tabIndex={0}
                         className="block cursor-default outline-none"
                       />
                     }
                   >
                     {item.sender_by === "AGENT" ? (
-                      <span
-                        className={
-                          taskPreview
-                            ? "mt-4 block whitespace-pre-wrap text-sm leading-7 text-foreground"
-                            : "whitespace-pre-wrap text-sm leading-7 text-foreground"
-                        }
-                      >
-                        {item.message}
-                      </span>
+                      <ChatMarkdown
+                        content={item.message}
+                        className={taskPreview ? "mt-4" : undefined}
+                      />
                     ) : (
                       item.message
                     )}
