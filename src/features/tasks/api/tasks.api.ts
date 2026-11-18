@@ -1,4 +1,5 @@
 import { api } from "@/service/api"
+import type { PageRequest, PageResponse } from "@/types/shared/page-response.type"
 import type {
   ApprovalDecision,
   Operation,
@@ -14,6 +15,8 @@ import type {
 
 export const tasksApi = {
   list: async () => (await api.get<Task[]>("/tasks/")).data,
+  page: async (params: PageRequest = {}) =>
+    (await api.get<PageResponse<Task>>("/tasks/page", { params })).data,
   get: async (taskId: string) => (await api.get<TaskDetail>(`/tasks/${taskId}`)).data,
   getRecords: async (taskId: string) =>
     (await api.get<TaskRecords>(`/tasks/${taskId}/records`)).data,

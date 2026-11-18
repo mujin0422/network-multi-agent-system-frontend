@@ -1,9 +1,12 @@
 import { api } from "@/service/api"
 import type { BenchmarkRun, BenchmarkScenario, BenchmarkScenarioCreate, BenchmarkScenarioDetail, BenchmarkScenarioUpdate } from "@/service/contracts"
+import type { PageRequest, PageResponse } from "@/types/shared/page-response.type"
 
 export const benchmarkScenariosApi = {
   listScenarios: async () =>
     (await api.get<BenchmarkScenario[]>("/benchmarks/scenarios")).data,
+  page: async (params: PageRequest = {}) =>
+    (await api.get<PageResponse<BenchmarkScenario>>("/benchmarks/scenarios/page", { params })).data,
   createScenario: async (payload: BenchmarkScenarioCreate) =>
     (await api.post<BenchmarkScenario>("/benchmarks/scenarios", payload)).data,
   getScenario: async (scenarioId: string) =>
