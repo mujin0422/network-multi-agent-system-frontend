@@ -1,5 +1,4 @@
 import type { BenchmarkRun, Task, TaskEvaluationSummary, User } from "@/service"
-import { AI_LATENCY_EVALUATOR_VERSIONS } from "../constants/evaluations.constants"
 import type { EvaluationMetrics, EvaluationTableRow } from "../types/evaluation.type"
 
 export function buildEvaluationRows(
@@ -29,7 +28,6 @@ export function buildEvaluationRows(
 
 export function calculateEvaluationMetrics(evaluations: TaskEvaluationSummary[]): EvaluationMetrics {
   const latencySamples = evaluations.flatMap((evaluation) => {
-    if (!(AI_LATENCY_EVALUATOR_VERSIONS as readonly string[]).includes(evaluation.evaluator_version ?? "")) return []
     const value = evaluation.measurements?.LATENCY
     return value == null ? [] : [value]
   })

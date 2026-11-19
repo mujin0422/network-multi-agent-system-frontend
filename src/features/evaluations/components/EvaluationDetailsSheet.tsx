@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 
-import { TaskEvaluationDetails } from "@/components/shared/TaskEvaluationDetails"
+import { EvaluationDetails } from "@/features/evaluations/components/EvaluationDetails"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import { evaluationsApi } from "../api/evaluations.api"
@@ -44,14 +44,14 @@ export function EvaluationDetailsSheet({ open, taskId, onOpenChange }: Evaluatio
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full gap-0 data-[side=right]:sm:max-w-3xl!">
+      <SheetContent className="w-full gap-0 overflow-hidden data-[side=right]:sm:max-w-3xl!">
         <SheetHeader className="border-b pr-12">
           <SheetTitle>Benchmark evaluation</SheetTitle>
           <SheetDescription className="break-all font-mono text-xs">
             {taskId ?? "—"}
           </SheetDescription>
         </SheetHeader>
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto p-4">
           {loading ? (
             <div role="status" className="space-y-3">
               <Skeleton className="h-24 w-full" />
@@ -59,7 +59,7 @@ export function EvaluationDetailsSheet({ open, taskId, onOpenChange }: Evaluatio
               <span className="sr-only">Loading Evaluation</span>
             </div>
           ) : (
-            <TaskEvaluationDetails evaluation={evaluation} error={error} />
+            <EvaluationDetails evaluation={evaluation} error={error} />
           )}
         </div>
       </SheetContent>

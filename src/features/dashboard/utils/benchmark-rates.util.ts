@@ -50,7 +50,7 @@ export function buildBenchmarkRates({
 }: RateInputs): DashboardRateMetric[] {
   const runScope = filtered
     ? "Selected dates · complete run history"
-    : "All benchmark runs · mixed evaluator versions"
+    : "All benchmark runs"
   const evaluationScope = filtered
     ? "Selected Benchmark Runs with completed evaluations"
     : "All Benchmark Runs with completed evaluations"
@@ -94,7 +94,7 @@ export function buildBenchmarkRates({
       label: "Task Success Rate",
       description: filtered
         ? "Percentage of eligible Benchmark Runs in the selected dates that passed GOAL: passed / (passed + failed). In-progress, setup-failed and unscored runs are excluded."
-        : "Percentage of eligible Benchmark Runs that passed GOAL: passed / (passed + failed). In-progress, setup-failed and unscored runs are excluded. The all-time history includes older evaluator versions.",
+        : "Percentage of eligible Benchmark Runs that passed GOAL: passed / (passed + failed). In-progress, setup-failed and unscored runs are excluded.",
       color: "#16a34a",
       secondaryColor: "#14532d",
       positiveLabel: "Task Success",
@@ -120,7 +120,7 @@ export function buildBenchmarkRates({
     {
       id: "rca",
       label: "RCA Pass Rate",
-      description: "Percentage of completed RCA evaluations that pass according to the evaluator used by each run.",
+      description: "Percentage of completed RCA evaluations with a PASS result.",
       color: "#7c3aed",
       secondaryColor: "#4c1d95",
       positiveLabel: "RCA Pass",

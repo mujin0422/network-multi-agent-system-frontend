@@ -352,7 +352,6 @@ export type TaskEvaluationSummary = {
   task_id: string
   evaluation_status: EvaluationStatus
   evaluator_type: "AUTOMATED" | "HUMAN"
-  evaluator_version: string | null
   created_at: string
   evaluated_at: string | null
   results: Partial<Record<EvaluationMetricType, EvaluationResult>>
@@ -364,7 +363,6 @@ export type TaskEvaluationDetail = {
   task_id: string
   evaluation_status: EvaluationStatus
   evaluator_type: "AUTOMATED" | "HUMAN"
-  evaluator_version: string | null
   created_at: string
   evaluated_at: string | null
   metrics: TaskEvaluationMetric[]

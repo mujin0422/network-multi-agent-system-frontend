@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react"
 
 import { StatusBadge } from "@/components/shared/StatusBadge"
-import { TaskEvaluationDetails } from "@/components/shared/TaskEvaluationDetails"
+import { EvaluationDetails } from "@/features/evaluations/components/EvaluationDetails"
 import { Button } from "@/components/ui/button"
 import {
   Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle,
@@ -168,7 +168,7 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full gap-0 data-[side=right]:sm:max-w-4xl!">
+      <SheetContent className="w-full gap-0 overflow-hidden data-[side=right]:sm:max-w-4xl!">
         <SheetHeader className="shrink-0 border-b pr-12">
           <SheetTitle>Execution records</SheetTitle>
           <SheetDescription className="sr-only">Task execution records and evaluation details</SheetDescription>
@@ -194,7 +194,7 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
               Refresh
             </Button>
           </div>
-          <div role="tabpanel" className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+          <div role="tabpanel" className="no-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
             {loading && (
               <div role="status" className="space-y-3">
                 <Skeleton className="h-20 w-full" />
@@ -208,30 +208,46 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
             )}
             {!loading && data && (
               <>
-                <div className="flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border bg-muted/10 px-4 py-3 text-xs">
-                  <span className="min-w-0">
-                    <span className="font-medium">Task ID: </span>
-                    <span className="break-all font-mono text-muted-foreground">{data.task.id}</span>
-                  </span>
-                  <span>
-                    <span className="font-medium">Type: </span>
-                    <span className="text-muted-foreground">
-                      {data.task.task_type
-                        .toLowerCase()
-                        .replaceAll("_", " ")
-                        .replace(/^./, (letter) => letter.toUpperCase())}
+                <div className="space-y-2.5 rounded-lg border bg-muted/10 px-4 py-3 text-xs">
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                    <span className="min-w-0">
+                      <span className="font-medium">Task ID: </span>
+                      <span className="break-all font-mono text-muted-foreground">{data.task.id}</span>
                     </span>
-                  </span>
+                    <span>
+                      <span className="font-medium">Type: </span>
+                      <span className="text-muted-foreground">
+                        {data.task.task_type
+                          .toLowerCase()
+                          .replaceAll("_", " ")
+                          .replace(/^./, (letter) => letter.toUpperCase())}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-[88px_minmax(0,1fr)] gap-2">
+                    <span className="font-medium">User request:</span>
+                    <p className="whitespace-pre-wrap break-words text-muted-foreground">
+                      {data.task.input_message}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-muted-foreground">
+                    <span>
+                      <span className="font-medium text-foreground">Conversation: </span>
+                      <span className="break-all font-mono">{data.task.conversation_id}</span>
+                    </span>
+                    <span>
+                      <span className="font-medium text-foreground">Started: </span>
+                      {timestamp(data.task.started_at)}
+                    </span>
+                    <span>
+                      <span className="font-medium text-foreground">Completed: </span>
+                      {timestamp(data.task.completed_at)}
+                    </span>
+                  </div>
                 </div>
 
                 {activeTab === "plan" && (
                   <Section>
-                    <RecordCard title="User request" subtitle={data.task.id}>
-                      <p className="whitespace-pre-wrap break-words text-xs">{data.task.input_message}</p>
-                      <DetailRow label="Conversation">{data.task.conversation_id}</DetailRow>
-                      <DetailRow label="Started">{timestamp(data.task.started_at)}</DetailRow>
-                      <DetailRow label="Completed">{timestamp(data.task.completed_at)}</DetailRow>
-                    </RecordCard>
                     {operations.map((operation) => (
                       <RecordCard key={operation.id} title={operationLabel(operation.id)} subtitle={operation.id} status={operation.operation_status}>
                         <DetailRow label="Created">{timestamp(operation.created_at)}</DetailRow>
@@ -335,7 +351,7 @@ export function TaskRecordsSheet({ open, taskId, onOpenChange }: TaskRecordsShee
                 )}
 
                 {activeTab === "evaluation" && (
-                  <TaskEvaluationDetails evaluation={evaluation} error={evaluationError} />
+                  <EvaluationDetails evaluation={evaluation} error={evaluationError} />
                 )}
 
                 {activeTab === "commands" && (
