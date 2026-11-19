@@ -67,7 +67,12 @@ export function FeatureFormSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className={cn("w-full data-[side=right]:sm:max-w-lg!", contentClassName)}>
+      <SheetContent
+        className={cn(
+          "w-full overflow-hidden data-[side=right]:sm:max-w-lg!",
+          contentClassName,
+        )}
+      >
         <SheetHeader className="border-b">
           <SheetTitle>
             {modeLabel} {entityLabel}
@@ -75,7 +80,7 @@ export function FeatureFormSheet({
           <SheetDescription className="text-xs">{description}</SheetDescription>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col [&_button]:text-xs!">
-          <div className="flex-1 space-y-4 overflow-y-auto p-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&_input]:text-xs! [&_input::placeholder]:text-xs [&_textarea]:text-xs! [&_textarea::placeholder]:text-xs">
+          <div className="no-scrollbar min-h-0 flex-1 space-y-4 overflow-y-auto p-4 [&_*]:[scrollbar-width:none] [&_*::-webkit-scrollbar]:hidden [&_input]:text-xs! [&_input::placeholder]:text-xs [&_textarea]:text-xs! [&_textarea::placeholder]:text-xs">
             {children}
           </div>
           <SheetFooter className="border-t">

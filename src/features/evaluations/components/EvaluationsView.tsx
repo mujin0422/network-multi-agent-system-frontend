@@ -107,7 +107,7 @@ export function EvaluationsView() {
           data={rows}
           getRowId={(evaluation) => evaluation.id}
           searchValue={(evaluation) =>
-            `${evaluation.task_id} ${evaluation.id} ${evaluation.scenarioName} ${evaluation.evaluator_type} ${evaluation.evaluator_version ?? ""} ${evaluation.ownerId ?? ""} ${evaluation.ownerName ?? ""} ${evaluation.ownerEmail ?? ""}`
+            `${evaluation.task_id} ${evaluation.id} ${evaluation.scenarioName} ${evaluation.evaluator_type} ${evaluation.ownerId ?? ""} ${evaluation.ownerName ?? ""} ${evaluation.ownerEmail ?? ""}`
           }
           filters={[
             {
