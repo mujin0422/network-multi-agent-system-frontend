@@ -17,30 +17,9 @@ import type {
   TaskOutcomePoint,
 } from "../types/task-analytics.type"
 import { buildBenchmarkRates, type DashboardRateMetric } from "../utils/benchmark-rates.util"
+import { summarizeBenchmarkRuns } from "../utils/benchmark-tsr.util"
 
 const DAY_MS = 86_400_000
-
-function summarizeRuns(runs: BenchmarkRun[]): BenchmarkRunSummary {
-  const passed = runs.filter((run) => run.evaluation_result === "PASS").length
-  const failed = runs.filter((run) => run.evaluation_result === "FAIL").length
-  const inProgress = runs.filter((run) => ["PREPARING", "READY", "RUNNING"].includes(run.status)).length
-  const setupFailed = runs.filter((run) => run.status === "FAILED" && run.source_message_id == null).length
-  const unscored = runs.filter((run) =>
-    run.source_message_id != null && run.evaluation_result == null && !["PREPARING", "READY", "RUNNING"].includes(run.status),
-  ).length
-  const eligibleRuns = passed + failed
-  return {
-    total_runs: runs.length,
-    passed,
-    failed,
-    in_progress: inProgress,
-    not_started: 0,
-    setup_failed: setupFailed,
-    unscored,
-    eligible_runs: eligibleRuns,
-    success_rate: eligibleRuns ? Math.round((passed / eligibleRuns) * 1000) / 10 : null,
-  }
-}
 
 function localDateBounds(range?: DateRange) {
   if (!range?.from) return null
@@ -61,6 +40,7 @@ export function useDashboardData(rateDateRange?: DateRange) {
   const [successRate, setSuccessRate] = useState(0)
   const [rateEvaluations, setRateEvaluations] = useState<TaskEvaluationSummary[] | null>(null)
   const [rateRuns, setRateRuns] = useState<BenchmarkRun[] | null>(null)
+  const [rateSummary, setRateSummary] = useState<BenchmarkRunSummary | null>(null)
   const [rateError, setRateError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -72,16 +52,19 @@ export function useDashboardData(rateDateRange?: DateRange) {
     try {
       // Benchmark metrics have independent permissions and failure states.
       // One unavailable endpoint must not break the regular Dashboard.
-      const [dashboardResult, evaluationResult, runsResult] = await Promise.allSettled([
+      const [dashboardResult, evaluationResult, runsResult, summaryResult] = await Promise.allSettled([
         tasksApi.list(),
         evaluationsApi.listAll(),
         benchmarkRunsApi.listAll(),
+        benchmarkRunsApi.getSummary(),
       ])
       setRateEvaluations(evaluationResult.status === "fulfilled" ? evaluationResult.value : null)
       setRateRuns(runsResult.status === "fulfilled" ? runsResult.value : null)
+      setRateSummary(summaryResult.status === "fulfilled" ? summaryResult.value : null)
       const unavailable = [
         evaluationResult.status === "rejected" ? "evaluations" : null,
         runsResult.status === "rejected" ? "benchmark runs" : null,
+        summaryResult.status === "rejected" ? "benchmark summary" : null,
       ].filter((name): name is string => name !== null)
       if (unavailable.length) {
         setRateError(`Some metrics are unavailable: ${unavailable.join(", ")}.`)
@@ -205,13 +188,22 @@ export function useDashboardData(rateDateRange?: DateRange) {
     const evaluationIds = new Set(runs?.flatMap((run) => run.evaluation_id ? [run.evaluation_id] : []) ?? [])
     const evaluations = rateEvaluations?.filter((evaluation) => evaluationIds.has(evaluation.id)) ?? null
 
+    // Use the backend's canonical full-history aggregation when no filter is set.
+    // Filtered cohorts match the backend classifier and use GOAL from Evaluation,
+    // never BenchmarkRun.evaluation_result (which stores RCA).
+    const summary = bounds
+      ? runs !== null && evaluations !== null
+        ? summarizeBenchmarkRuns(runs, evaluations)
+        : null
+      : rateSummary
+
     return buildBenchmarkRates({
-      summary: runs ? summarizeRuns(runs) : null,
+      summary,
       evaluations,
       runs,
       filtered: bounds != null,
     })
-  }, [rateDateRange, rateEvaluations, rateRuns])
+  }, [rateDateRange, rateEvaluations, rateRuns, rateSummary])
 
   return {
     metrics, taskBars,
